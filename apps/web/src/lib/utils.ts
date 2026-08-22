@@ -6,12 +6,11 @@ import { format } from 'date-fns';
 export function getPublicInvoiceUrl(billId: string): string {
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
-    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '192.168.1.101') {
-      return `http://192.168.1.101:3000/bill/${billId}`;
+    if (hostname.includes('onrender.com') || (!hostname.includes('localhost') && !hostname.includes('127.0.0.1') && !hostname.includes('192.168.'))) {
+      return `${window.location.origin}/bill/${billId}`;
     }
-    return `${window.location.origin}/bill/${billId}`;
   }
-  return `http://192.168.1.101:3000/bill/${billId}`;
+  return `https://billing-saas-web.onrender.com/bill/${billId}`;
 }
 
 /**

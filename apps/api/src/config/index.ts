@@ -3,8 +3,8 @@ import { registerAs } from '@nestjs/config';
 export const appConfig = registerAs('app', () => ({
   nodeEnv: process.env.NODE_ENV ?? 'development',
   port: parseInt(process.env.PORT ?? '4000', 10),
-  baseUrl: process.env.APP_BASE_URL ?? 'http://localhost:3000',
-  corsOrigins: process.env.CORS_ORIGINS?.split(',') ?? ['http://localhost:3000'],
+  baseUrl: process.env.APP_BASE_URL ?? 'https://billing-saas-web.onrender.com',
+  corsOrigins: process.env.CORS_ORIGINS?.split(',') ?? ['http://localhost:3000', 'https://billing-saas-web.onrender.com'],
 }));
 
 export const databaseConfig = registerAs('database', () => ({
