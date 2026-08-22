@@ -8,35 +8,43 @@ export class ReportsService {
 
   // ── Dashboard summary ─────────────────────────────────────────────────────────
 
-  async getDashboardSummary(tenantId: string) {
+  async getDashboardSummary(tenantId?: string | null) {
     const today = new Date();
     const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    const tenantFilter = tenantId ? { tenantId } : {};
 
     const [todaySales, monthSales, totalItems, allItems, todayBillItems] =
       await Promise.all([
         // Today's sales
         this.prisma.bill.aggregate({
-          where: { tenantId, status: 'PAID', createdAt: { gte: startOfToday } },
+          where: { ...tenantFilter, status: 'PAID', createdAt: { gte: startOfToday } },
           _sum: { grandTotal: true },
           _count: { id: true },
         }),
         // This month's sales
         this.prisma.bill.aggregate({
-          where: { tenantId, status: 'PAID', createdAt: { gte: startOfMonth } },
+          where: { ...tenantFilter, status: 'PAID', createdAt: { gte: startOfMonth } },
           _sum: { grandTotal: true },
           _count: { id: true },
         }),
         // Total active items
-        this.prisma.item.count({ where: { tenantId, isActive: true } }),
+        this.prisma.item.count({ where: { ...tenantFilter, isActive: true } }),
         // All items to accurately calculate low stock & near expiry
         this.prisma.item.findMany({
-          where: { tenantId, isActive: true },
+          where: { ...tenantFilter, isActive: true },
           select: { currentStock: true, reorderThreshold: true, expiryDate: true },
         }),
         // Today's sold items for top 5 list
         this.prisma.billItem.findMany({
-          where: { bill: { tenantId, status: 'PAID', createdAt: { gte: startOfToday } } },
+          where: {
+            bill: {
+              ...tenantFilter,
+              status: 'PAID',
+              createdAt: { gte: startOfToday },
+            },
+          },
           select: { itemId: true, itemNameAtSale: true, qty: true, lineTotal: true },
         }),
       ]);
@@ -79,7 +87,7 @@ export class ReportsService {
 
     const weeklyBills = await this.prisma.bill.findMany({
       where: {
-        tenantId,
+        ...tenantFilter,
         status: 'PAID',
         createdAt: { gte: sevenDaysAgo },
       },
@@ -136,14 +144,16 @@ export class ReportsService {
 
   // ── Sales report (date range) ─────────────────────────────────────────────────
 
-  async getSalesReport(tenantId: string, from: string, to: string) {
+  async getSalesReport(tenantId: string | null, from: string, to: string) {
     const fromDate = new Date(from);
     const toDate = new Date(to);
     toDate.setHours(23, 59, 59, 999);
 
+    const tenantFilter = tenantId ? { tenantId } : {};
+
     const bills = await this.prisma.bill.findMany({
       where: {
-        tenantId,
+        ...tenantFilter,
         status: 'PAID',
         createdAt: { gte: fromDate, lte: toDate },
       },
@@ -177,14 +187,20 @@ export class ReportsService {
 
   // ── Best-selling items ────────────────────────────────────────────────────────
 
-  async getBestSellingItems(tenantId: string, from: string, to: string, limit = 20) {
+  async getBestSellingItems(tenantId: string | null, from: string, to: string, limit = 20) {
     const fromDate = new Date(from);
     const toDate = new Date(to);
     toDate.setHours(23, 59, 59, 999);
 
+    const tenantFilter = tenantId ? { tenantId } : {};
+
     const billItems = await this.prisma.billItem.findMany({
       where: {
-        bill: { tenantId, status: 'PAID', createdAt: { gte: fromDate, lte: toDate } },
+        bill: {
+          ...tenantFilter,
+          status: 'PAID',
+          createdAt: { gte: fromDate, lte: toDate },
+        },
       },
       select: { itemId: true, itemNameAtSale: true, qty: true, lineTotal: true },
     });
@@ -215,9 +231,11 @@ export class ReportsService {
 
   // ── Low stock alerts ──────────────────────────────────────────────────────────
 
-  async getLowStockItems(tenantId: string) {
+  async getLowStockItems(tenantId: string | null) {
+    const tenantFilter = tenantId ? { tenantId } : {};
+
     const items = await this.prisma.item.findMany({
-      where: { tenantId, isActive: true },
+      where: { ...tenantFilter, isActive: true },
       include: { category: true },
       orderBy: { currentStock: 'asc' },
     });
@@ -231,14 +249,16 @@ export class ReportsService {
 
   // ── Tax collected report ──────────────────────────────────────────────────────
 
-  async getTaxReport(tenantId: string, from: string, to: string) {
+  async getTaxReport(tenantId: string | null, from: string, to: string) {
     const fromDate = new Date(from);
     const toDate = new Date(to);
     toDate.setHours(23, 59, 59, 999);
 
+    const tenantFilter = tenantId ? { tenantId } : {};
+
     const bills = await this.prisma.bill.findMany({
       where: {
-        tenantId,
+        ...tenantFilter,
         status: 'PAID',
         createdAt: { gte: fromDate, lte: toDate },
       },
@@ -275,11 +295,11 @@ export class ReportsService {
 
   // ── Stock movement audit log ──────────────────────────────────────────────────
 
-  async getStockMovementLog(tenantId: string, query: { page?: number; limit?: number; itemId?: string; type?: string }) {
+  async getStockMovementLog(tenantId: string | null, query: { page?: number; limit?: number; itemId?: string; type?: string }) {
     const { page = 1, limit = 50, itemId, type } = query;
     const skip = (page - 1) * limit;
 
-    const where: any = { tenantId };
+    const where: any = tenantId ? { tenantId } : {};
     if (itemId) where.itemId = itemId;
     if (type) where.type = type;
 

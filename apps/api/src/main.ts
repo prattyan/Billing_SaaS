@@ -32,21 +32,19 @@ async function bootstrap() {
     }),
   );
 
-  // API prefix
-  app.setGlobalPrefix('api/v1');
+  // API prefix (exclude root / and /health for direct health checks)
+  app.setGlobalPrefix('api/v1', { exclude: ['/', 'health'] });
 
-  // Swagger docs (disabled in production)
-  if (process.env.NODE_ENV !== 'production') {
-    const config = new DocumentBuilder()
-      .setTitle('Billing SaaS API')
-      .setDescription('Multi-tenant grocery billing & inventory management API')
-      .setVersion('1.0')
-      .addBearerAuth()
-      .build();
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api/docs', app, document);
-    logger.log('Swagger docs available at /api/docs');
-  }
+  // Swagger docs
+  const config = new DocumentBuilder()
+    .setTitle('Billing SaaS REST API')
+    .setDescription('Multi-tenant grocery billing, POS & inventory management API')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
+  logger.log('Swagger docs available at /api/docs');
 
   const port = process.env.PORT ?? 4000;
   await app.listen(port);

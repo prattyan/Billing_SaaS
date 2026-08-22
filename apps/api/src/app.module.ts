@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { AppController } from './app.controller';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { TenantsModule } from './tenants/tenants.module';
@@ -58,5 +59,6 @@ import { appConfig, databaseConfig, jwtConfig, cashfreeConfig, whatsappConfig } 
     NotificationsModule,
     SuperAdminModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule {}
