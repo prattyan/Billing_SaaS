@@ -4,7 +4,7 @@ import {
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { PaymentMode } from '@billing-saas/types';
+import { PaymentMode } from '../../types';
 
 export class BillItemDto {
   @ApiProperty()

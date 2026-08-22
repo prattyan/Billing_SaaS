@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, BadRequestException, Logger } from '@nes
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto, VerifyPaymentDto } from './dto/subscription.dto';
-import { PLAN_LIMITS, PLAN_PRICES, PlanTier } from '@billing-saas/types';
+import { PLAN_LIMITS, PLAN_PRICES, PlanTier } from '../types';
 import Decimal from 'decimal.js';
 import { v4 as uuidv4 } from 'uuid';
 

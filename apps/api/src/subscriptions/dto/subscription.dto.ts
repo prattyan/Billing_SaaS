@@ -1,6 +1,6 @@
 import { IsEnum, IsString, IsOptional } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { PlanTier } from '@billing-saas/types';
+import { PlanTier } from '../../types';
 
 export class CreateOrderDto {
   @ApiProperty({ enum: ['GROWTH', 'BUSINESS', 'ENTERPRISE'] })

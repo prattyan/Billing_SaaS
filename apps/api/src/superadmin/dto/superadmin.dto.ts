@@ -1,6 +1,6 @@
 import { IsEnum, IsBoolean, IsOptional, IsDateString, IsString, IsEmail, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { PlanTier, SubscriptionStatus } from '@billing-saas/types';
+import { PlanTier, SubscriptionStatus } from '../../types';
 
 export class CreateTenantByAdminDto {
   @ApiProperty({ example: 'Sunshine Supermarket' })

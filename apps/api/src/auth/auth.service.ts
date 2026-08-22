@@ -11,7 +11,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
 import * as bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
-import { JwtPayload, AuthTokens } from '@billing-saas/types';
+import { JwtPayload, AuthTokens } from '../types';
 
 @Injectable()
 export class AuthService {

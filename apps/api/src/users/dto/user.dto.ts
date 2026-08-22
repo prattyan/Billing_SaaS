@@ -1,6 +1,6 @@
 import { IsString, IsEmail, MinLength, MaxLength, IsEnum, IsOptional, IsBoolean } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Role } from '@billing-saas/types';
+import { Role } from '../../types';
 
 export class CreateStaffDto {
   @ApiProperty({ example: 'Suresh Raina' })

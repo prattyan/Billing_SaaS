@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateItemDto, UpdateItemDto, RestockItemDto, ItemQueryDto } from './dto/item.dto';
-import { PLAN_LIMITS, GRACE_PERIOD_DAYS, PlanTier } from '@billing-saas/types';
+import { PLAN_LIMITS, GRACE_PERIOD_DAYS, PlanTier } from '../types';
 import Decimal from 'decimal.js';
 
 Decimal.set({ precision: 20, rounding: Decimal.ROUND_HALF_UP });
