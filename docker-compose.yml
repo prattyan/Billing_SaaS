@@ -1,0 +1,85 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: billing_saas_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-billing_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-billing_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-billing_saas}
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U billing_user -d billing_saas']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: billing_saas_redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:-redis_pass}
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-a', '${REDIS_PASSWORD:-redis_pass}', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile.dev
+    container_name: billing_saas_api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-billing_user}:${POSTGRES_PASSWORD:-billing_pass}@postgres:5432/${POSTGRES_DB:-billing_saas}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-redis_pass}@redis:6379
+      JWT_SECRET: ${JWT_SECRET:-change_me_in_production_32chars_min}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change_refresh_in_production_32chars}
+      NODE_ENV: development
+      PORT: 4000
+    ports:
+      - '4000:4000'
+    volumes:
+      - ./apps/api:/app
+      - ./packages:/packages
+      - /app/node_modules
+    command: npm run start:dev
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile.dev
+    container_name: billing_saas_web
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:4000
+      NODE_ENV: development
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./apps/web:/app
+      - ./packages:/packages
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev
+
+volumes:
+  postgres_data:
+  redis_data:

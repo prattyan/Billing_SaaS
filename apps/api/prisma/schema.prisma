@@ -1,0 +1,384 @@
+// This is your Prisma schema file
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// TENANTS / MULTI-TENANCY
+// ─────────────────────────────────────────────
+
+model Tenant {
+  id                  String    @id @default(cuid())
+  name                String
+  slug                String    @unique // URL-safe shop identifier
+  planTier            String    @default("STARTER") // STARTER, GROWTH, BUSINESS, ENTERPRISE
+  subscriptionStatus  String    @default("ACTIVE")  // ACTIVE, GRACE, EXPIRED, CANCELLED
+  subscriptionExpiry  DateTime?
+  skuCount            Int       @default(0)
+  gracePeriodEndsAt   DateTime?
+  isActive            Boolean   @default(true)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  // Relations
+  users               User[]
+  items               Item[]
+  categories          Category[]
+  suppliers           Supplier[]
+  purchaseOrders      PurchaseOrder[]
+  customers           Customer[]
+  bills               Bill[]
+  heldBills           HeldBill[]
+  stockTransactions   StockTransaction[]
+  subscriptions       Subscription[]
+  notificationLogs    NotificationLog[]
+  shopSettings        ShopSettings?
+
+  @@map("tenants")
+}
+
+// ─────────────────────────────────────────────
+// USERS & AUTH
+// ─────────────────────────────────────────────
+
+model User {
+  id           String    @id @default(cuid())
+  tenantId     String?   // null for SUPER_ADMIN
+  name         String
+  phone        String?
+  email        String    @unique
+  passwordHash String
+  role         String    @default("BILLER") // SUPER_ADMIN, OWNER, BILLER
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relations
+  tenant            Tenant?            @relation(fields: [tenantId], references: [id])
+  refreshTokens     RefreshToken[]
+  bills             Bill[]
+  stockTransactions StockTransaction[]
+
+  @@index([tenantId])
+  @@index([email])
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ─────────────────────────────────────────────
+// SHOP SETTINGS
+// ─────────────────────────────────────────────
+
+model ShopSettings {
+  id                    String  @id @default(cuid())
+  tenantId              String  @unique
+  requireCustomerPhone  Boolean @default(false)
+  whatsappEnabled       Boolean @default(true)
+  billPrefix            String  @default("INV")
+  billCounter           Int     @default(1)  // sequential per-shop bill counter
+  gstin                 String?
+  address               String?
+  logoUrl               String?
+  loyaltyEarnRate       Decimal @default(1)   // points per ₹1 spent
+  loyaltyRedeemRate     Decimal @default(0.5) // ₹ value per point
+  thermalPrinterWidth   Int     @default(80)  // 58 or 80 mm
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("shop_settings")
+}
+
+// ─────────────────────────────────────────────
+// INVENTORY
+// ─────────────────────────────────────────────
+
+model Category {
+  id       String @id @default(cuid())
+  tenantId String
+  name     String
+  color    String? // for UI tagging
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  items  Item[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("categories")
+}
+
+model Item {
+  id               String    @id @default(cuid())
+  tenantId         String
+  name             String
+  categoryId       String?
+  brand            String?
+  unit             String    @default("piece") // kg, litre, piece, pack, box
+  barcode          String?
+  mrp              Decimal
+  offerPrice       Decimal?  // selling price (if different from MRP)
+  costPrice        Decimal?  // purchase price
+  taxPercent       Decimal   @default(0) // total GST %
+  hsnCode          String?
+  supplierId       String?
+  reorderThreshold Decimal   @default(0)
+  expiryDate       DateTime?
+  currentStock     Decimal   @default(0)
+  isActive         Boolean   @default(true)
+  imageUrl         String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relations
+  tenant            Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  category          Category?          @relation(fields: [categoryId], references: [id])
+  supplier          Supplier?          @relation(fields: [supplierId], references: [id])
+  stockTransactions StockTransaction[]
+  billItems         BillItem[]
+  poItems           PoItem[]
+
+  @@unique([tenantId, barcode]) // barcode unique per shop
+  @@index([tenantId])
+  @@index([tenantId, barcode])
+  @@index([tenantId, name])
+  @@map("items")
+}
+
+model StockTransaction {
+  id          String   @id @default(cuid())
+  tenantId    String
+  itemId      String
+  type        String   // RESTOCK, SALE, RETURN, ADJUSTMENT
+  quantity    Decimal
+  costPrice   Decimal?
+  referenceId String?  // bill id, PO id, etc.
+  reason      String?  // for ADJUSTMENT type
+  createdById String?
+  createdAt   DateTime @default(now())
+
+  tenant    Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  item      Item    @relation(fields: [itemId], references: [id])
+  createdBy User?   @relation(fields: [createdById], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, itemId])
+  @@index([tenantId, type])
+  @@map("stock_transactions")
+}
+
+// ─────────────────────────────────────────────
+// SUPPLIERS & PURCHASE ORDERS
+// ─────────────────────────────────────────────
+
+model Supplier {
+  id        String  @id @default(cuid())
+  tenantId  String
+  name      String
+  contact   String?
+  email     String?
+  address   String?
+  gstin     String?
+  isActive  Boolean @default(true)
+
+  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  items          Item[]
+  purchaseOrders PurchaseOrder[]
+
+  @@index([tenantId])
+  @@map("suppliers")
+}
+
+model PurchaseOrder {
+  id          String    @id @default(cuid())
+  tenantId    String
+  supplierId  String
+  status      String    @default("DRAFT") // DRAFT, SENT, RECEIVED, CANCELLED
+  totalAmount Decimal   @default(0)
+  notes       String?
+  receivedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  supplier Supplier @relation(fields: [supplierId], references: [id])
+  items    PoItem[]
+
+  @@index([tenantId])
+  @@map("purchase_orders")
+}
+
+model PoItem {
+  id         String  @id @default(cuid())
+  poId       String
+  itemId     String
+  quantity   Decimal
+  unitPrice  Decimal
+  receivedQty Decimal @default(0)
+
+  purchaseOrder PurchaseOrder @relation(fields: [poId], references: [id], onDelete: Cascade)
+  item          Item          @relation(fields: [itemId], references: [id])
+
+  @@map("po_items")
+}
+
+// ─────────────────────────────────────────────
+// CUSTOMERS
+// ─────────────────────────────────────────────
+
+model Customer {
+  id             String   @id @default(cuid())
+  tenantId       String
+  phone          String
+  name           String?
+  email          String?
+  totalSpend     Decimal  @default(0)
+  loyaltyPoints  Decimal  @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  bills  Bill[]
+
+  @@unique([tenantId, phone])
+  @@index([tenantId])
+  @@index([tenantId, phone])
+  @@map("customers")
+}
+
+// ─────────────────────────────────────────────
+// BILLING / POS
+// ─────────────────────────────────────────────
+
+model Bill {
+  id             String   @id @default(cuid())
+  tenantId       String
+  billNumber     String   // e.g. INV-00123 (sequential per shop)
+  customerId     String?
+  billerId       String
+  subtotal       Decimal
+  discount       Decimal  @default(0)
+  taxTotal       Decimal
+  grandTotal     Decimal
+  paymentMode    String   // CASH, CARD, UPI, WALLET, SPLIT
+  paymentDetails String?  // json encoded
+  status         String   @default("PAID") // PAID, RETURNED, CANCELLED, HELD
+  pdfUrl         String?
+  returnedBillId String?  // if this is a return, link to original
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tenant         Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer       Customer?    @relation(fields: [customerId], references: [id])
+  biller         User         @relation(fields: [billerId], references: [id])
+  items          BillItem[]
+  notifications  NotificationLog[]
+
+  @@unique([tenantId, billNumber])
+  @@index([tenantId])
+  @@index([tenantId, customerId])
+  @@index([tenantId, createdAt])
+  @@map("bills")
+}
+
+model BillItem {
+  id               String  @id @default(cuid())
+  billId           String
+  itemId           String
+  itemNameAtSale   String  // snapshot of name at time of sale
+  barcodeAtSale    String?
+  qty              Decimal
+  mrpAtSale        Decimal // snapshot
+  priceAtSale      Decimal // actual price sold at
+  taxPercentAtSale Decimal // snapshot
+  taxAmount        Decimal
+  lineTotal        Decimal // (priceAtSale * qty) + taxAmount
+
+  bill Bill @relation(fields: [billId], references: [id], onDelete: Cascade)
+  item Item @relation(fields: [itemId], references: [id])
+
+  @@index([billId])
+  @@map("bill_items")
+}
+
+model HeldBill {
+  id        String   @id @default(cuid())
+  tenantId  String
+  billerId  String
+  label     String?  // optional label like "Counter 1" or customer name
+  cartData  String   // serialized JSON
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, billerId])
+  @@map("held_bills")
+}
+
+// ─────────────────────────────────────────────
+// SUBSCRIPTIONS
+// ─────────────────────────────────────────────
+
+model Subscription {
+  id                  String    @id @default(cuid())
+  tenantId            String
+  planTier            String    // STARTER, GROWTH, BUSINESS, ENTERPRISE
+  amount              Decimal
+  cashfreeOrderId     String?
+  cashfreePaymentId   String?
+  startDate           DateTime
+  endDate             DateTime
+  status              String    // ACTIVE, GRACE, EXPIRED, CANCELLED
+  invoicePdfUrl       String?
+  createdAt           DateTime  @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("subscriptions")
+}
+
+// ─────────────────────────────────────────────
+// NOTIFICATIONS
+// ─────────────────────────────────────────────
+
+model NotificationLog {
+  id        String    @id @default(cuid())
+  tenantId  String
+  billId    String?
+  type      String    // BILL_DELIVERY, LOW_STOCK, NEAR_EXPIRY, SUBSCRIPTION_REMINDER
+  recipient String    // phone or email
+  channel   String    // WHATSAPP, SMS, EMAIL
+  messageId String?   // provider's message ID for tracking
+  payload   String?   // serialized JSON
+  status    String    @default("QUEUED") // QUEUED, SENT, FAILED
+  errorMsg  String?
+  sentAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  bill   Bill?  @relation(fields: [billId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, type])
+  @@map("notification_logs")
+}
