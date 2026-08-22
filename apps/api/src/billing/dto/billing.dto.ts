@@ -54,6 +54,12 @@ export class CreateBillDto {
   @Min(0)
   discount?: number;
 
+  @ApiPropertyOptional({ example: 5, description: 'Loyalty points to redeem (1 pt = ₹1)' })
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  pointsToRedeem?: number;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()

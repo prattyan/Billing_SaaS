@@ -1,64 +1,90 @@
-# Multi-Tenant Grocery / Shop Billing & Inventory SaaS
+# Cloud POS Billing, Barcode Inventory & SaaS Platform
 
-A modern, full-featured multi-tenant POS billing, barcode inventory, and customer management SaaS platform designed for grocery counters, convenience stores, and supermarkets.
+A modern, high-performance, multi-tenant POS billing, barcode inventory, and customer management SaaS platform designed for retail shops, supermarkets, and multi-branch grocery businesses.
 
 ---
 
-## 🚀 Quick Start (Zero Docker Required)
+## 🌟 Key Features
 
-### 1. Install Dependencies
+### ⚡ High-Speed POS Billing Counter
+- **Instant Barcode Scanning**: Full USB HID barcode scanner support with instant product lookups.
+- **Smart Loyalty Rewards Engine**: Automatically awards **1 Loyalty Point for every ₹100 spent**, with real-time redemption (1 pt = ₹1 discount) on future orders.
+- **Returning Customer Auto-Fetch**: Enter a contact number to automatically fetch returning customer details and loyalty balances.
+- **Cart Management**: Real-time tax calculation (GST 5%, 12%, 18%, 28%), cart hold/park & resume, and manual bill discounts.
+- **80mm Thermal Receipt Printing**: Realistic portrait receipt print animation with live item breakdowns, payment modes, and self-scan QR codes.
+
+### 📲 1-Click WhatsApp Direct Invoicing
+- **Zero-Cost Digital Bill Delivery**: Send itemized digital tax invoices directly to customer WhatsApp numbers in one click.
+- **Clean Cross-Platform Formatting**: Universal WhatsApp bold markdown typography without emoji corruption.
+- **Interactive Customer Digital Receipt**: Dedicated mobile-responsive portrait e-receipt view (`/bill/:id`) with download, print, and self-scan capabilities.
+
+### 📦 Multi-Tenant Inventory & SKU Tracking
+- **Automated Stock Sync**: Decrements inventory in real time with transactional integrity on every sale and restock.
+- **Low Stock & Expiry Alerts**: Visual threshold indicators and quick-action restock modals.
+- **Categories & Suppliers**: Supplier directory and Purchase Order (PO) workflows.
+
+### 📊 GST & Business Analytics
+- **Tax Breakdown**: Automated 50/50 CGST + SGST reporting.
+- **Live Sales Dashboard**: Daily revenue, top-selling products, transaction history, and inventory movements.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend**: Next.js 16 (App Router), React 19, TypeScript, Vanilla CSS Design System, Zustand, Lucide Icons
+- **Backend**: NestJS, TypeScript, Prisma ORM, JWT Authentication & Role Guards
+- **Database**: PostgreSQL (Supabase / RDS / Local)
+- **Monorepo**: Turborepo & Concurrently workspace
+
+---
+
+## 🚀 Getting Started
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/prattyan/Billing_SaaS.git
+cd Billing_SaaS
+```
+
+### 2. Configure Environment Variables
+Create `.env` files in `apps/api` and `apps/web` based on the provided `.env.example` templates:
+
+```bash
+# In apps/api/.env
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DATABASE
+JWT_SECRET=your_jwt_secret_key
+PORT=4000
+APP_BASE_URL=http://localhost:3000
+
+# In apps/web/.env.local
+NEXT_PUBLIC_API_URL=http://localhost:4000
+```
+
+### 3. Install Dependencies
 ```bash
 npm install
 ```
 
-### 2. Start Full Application (Backend + Frontend)
-From the root folder, simply run:
+### 4. Setup Database
+```bash
+# Push Prisma schema to your database
+npm run db:push --prefix apps/api
+
+# (Optional) Seed initial configuration
+npm run seed --prefix apps/api
+```
+
+### 5. Run the Application
 ```bash
 npm run dev
 ```
 
 This single command concurrently starts:
-- **NestJS REST API**: [http://localhost:4000/api/v1](http://localhost:4000/api/v1) (Swagger API Docs at `/api/docs`)
-- **Next.js Web App**: [http://localhost:3000](http://localhost:3000)
+- **API Server**: [http://localhost:4000/api/v1](http://localhost:4000/api/v1) (Swagger Docs at `/api/docs`)
+- **Web Frontend**: [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## 🔑 Demo Login Credentials
+## 📜 License
 
-The local database (`apps/api/prisma/dev.db`) comes pre-seeded with sample inventory, categories, suppliers, and users:
-
-| Account Type | Email | Password | Access |
-|---|---|---|---|
-| **Shop Owner** | `owner@demo-grocery.com` | `Owner@123` | Full shop management (POS, Inventory, Reports, Subscriptions, Settings) |
-| **Cashier / Biller** | `biller@demo-grocery.com` | `Biller@123` | Counter sales billing & stock search only |
-| **Platform Super Admin** | `admin@billingsaas.com` | `SuperAdmin@123` | Platform portal (`/superadmin`) with all shops, live SKU counts & plan overrides |
-
----
-
-## 📋 Database Management
-
-The local database uses SQLite out of the box with zero external database installation required.
-
-```bash
-# Push schema changes to database
-npm run db:push
-
-# Re-seed demo data
-npm run db:seed
-
-# Open Prisma Studio web inspector
-npm run db:studio
-```
-
----
-
-## 📦 Features Included
-
-- **POS Billing Counter (`/pos`)**: USB HID barcode scanner support, real-time product search, customer phone lookup & loyalty points, multi-payment options, cart hold/resume, and 58mm/80mm thermal receipt printing.
-- **Inventory Management (`/inventory`)**: SKU capacity plan enforcement, 7-day grace period logic, barcode quick restock modal, and low-stock filters.
-- **Customer CRM (`/customers`)**: Auto-captured profiles, purchase history drawer, and loyalty point rewards.
-- **Suppliers & Purchase Orders (`/suppliers`)**: Vendor directory, PO creation, and automated restock on PO receipt.
-- **GST & Analytics Reports (`/reports`)**: Sales turnover, fast movers, critical shortage alerts, 50/50 CGST+SGST tax breakdown, and immutable stock audit logs.
-- **Subscriptions & Cashfree (`/subscription`)**: Live SKU capacity meter and instant automated plan tier upgrades.
-- **Shop Settings (`/settings`)**: GSTIN, invoice prefixes, cashier staff accounts, and WhatsApp e-bill toggles.
-- **Super Admin Platform (`/superadmin`)**: Global GMV and SaaS revenue metrics, tenant table, manual plan overrides, and shop suspension controls.
+This project is licensed under the MIT License.

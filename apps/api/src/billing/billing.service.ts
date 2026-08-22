@@ -87,13 +87,18 @@ export class BillingService {
       };
     });
 
+    // Calculate bill discounts: manual discount + loyalty points redeemed (1 pt = ₹1)
+    const manualDiscount = new Decimal(dto.discount ?? 0);
+    const pointsToRedeem = new Decimal(dto.pointsToRedeem ?? 0);
+    const combinedDiscount = manualDiscount.plus(pointsToRedeem);
+
     const { subtotal, taxTotal, discount, grandTotal } = TaxCalculator.calculateBill(
       lineCalcs.map((l) => ({
         qty: l.qty.toNumber(),
         priceAtSale: l.priceAtSale.toNumber(),
         taxPercent: l.taxPercentAtSale.toNumber(),
       })),
-      dto.discount ?? 0,
+      combinedDiscount.toNumber(),
     );
 
     // Execute as a transaction
@@ -114,6 +119,19 @@ export class BillingService {
             ? { name: trimmedName }
             : {},
         });
+      }
+
+      // Check loyalty points balance if redeeming
+      if (pointsToRedeem.gt(0)) {
+        if (!customer) {
+          throw new BadRequestException('Customer phone is required to redeem loyalty points');
+        }
+        const availablePoints = new Decimal(customer.loyaltyPoints?.toString() ?? '0');
+        if (availablePoints.lt(pointsToRedeem)) {
+          throw new BadRequestException(
+            `Insufficient loyalty points: customer has ${availablePoints.toFixed(0)} pts, tried to redeem ${pointsToRedeem.toFixed(0)} pts`,
+          );
+        }
       }
 
       // Generate sequential bill number
@@ -190,16 +208,23 @@ export class BillingService {
         ),
       );
 
-      // Update customer spend + loyalty
+      // Update customer spend + loyalty:
+      // 1 loyalty point for every ₹100 spend
       if (customer?.id) {
-        const pointsEarned = grandTotal.mul(shopSettings.loyaltyEarnRate?.toString() ?? '1').toDecimalPlaces(2);
-        await tx.customer.update({
+        const pointsEarned = new Decimal(Math.floor(grandTotal.toNumber() / 100));
+        const netPointsDiff = pointsEarned.minus(pointsToRedeem);
+
+        const updatedCustomer = await tx.customer.update({
           where: { id: (customer as any).id },
           data: {
             totalSpend: { increment: grandTotal as any },
-            loyaltyPoints: { increment: pointsEarned as any },
+            loyaltyPoints: { increment: netPointsDiff as any },
           },
         });
+
+        (newBill as any).pointsEarned = pointsEarned.toNumber();
+        (newBill as any).pointsRedeemed = pointsToRedeem.toNumber();
+        (newBill as any).customer = updatedCustomer;
       }
 
       return newBill;

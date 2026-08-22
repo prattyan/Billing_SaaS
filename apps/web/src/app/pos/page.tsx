@@ -51,6 +51,7 @@ export default function POSPage() {
   const [isBillPending, setIsBillPending] = useState(false);
   const [lastBill, setLastBill] = useState<any>(null);
   const [discountInput, setDiscountInput] = useState('');
+  const [pointsToRedeemInput, setPointsToRedeemInput] = useState('');
 
   // Held bills
   const { data: heldBills } = useQuery({
@@ -221,6 +222,7 @@ export default function POSPage() {
         customerName: customerNameInput.trim() || undefined,
         paymentMode,
         discount: Number(discountInput) || 0,
+        pointsToRedeem: Number(pointsToRedeemInput) || 0,
       }),
     onSuccess: (res) => {
       setLastBill(res.data);
@@ -229,6 +231,7 @@ export default function POSPage() {
       setCustomerNameInput('');
       setCustomerSuggestion(null);
       setDiscountInput('');
+      setPointsToRedeemInput('');
       qc.invalidateQueries({ queryKey: ['dashboard'] });
       qc.invalidateQueries({ queryKey: ['items'] });
       qc.invalidateQueries({ queryKey: ['customers'] });
@@ -635,9 +638,74 @@ export default function POSPage() {
             </div>
           </div>
 
+          {/* Loyalty Points Redemption (if available) */}
+          {customerSuggestion && Math.floor(Number(customerSuggestion?.loyaltyPoints || 0)) > 0 && (
+            <div style={{
+              background: 'rgba(251,191,36,0.08)',
+              border: '1px solid rgba(251,191,36,0.3)',
+              borderRadius: 12,
+              padding: '12px 14px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'rgb(251,191,36)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  ⭐ Redeem Loyalty Points
+                </span>
+                <span style={{ fontSize: '0.72rem', color: '#a1a1aa' }}>
+                  Available: <strong>{Math.floor(Number(customerSuggestion.loyaltyPoints))} pts</strong> (₹{Math.floor(Number(customerSuggestion.loyaltyPoints))})
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <input
+                  type="number"
+                  className="input"
+                  placeholder="Pts to redeem (1 pt = ₹1)"
+                  min="0"
+                  max={Math.floor(Number(customerSuggestion.loyaltyPoints))}
+                  value={pointsToRedeemInput}
+                  onChange={(e) => setPointsToRedeemInput(e.target.value)}
+                  style={{ flex: 1, padding: '6px 10px', fontSize: '0.8rem', height: 34 }}
+                />
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  style={{
+                    fontSize: '0.72rem',
+                    padding: '6px 10px',
+                    height: 34,
+                    color: 'rgb(251,191,36)',
+                    borderColor: 'rgba(251,191,36,0.3)',
+                    whiteSpace: 'nowrap',
+                    fontWeight: 700,
+                  }}
+                  onClick={() => {
+                    const avail = Math.floor(Number(customerSuggestion.loyaltyPoints));
+                    const maxRedeem = Math.min(avail, Math.floor(Math.max(0, (getSubtotal() + getTaxTotal()) - (Number(discountInput) || 0))));
+                    setPointsToRedeemInput(String(maxRedeem));
+                  }}
+                >
+                  Redeem Max
+                </button>
+                {Number(pointsToRedeemInput) > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setPointsToRedeemInput('')}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#a1a1aa', padding: 4 }}
+                    title="Remove points discount"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Discount */}
           <div>
-            <label className="label">Bill Discount (₹)</label>
+            <label className="label">Manual Discount (₹)</label>
             <div style={{ position: 'relative' }}>
               <Tag size={14} style={{
                 position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
@@ -656,59 +724,98 @@ export default function POSPage() {
           </div>
 
           {/* Bill totals */}
-          <div className="card" style={{ padding: '14px 16px' }}>
-            {[
-              { label: 'Subtotal', value: subtotal, color: 'rgb(var(--text-primary))' },
-              { label: 'GST / Tax', value: taxTotal, color: 'rgb(var(--text-secondary))' },
-              ...(Number(discountInput) > 0
-                ? [{ label: 'Discount', value: -Number(discountInput), color: 'rgb(52,211,153)' }]
-                : []),
-            ].map((row) => (
-              <div key={row.label} style={{
-                display: 'flex', justifyContent: 'space-between',
-                marginBottom: 8, fontSize: '0.85rem',
-              }}>
-                <span style={{ color: 'rgb(161,161,170)' }}>{row.label}</span>
-                <span style={{ color: row.color, fontWeight: 600 }}>
-                  {row.value < 0 ? '−' : ''}₹{Math.abs(row.value).toFixed(2)}
-                </span>
+          {(() => {
+            const subtotal = getSubtotal();
+            const taxTotal = getTaxTotal();
+            const rawTotal = subtotal + taxTotal;
+            const manualDiscount = Number(discountInput) || 0;
+            const availablePoints = Math.floor(Number(customerSuggestion?.loyaltyPoints || 0));
+            const pointsRedeemed = Math.min(Number(pointsToRedeemInput) || 0, availablePoints, Math.max(0, rawTotal - manualDiscount));
+            const totalDiscount = manualDiscount + pointsRedeemed;
+            const grandTotal = Math.max(0, rawTotal - totalDiscount);
+            const pointsEarned = Math.floor(grandTotal / 100);
+
+            return (
+              <div className="card" style={{ padding: '14px 16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: '0.85rem' }}>
+                  <span style={{ color: 'rgb(161,161,170)' }}>Subtotal</span>
+                  <span style={{ color: 'rgb(var(--text-primary))', fontWeight: 600 }}>₹{subtotal.toFixed(2)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: '0.85rem' }}>
+                  <span style={{ color: 'rgb(161,161,170)' }}>GST / Tax</span>
+                  <span style={{ color: 'rgb(var(--text-secondary))', fontWeight: 600 }}>₹{taxTotal.toFixed(2)}</span>
+                </div>
+                {manualDiscount > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: '0.85rem' }}>
+                    <span style={{ color: 'rgb(161,161,170)' }}>Manual Discount</span>
+                    <span style={{ color: 'rgb(52,211,153)', fontWeight: 600 }}>−₹{manualDiscount.toFixed(2)}</span>
+                  </div>
+                )}
+                {pointsRedeemed > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: '0.85rem' }}>
+                    <span style={{ color: 'rgb(251,191,36)', fontWeight: 600 }}>⭐ Loyalty ({pointsRedeemed} pts)</span>
+                    <span style={{ color: 'rgb(251,191,36)', fontWeight: 700 }}>−₹{pointsRedeemed.toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="divider" />
+                <div style={{
+                  display: 'flex', justifyContent: 'space-between',
+                  fontSize: '1.1rem', fontWeight: 800,
+                }}>
+                  <span>Grand Total</span>
+                  <span style={{ color: 'rgb(52,211,153)' }}>
+                    ₹{grandTotal.toFixed(2)}
+                  </span>
+                </div>
+                {customerPhoneInput && (
+                  <div style={{
+                    marginTop: 8, paddingTop: 8, borderTop: '1px dashed rgba(255,255,255,0.08)',
+                    display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'rgb(251,191,36)',
+                  }}>
+                    <span>⭐ Earn on Bill (+1 pt/₹100):</span>
+                    <span style={{ fontWeight: 800 }}>+{pointsEarned} pts</span>
+                  </div>
+                )}
               </div>
-            ))}
-            <div className="divider" />
-            <div style={{
-              display: 'flex', justifyContent: 'space-between',
-              fontSize: '1.1rem', fontWeight: 800,
-            }}>
-              <span>Grand Total</span>
-              <span style={{ color: 'rgb(52,211,153)' }}>
-                ₹{grandTotal.toFixed(2)}
-              </span>
-            </div>
-          </div>
+            );
+          })()}
         </div>
 
         {/* Finalize button */}
-        <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-          <button
-            className="btn-primary"
-            style={{ width: '100%', justifyContent: 'center', height: 48, fontSize: '1rem' }}
-            disabled={cartItems.length === 0 || finalizeBillMutation.isPending}
-            onClick={() => finalizeBillMutation.mutate()}
-          >
-            {finalizeBillMutation.isPending
-              ? <><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Processing...</>
-              : <><CheckCircle2 size={18} /> Finalize Bill · ₹{grandTotal.toFixed(2)}</>}
-          </button>
-          {cartItems.length > 0 && (
-            <button
-              className="btn-secondary"
-              style={{ width: '100%', justifyContent: 'center', marginTop: 8, fontSize: '0.8rem' }}
-              onClick={() => { clearCart(); setCustomerPhoneInput(''); setCustomerNameInput(''); setDiscountInput(''); }}
-            >
-              <X size={14} /> Clear Cart
-            </button>
-          )}
-        </div>
+        {(() => {
+          const subtotal = getSubtotal();
+          const taxTotal = getTaxTotal();
+          const rawTotal = subtotal + taxTotal;
+          const manualDiscount = Number(discountInput) || 0;
+          const availablePoints = Math.floor(Number(customerSuggestion?.loyaltyPoints || 0));
+          const pointsRedeemed = Math.min(Number(pointsToRedeemInput) || 0, availablePoints, Math.max(0, rawTotal - manualDiscount));
+          const totalDiscount = manualDiscount + pointsRedeemed;
+          const grandTotal = Math.max(0, rawTotal - totalDiscount);
+
+          return (
+            <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+              <button
+                className="btn-primary"
+                style={{ width: '100%', justifyContent: 'center', height: 48, fontSize: '1rem' }}
+                disabled={cartItems.length === 0 || finalizeBillMutation.isPending}
+                onClick={() => finalizeBillMutation.mutate()}
+              >
+                {finalizeBillMutation.isPending
+                  ? <><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Processing...</>
+                  : <><CheckCircle2 size={18} /> Finalize Bill · ₹{grandTotal.toFixed(2)}</>}
+              </button>
+              {cartItems.length > 0 && (
+                <button
+                  className="btn-secondary"
+                  style={{ width: '100%', justifyContent: 'center', marginTop: 8, fontSize: '0.8rem' }}
+                  onClick={() => { clearCart(); setCustomerPhoneInput(''); setCustomerNameInput(''); setDiscountInput(''); setPointsToRedeemInput(''); }}
+                >
+                  <X size={14} /> Clear Cart
+                </button>
+              )}
+            </div>
+          );
+        })()}
       </div>
 
       {/* ── Realistic Thermal POS Printer Animation & Long Portrait Shop Receipt ── */}
