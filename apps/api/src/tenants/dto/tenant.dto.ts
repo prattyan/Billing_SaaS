@@ -44,4 +44,9 @@ export class UpdateShopSettingsDto {
   @IsOptional()
   @IsNumber()
   thermalPrinterWidth?: number;
+
+  @ApiPropertyOptional({ example: 'merchant@upi' })
+  @IsOptional()
+  @IsString()
+  upiId?: string;
 }

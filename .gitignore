@@ -1,11 +1,17 @@
 .env
+.env*.local
 node_modules/
 .next/
+out/
 dist/
 build/
 *.log
+*.tmp
 .turbo/
 coverage/
 .DS_Store
 Thumbs.db
 *.tsbuildinfo
+BillFlow_POS_Portable.exe
+BillFlow_POS_Setup.exe
+Run_BillFlow_POS.bat

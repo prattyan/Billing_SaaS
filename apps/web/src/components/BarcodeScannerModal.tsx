@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import {
   Camera, X, RefreshCw, Zap, Volume2, VolumeX, AlertCircle,
-  Upload, ArrowRight, ZoomIn, ZoomOut, CheckCircle2, ScanLine
+  Upload, ArrowRight, ZoomIn, ZoomOut, CheckCircle2, ScanLine,
+  Plus, Minus, Trash2, ShoppingBag,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { itemsApi } from '@/lib/api';
@@ -16,6 +17,10 @@ interface BarcodeScannerModalProps {
   title?: string;
   subtitle?: string;
   autoCloseOnScan?: boolean;
+  cartItems?: any[];
+  onUpdateQty?: (itemId: string, qty: number) => void;
+  onRemoveItem?: (itemId: string) => void;
+  grandTotal?: number;
 }
 
 // Crisp 1800Hz synthesized audio beep on successful line decode
@@ -51,6 +56,10 @@ export default function BarcodeScannerModal({
   title = 'Scan 1D Product Barcode',
   subtitle = 'Align the vertical black & white barcode lines across the laser guide',
   autoCloseOnScan = true,
+  cartItems,
+  onUpdateQty,
+  onRemoveItem,
+  grandTotal,
 }: BarcodeScannerModalProps) {
   const [cameras, setCameras] = useState<any[]>([]);
   const [activeCameraId, setActiveCameraId] = useState<string>('');
@@ -67,6 +76,7 @@ export default function BarcodeScannerModal({
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const isStoppingRef = useRef(false);
   const hasTriggeredScanRef = useRef(false);
+  const lastScanRef = useRef<{ barcode: string; time: number }>({ barcode: '', time: 0 });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const nativeDetectorLoopRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const offscreenCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -136,25 +146,34 @@ export default function BarcodeScannerModal({
 
   const handleSuccessfulScan = async (rawBarcode: string, formatName?: string) => {
     const cleanBarcode = rawBarcode.trim();
-    if (!cleanBarcode || hasTriggeredScanRef.current) return;
+    if (!cleanBarcode) return;
 
-    hasTriggeredScanRef.current = true;
+    const now = Date.now();
+    // Cooldown check to prevent scanning the exact same barcode multiple times per second
+    if (
+      lastScanRef.current.barcode === cleanBarcode &&
+      now - lastScanRef.current.time < 1200
+    ) {
+      return;
+    }
+    lastScanRef.current = { barcode: cleanBarcode, time: now };
+
     if (formatName) setDetectedFormat(formatName);
 
     if (soundEnabled) {
       playBeep();
     }
 
-    toast.success(`Barcode Lines Detected: ${cleanBarcode}`, {
+    toast.success(`Scanned: ${cleanBarcode}`, {
       id: 'barcode-scan-result',
-      duration: 2500,
+      duration: 1500,
       icon: '⚡',
     });
 
-    await stopScanner();
     onScan(cleanBarcode);
 
     if (autoCloseOnScan) {
+      await stopScanner();
       onClose();
     }
   };
@@ -596,107 +615,241 @@ export default function BarcodeScannerModal({
           )}
         </div>
 
-        {/* Controls Toolbar */}
+        {/* Added Products Section (Visible during live scanning in POS) */}
+        {cartItems && (
+          <div style={{
+            marginTop: 14,
+            padding: '12px 14px',
+            borderRadius: 12,
+            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 10,
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem', fontWeight: 800, color: 'rgb(244,244,245)' }}>
+                <ShoppingBag size={16} color="rgb(139,92,246)" />
+                <span>Added Products ({cartItems.reduce((acc, i) => acc + i.qty, 0)})</span>
+              </div>
+              {grandTotal !== undefined && (
+                <div style={{ fontSize: '0.9rem', fontWeight: 800, color: 'rgb(52,211,153)' }}>
+                  Total: ₹{grandTotal.toFixed(2)}
+                </div>
+              )}
+            </div>
+
+            {cartItems.length === 0 ? (
+              <div style={{ padding: '16px 0', textAlign: 'center', color: '#a1a1aa', fontSize: '0.78rem' }}>
+                No items added yet. Aim barcode at camera to scan.
+              </div>
+            ) : (
+              <div style={{
+                maxHeight: 180,
+                overflowY: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 8,
+                paddingRight: 4,
+              }}>
+                {cartItems.map((item) => (
+                  <div
+                    key={item.itemId}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '8px 10px',
+                      borderRadius: 8,
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.06)',
+                    }}
+                  >
+                    <div style={{ flex: 1, minWidth: 0, paddingRight: 8 }}>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {item.name}
+                      </div>
+                      <div style={{ fontSize: '0.72rem', color: '#a1a1aa' }}>
+                        ₹{item.priceAtSale.toFixed(2)} × {item.qty} = <span style={{ color: 'rgb(52,211,153)', fontWeight: 700 }}>₹{(item.priceAtSale * item.qty).toFixed(2)}</span>
+                      </div>
+                    </div>
+
+                    {/* Quantity controls */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      {onUpdateQty && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => onUpdateQty(item.itemId, item.qty - 1)}
+                            style={{
+                              width: 26, height: 26, borderRadius: 6,
+                              background: 'rgba(255,255,255,0.1)', border: 'none',
+                              color: 'white', fontWeight: 800, cursor: 'pointer',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            }}
+                          >
+                            <Minus size={12} />
+                          </button>
+                          <span style={{ fontSize: '0.82rem', fontWeight: 800, minWidth: 20, textAlign: 'center' }}>
+                            {item.qty}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => onUpdateQty(item.itemId, item.qty + 1)}
+                            style={{
+                              width: 26, height: 26, borderRadius: 6,
+                              background: 'rgba(139,92,246,0.3)', border: '1px solid rgba(139,92,246,0.5)',
+                              color: 'rgb(167,139,250)', fontWeight: 800, cursor: 'pointer',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            }}
+                          >
+                            <Plus size={12} />
+                          </button>
+                        </>
+                      )}
+
+                      {onRemoveItem && (
+                        <button
+                          type="button"
+                          onClick={() => onRemoveItem(item.itemId)}
+                          style={{
+                            background: 'none', border: 'none', color: '#a1a1aa',
+                            cursor: 'pointer', padding: 4, marginLeft: 4
+                          }}
+                          title="Remove item"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Controls & Action Footer */}
         <div style={{
+          marginTop: 14,
+          paddingTop: 12,
+          borderTop: '1px solid rgba(255,255,255,0.08)',
           display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginTop: 12,
-          paddingTop: 10,
-          borderTop: '1px solid rgba(255,255,255,0.06)',
+          flexDirection: 'column',
+          gap: 10,
         }}>
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-            {/* Zoom controls (magnifies barcode lines for fixed-focus webcams) */}
-            <button
-              type="button"
-              className="btn-secondary"
-              style={{ padding: '6px 8px', fontSize: '0.72rem' }}
-              onClick={() => handleZoom(0.5)}
-              title="Zoom In (magnifies barcode lines for clearer line detection)"
-            >
-              <ZoomIn size={13} /> {zoomLevel}x
-            </button>
-
-            {zoomLevel > 1 && (
+          {/* Top Row: Camera Utility Controls */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+              {/* Zoom controls */}
               <button
                 type="button"
                 className="btn-secondary"
-                style={{ padding: '6px 8px', fontSize: '0.72rem' }}
-                onClick={() => handleZoom(-0.5)}
-                title="Zoom Out"
+                style={{ padding: '6px 10px', fontSize: '0.74rem' }}
+                onClick={() => handleZoom(0.5)}
+                title="Zoom In"
               >
-                <ZoomOut size={13} />
+                <ZoomIn size={13} /> {zoomLevel}x
               </button>
-            )}
 
-            {cameras.length > 1 && (
+              {zoomLevel > 1 && (
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  style={{ padding: '6px 8px', fontSize: '0.74rem' }}
+                  onClick={() => handleZoom(-0.5)}
+                  title="Zoom Out"
+                >
+                  <ZoomOut size={13} />
+                </button>
+              )}
+
+              {cameras.length > 1 && (
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  style={{ padding: '6px 10px', fontSize: '0.74rem' }}
+                  onClick={handleSwitchCamera}
+                  title="Switch Camera"
+                >
+                  <RefreshCw size={13} /> Switch ({cameras.length})
+                </button>
+              )}
+
+              {/* Upload photo */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                style={{ display: 'none' }}
+                onChange={handleFileUpload}
+              />
               <button
                 type="button"
                 className="btn-secondary"
-                style={{ padding: '6px 10px', fontSize: '0.72rem' }}
-                onClick={handleSwitchCamera}
-                title="Switch Camera"
+                style={{ padding: '6px 10px', fontSize: '0.74rem', display: 'flex', alignItems: 'center', gap: 4 }}
+                onClick={() => fileInputRef.current?.click()}
+                title="Upload photo of barcode"
+                disabled={isProcessingFile}
               >
-                <RefreshCw size={13} /> Switch ({cameras.length})
+                <Upload size={13} /> {isProcessingFile ? 'Scanning...' : 'Upload Photo'}
               </button>
-            )}
+            </div>
 
-            {/* High-res uncompressed photo scanner */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              style={{ display: 'none' }}
-              onChange={handleFileUpload}
-            />
-            <button
-              type="button"
-              className="btn-secondary"
-              style={{ padding: '6px 10px', fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: 4 }}
-              onClick={() => fileInputRef.current?.click()}
-              title="Upload photo of barcode"
-              disabled={isProcessingFile}
-            >
-              <Upload size={13} /> {isProcessingFile ? 'Scanning...' : 'Upload Photo'}
-            </button>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{
+                  padding: '6px 10px',
+                  fontSize: '0.74rem',
+                  color: soundEnabled ? 'rgb(52,211,153)' : 'rgb(113,113,122)',
+                }}
+                onClick={() => setSoundEnabled(!soundEnabled)}
+                title={soundEnabled ? 'Mute Sound' : 'Enable Sound'}
+              >
+                {soundEnabled ? <Volume2 size={13} /> : <VolumeX size={13} />}
+              </button>
 
-            <button
-              type="button"
-              className="btn-secondary"
-              style={{
-                padding: '6px 10px',
-                fontSize: '0.72rem',
-                color: soundEnabled ? 'rgb(52,211,153)' : 'rgb(113,113,122)',
-              }}
-              onClick={() => setSoundEnabled(!soundEnabled)}
-              title={soundEnabled ? 'Mute Sound' : 'Enable Sound'}
-            >
-              {soundEnabled ? <Volume2 size={13} /> : <VolumeX size={13} />}
-            </button>
-
-            <button
-              type="button"
-              className="btn-secondary"
-              style={{
-                padding: '6px 10px',
-                fontSize: '0.72rem',
-                color: torchOn ? 'rgb(245,158,11)' : 'rgb(113,113,122)',
-              }}
-              onClick={toggleTorch}
-              title="Toggle Torch"
-            >
-              <Zap size={13} />
-            </button>
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{
+                  padding: '6px 10px',
+                  fontSize: '0.74rem',
+                  color: torchOn ? 'rgb(245,158,11)' : 'rgb(113,113,122)',
+                }}
+                onClick={toggleTorch}
+                title="Toggle Torch"
+              >
+                <Zap size={13} />
+              </button>
+            </div>
           </div>
 
+          {/* Bottom Row: Full-width Done Scanning Action Button */}
           <button
             type="button"
-            className="btn-secondary"
-            style={{ padding: '6px 14px', fontSize: '0.75rem' }}
+            className="btn-primary"
+            style={{
+              width: '100%',
+              height: 44,
+              fontSize: '0.9rem',
+              fontWeight: 800,
+              borderRadius: 12,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              boxShadow: '0 4px 16px rgba(139,92,246,0.3)',
+            }}
             onClick={onClose}
           >
-            Close
+            <CheckCircle2 size={18} />
+            {cartItems && cartItems.length > 0
+              ? `Done Scanning · ${cartItems.reduce((a, i) => a + i.qty, 0)} Items (₹${(grandTotal || 0).toFixed(2)})`
+              : 'Close Scanner'}
           </button>
         </div>
 

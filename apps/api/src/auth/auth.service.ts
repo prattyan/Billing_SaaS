@@ -26,9 +26,10 @@ export class AuthService {
   // ── Register new shop owner ──────────────────────────────────────────────────
 
   async register(dto: RegisterDto) {
+    const normalizedEmail = dto.email.trim().toLowerCase();
     // Check if email already exists
     const existing = await this.prisma.user.findUnique({
-      where: { email: dto.email },
+      where: { email: normalizedEmail },
     });
     if (existing) {
       throw new ConflictException('An account with this email already exists');
@@ -68,7 +69,7 @@ export class AuthService {
 
       const user = await tx.user.create({
         data: {
-          email: dto.email,
+          email: normalizedEmail,
           name: dto.ownerName,
           phone: dto.phone,
           passwordHash,

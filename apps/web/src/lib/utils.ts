@@ -26,9 +26,10 @@ export function formatWhatsAppBillMessage(bill: any, invoiceUrl: string): string
   const grandTotal = Number(bill.grandTotal || 0).toFixed(2);
   const paymentMode = bill.paymentMode || 'CASH';
 
+  const phoneStr = bill.customer?.phone && !bill.customer.phone.startsWith('GUEST-') ? ` (${bill.customer.phone})` : '';
   const customerName = bill.customer?.name && bill.customer.name !== 'Walk-in Customer'
-    ? `${bill.customer.name}${bill.customer.phone ? ` (${bill.customer.phone})` : ''}`
-    : (bill.customer?.phone || bill.customerPhone ? `Walk-in (${bill.customer?.phone || bill.customerPhone})` : 'Walk-in');
+    ? `${bill.customer.name}${phoneStr}`
+    : (bill.customer?.phone && !bill.customer.phone.startsWith('GUEST-') || bill.customerPhone ? `Walk-in (${bill.customer?.phone || bill.customerPhone})` : 'Walk-in');
 
   let itemsSummary = '';
   if (bill.items && Array.isArray(bill.items) && bill.items.length > 0) {

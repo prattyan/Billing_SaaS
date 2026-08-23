@@ -49,7 +49,8 @@ export default function RegisterPage() {
       toast.success('Welcome! Your shop has been created.');
       router.push('/dashboard');
     } catch (err: any) {
-      toast.error(err.response?.data?.message ?? 'Registration failed');
+      const msg = err.response?.data?.message || (err.code === 'ECONNABORTED' ? 'Server cold start timeout. Please tap Create My Shop again.' : err.message || 'Registration failed. Please check network connection.');
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }

@@ -47,7 +47,8 @@ export default function LoginPage() {
         router.push('/dashboard');
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.message ?? 'Login failed. Please check credentials.');
+      const msg = err.response?.data?.message || (err.code === 'ECONNABORTED' ? 'Server cold start timeout. Please tap Sign In again in 5 seconds.' : err.message || 'Login failed. Please check network connection.');
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }
@@ -165,35 +166,6 @@ export default function LoginPage() {
               Create your account →
             </Link>
           </p>
-        </div>
-
-        {/* Super Admin Quick Login Card */}
-        <div className="card" style={{ marginTop: 16, padding: '14px 16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'rgb(167,139,250)' }}>
-                Platform Super Admin
-              </div>
-              <div style={{ fontSize: '0.7rem', color: 'rgb(113,113,122)' }}>
-                admin@billingsaas.com (Onboard shops & oversee system)
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('admin@billingsaas.com', 'SuperAdmin@123')}
-              className="badge badge-purple"
-              style={{
-                fontSize: '0.7rem',
-                padding: '4px 10px',
-                border: 'none',
-                cursor: 'pointer',
-                background: 'rgba(139,92,246,0.2)',
-                color: 'rgb(167,139,250)',
-              }}
-            >
-              Sign In as Admin →
-            </button>
-          </div>
         </div>
       </div>
     </div>

@@ -1,0 +1,51 @@
+{
+  "appId": "com.billflow.pos",
+  "productName": "BillFlow Pro POS",
+  "electronVersion": "34.0.0",
+  "copyright": "Copyright © 2026 BillFlow Inc.",
+  "publish": [
+    {
+      "provider": "github",
+      "owner": "prattyan",
+      "repo": "Billing_SaaS"
+    }
+  ],
+  "directories": {
+    "output": "dist",
+    "buildResources": "public"
+  },
+  "files": [
+    "electron/**/*",
+    "public/**/*"
+  ],
+  "extraResources": [
+    {
+      "from": "out",
+      "to": "out",
+      "filter": ["**/*"]
+    }
+  ],
+  "win": {
+    "verifyUpdateCodeSignature": false,
+    "forceCodeSigning": false,
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      },
+      {
+        "target": "portable",
+        "arch": ["x64"]
+      }
+    ],
+    "icon": "public/icon.png"
+  },
+  "nsis": {
+    "oneClick": true,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": false,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "BillFlow Pro POS"
+  }
+}

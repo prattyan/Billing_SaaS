@@ -238,6 +238,7 @@ function GeneralSettingsForm({ initialData, profile, onSave, isPending }: any) {
 function PosSettingsForm({ initialData, onSave, isPending }: any) {
   const { register, handleSubmit } = useForm({
     values: {
+      upiId: initialData?.upiId ?? '',
       requireCustomerPhone: initialData?.requireCustomerPhone ?? false,
       whatsappEnabled: initialData?.whatsappEnabled ?? true,
       thermalPrinterWidth: initialData?.thermalPrinterWidth ?? 80,
@@ -248,6 +249,21 @@ function PosSettingsForm({ initialData, onSave, isPending }: any) {
   return (
     <form onSubmit={handleSubmit(onSave)} className="glass-card animate-fadeIn" style={{ maxWidth: 640, padding: 28 }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        {/* Shop Merchant UPI ID */}
+        <div>
+          <label className="label">Merchant / Shop UPI ID (for Dynamic QR Payment)</label>
+          <input
+            type="text"
+            className="input"
+            placeholder="e.g. myshop@upi or 9876543210@paytm"
+            {...register('upiId')}
+          />
+          <p style={{ fontSize: '0.72rem', color: 'rgb(113,113,122)', marginTop: 4 }}>
+            Used to generate dynamic instant UPI QR codes on the POS billing screen when paying via GPay, PhonePe, Paytm, etc.
+          </p>
+        </div>
+
+        <div className="divider" style={{ margin: 0 }} />
         {/* Toggle 1: Mandatory Phone */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
           <div>

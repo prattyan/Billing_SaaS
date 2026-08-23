@@ -21,6 +21,31 @@ export class BillItemDto {
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
   priceOverride?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  priceAtSale?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  taxPercent?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  unit?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  mrp?: number;
 }
 
 export class CreateBillDto {
@@ -77,6 +102,16 @@ export class HoldBillDto {
   @IsOptional()
   @IsString()
   label?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  customerPhone?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  customerName?: string;
 }
 
 export class ReturnBillDto {

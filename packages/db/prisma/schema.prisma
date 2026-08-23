@@ -99,6 +99,7 @@ model ShopSettings {
   gstin                 String?
   address               String?
   logoUrl               String?
+  upiId                 String?
   loyaltyEarnRate       Decimal @default(1)   // points per ₹1 spent
   loyaltyRedeemRate     Decimal @default(0.5) // ₹ value per point
   thermalPrinterWidth   Int     @default(80)  // 58 or 80 mm

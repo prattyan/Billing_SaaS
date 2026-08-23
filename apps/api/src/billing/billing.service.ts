@@ -105,9 +105,9 @@ export class BillingService {
     const bill = await this.prisma.$transaction(async (tx) => {
       // Get/create customer
       let customer: any = null;
-      if (dto.customerPhone) {
-        const cleanPhone = dto.customerPhone.trim();
-        const trimmedName = dto.customerName?.trim();
+      const cleanPhone = dto.customerPhone?.trim();
+      const trimmedName = dto.customerName?.trim();
+      if (cleanPhone) {
         customer = await tx.customer.upsert({
           where: { tenantId_phone: { tenantId, phone: cleanPhone } },
           create: {
@@ -118,6 +118,15 @@ export class BillingService {
           update: (trimmedName && trimmedName !== 'Walk-in Customer')
             ? { name: trimmedName }
             : {},
+        });
+      } else if (trimmedName && trimmedName !== 'Walk-in Customer') {
+        const placeholderPhone = `GUEST-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+        customer = await tx.customer.create({
+          data: {
+            tenantId,
+            phone: placeholderPhone,
+            name: trimmedName,
+          },
         });
       }
 
@@ -337,9 +346,9 @@ export class BillingService {
     return held;
   }
 
-  async getHeldBills(tenantId: string, billerId: string) {
+  async getHeldBills(tenantId: string, _billerId?: string) {
     return this.prisma.heldBill.findMany({
-      where: { tenantId, billerId },
+      where: { tenantId },
       orderBy: { createdAt: 'desc' },
     });
   }

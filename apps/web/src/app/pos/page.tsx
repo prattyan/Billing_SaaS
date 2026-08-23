@@ -2,24 +2,67 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { itemsApi, billingApi, customersApi, categoriesApi } from '@/lib/api';
+import { itemsApi, billingApi, customersApi, categoriesApi, tenantsApi } from '@/lib/api';
 import { useCartStore, useAuthStore } from '@/lib/store';
 import toast from 'react-hot-toast';
 import {
   Scan, Search, X, Plus, Minus, Trash2, ShoppingCart, ShoppingBag,
   Phone, User, Loader2, CheckCircle2, PauseCircle, PlayCircle,
   ChevronDown, Receipt, IndianRupee, Tag, Camera, Printer, Share2, FileText, ExternalLink,
-  Sparkles, Layers, ArrowRight,
+  Sparkles, Layers, ArrowRight, QrCode,
 } from 'lucide-react';
 import BarcodeScannerModal from '@/components/BarcodeScannerModal';
 import ThermalPrinterBillModal from '@/components/ThermalPrinterBillModal';
+import UpiQrPaymentModal from '@/components/UpiQrPaymentModal';
+import HeldBillsSectionModal from '@/components/HeldBillsSectionModal';
+import { saveOfflineBill, cacheCatalogLocally, getLocalCatalog } from '@/lib/offlineSync';
 
 const PAYMENT_MODES = [
-  { id: 'CASH', label: 'Cash', emoji: '💵' },
-  { id: 'UPI', label: 'UPI', emoji: '📱' },
-  { id: 'CARD', label: 'Card', emoji: '💳' },
-  { id: 'WALLET', label: 'Wallet', emoji: '👛' },
+  { id: 'CASH', label: 'Cash', emoji: '💵', disabled: false },
+  { id: 'UPI', label: 'UPI QR', emoji: '📱', disabled: false },
+  { id: 'CARD', label: 'Card', emoji: '💳', disabled: true, badge: 'Soon' },
 ];
+
+function playThermalPrintSound() {
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+
+    for (let i = 0; i < 8; i++) {
+      const startTime = ctx.currentTime + i * 0.1;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(160 + (i % 2) * 40, startTime);
+      gain.gain.setValueAtTime(0.12, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.07);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(startTime);
+      osc.stop(startTime + 0.07);
+    }
+
+    const cutterTime = ctx.currentTime + 0.95;
+    const cutterOsc = ctx.createOscillator();
+    const cutterGain = ctx.createGain();
+    cutterOsc.type = 'square';
+    cutterOsc.frequency.setValueAtTime(750, cutterTime);
+    cutterGain.gain.setValueAtTime(0.25, cutterTime);
+    cutterGain.gain.exponentialRampToValueAtTime(0.01, cutterTime + 0.05);
+    cutterOsc.connect(cutterGain);
+    cutterGain.connect(ctx.destination);
+    cutterOsc.start(cutterTime);
+    cutterOsc.stop(cutterTime + 0.05);
+
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate([40, 30, 40, 30, 80]);
+    }
+  } catch {}
+}
 
 export default function POSPage() {
   const qc = useQueryClient();
@@ -56,19 +99,43 @@ export default function POSPage() {
   const [discountInput, setDiscountInput] = useState('');
   const [pointsToRedeemInput, setPointsToRedeemInput] = useState('');
 
-  // Catalog items for quick grid selling
+  // Catalog items for quick grid selling (with local offline caching)
   const { data: catalogData } = useQuery({
     queryKey: ['posCatalog'],
     queryFn: () => itemsApi.list({ page: 1, limit: 100 }).then((r) => r.data),
   });
+
+  useEffect(() => {
+    if (catalogData?.items) {
+      cacheCatalogLocally(catalogData.items);
+    }
+  }, [catalogData]);
 
   const { data: categories } = useQuery({
     queryKey: ['posCategories'],
     queryFn: () => categoriesApi.list().then((r) => r.data),
   });
 
-  // Held bills
-  const { data: heldBills } = useQuery({
+  // Modal states
+  const [showUpiQrModal, setShowUpiQrModal] = useState(false);
+  const [showHeldModal, setShowHeldModal] = useState(false);
+
+  // Shop settings for UPI ID & shop name
+  const { data: shopSettings } = useQuery({
+    queryKey: ['shopSettings'],
+    queryFn: () => tenantsApi.getSettings().then((r) => r.data),
+  });
+
+  const updateSettingsMutation = useMutation({
+    mutationFn: (data: any) => tenantsApi.updateSettings(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['shopSettings'] });
+      toast.success('Shop settings updated');
+    },
+  });
+
+  // Held bills query
+  const { data: heldBills = [] } = useQuery({
     queryKey: ['heldBills'],
     queryFn: () => billingApi.getHeld().then((r) => r.data),
   });
@@ -203,21 +270,48 @@ export default function POSPage() {
       const availablePoints = Math.floor(Number(customerSuggestion?.loyaltyPoints || 0));
       const pointsToRedeem = Math.min(Number(pointsToRedeemInput) || 0, availablePoints, Math.max(0, rawTotal - manualDiscount));
 
-      return billingApi.create({
+      const payload = {
         items: cartItems.map((item) => ({
           itemId: item.itemId,
           qty: item.qty,
-          priceAtSale: item.priceAtSale,
-          taxPercent: item.taxPercent,
         })),
         paymentMode: paymentMode as any,
         discount: manualDiscount,
         pointsToRedeem: pointsToRedeem > 0 ? pointsToRedeem : undefined,
         customerPhone: customerPhoneInput || undefined,
         customerName: customerNameInput || undefined,
-      });
+      };
+
+      // Check offline status
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        return { isOffline: true, payload };
+      }
+
+      try {
+        const res = await billingApi.create(payload);
+        return { isOffline: false, data: res.data };
+      } catch (err: any) {
+        if (!err.response) {
+          // Network connection failed
+          return { isOffline: true, payload };
+        }
+        throw err;
+      }
     },
-    onSuccess: (res) => {
+    onSuccess: (res: any) => {
+      if (res.isOffline) {
+        saveOfflineBill(res.payload);
+        clearCart();
+        setCustomerPhoneInput('');
+        setCustomerNameInput('');
+        setCustomerSuggestion(null);
+        setDiscountInput('');
+        setPointsToRedeemInput('');
+        setMobileCartSheetOpen(false);
+        toast.success('⚡ Device Offline: Bill saved locally! Will auto-sync when online.', { duration: 6000 });
+        return;
+      }
+
       const bill = res.data;
       setLastBill(bill);
       clearCart();
@@ -292,9 +386,20 @@ export default function POSPage() {
         setCustomerNameInput(held.customerName || '');
         setCustomer(held.customerPhone, held.customerName || '');
       }
-      qc.invalidateQueries({ queryKey: ['heldBills'] });
+        qc.invalidateQueries({ queryKey: ['heldBills'] });
       toast.success('Held bill restored');
     },
+  });
+
+  // ── Filter catalog items (falls back to local cache when offline) ──────────
+  const catalogItems = (catalogData?.items && catalogData.items.length > 0)
+    ? catalogData.items
+    : getLocalCatalog();
+
+  const filteredCatalog = catalogItems.filter((item: any) => {
+    const matchesCategory = selectedCategory === 'ALL' || item.categoryId === selectedCategory;
+    const matchesSearch = !searchQuery || item.name.toLowerCase().includes(searchQuery.toLowerCase()) || (item.barcode && item.barcode.includes(searchQuery));
+    return matchesCategory && matchesSearch;
   });
 
   // Calculate totals
@@ -308,11 +413,7 @@ export default function POSPage() {
   const grandTotal = Math.max(0, rawTotal - totalDiscount);
   const totalCartCount = cartItems.reduce((sum, item) => sum + item.qty, 0);
 
-  // Filter catalog items
-  const allCatalogItems = catalogData?.items ?? [];
-  const filteredCatalog = selectedCategory === 'ALL'
-    ? allCatalogItems
-    : allCatalogItems.filter((i: any) => i.categoryId === selectedCategory);
+
 
   return (
     <div style={{ display: 'flex', height: '100%', minHeight: 'calc(100vh - 58px)', position: 'relative' }}>
@@ -377,7 +478,41 @@ export default function POSPage() {
               <span className="hide-mobile">Scan Barcode</span>
             </button>
 
-            {/* Desktop Hold Cart Actions */}
+            {/* Desktop Parked Orders / Held Bills Button */}
+            <button
+              className="btn-secondary"
+              style={{
+                height: 44,
+                padding: '0 14px',
+                borderRadius: 12,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                background: (heldBills?.length || 0) > 0 ? 'rgba(251, 191, 36, 0.12)' : undefined,
+                border: (heldBills?.length || 0) > 0 ? '1px solid rgba(251, 191, 36, 0.4)' : undefined,
+                color: (heldBills?.length || 0) > 0 ? 'rgb(251, 191, 36)' : undefined,
+                fontWeight: 700,
+              }}
+              onClick={() => setShowHeldModal(true)}
+              title="View parked orders & held bills"
+            >
+              <PauseCircle size={18} />
+              <span className="hide-mobile">Held Orders</span>
+              {(heldBills?.length || 0) > 0 && (
+                <span style={{
+                  background: 'rgb(251, 191, 36)',
+                  color: '#000000',
+                  borderRadius: 999,
+                  padding: '1px 7px',
+                  fontSize: '0.72rem',
+                  fontWeight: 900,
+                }}>
+                  {heldBills.length}
+                </span>
+              )}
+            </button>
+
+            {/* Hold Current Cart Button */}
             {cartItems.length > 0 && (
               <button
                 className="btn-secondary hide-mobile"
@@ -387,7 +522,7 @@ export default function POSPage() {
                 title="Hold current bill"
               >
                 <PauseCircle size={16} />
-                <span>Hold</span>
+                <span>Park Cart</span>
               </button>
             )}
           </div>
@@ -409,7 +544,7 @@ export default function POSPage() {
                 transition: 'all 0.15s',
               }}
             >
-              ✨ All Items ({allCatalogItems.length})
+              ✨ All Items ({catalogItems.length})
             </button>
             {categories?.map((cat: any) => (
               <button
@@ -713,8 +848,8 @@ export default function POSPage() {
 
         {/* Customer & Checkout Form */}
         <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {/* Customer phone */}
-          <div>
+          {/* Customer phone & name */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ position: 'relative' }}>
               <Phone size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'rgb(113,113,122)' }} />
               <input
@@ -731,6 +866,21 @@ export default function POSPage() {
               {isLookingUpCustomer && (
                 <Loader2 size={12} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', animation: 'spin 1s linear infinite', color: 'rgb(139,92,246)' }} />
               )}
+            </div>
+
+            <div style={{ position: 'relative' }}>
+              <User size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'rgb(113,113,122)' }} />
+              <input
+                type="text"
+                className="input"
+                placeholder="Customer Name (Optional)"
+                value={customerNameInput}
+                onChange={(e) => {
+                  setCustomerNameInput(e.target.value);
+                  setCustomer(customerPhoneInput, e.target.value);
+                }}
+                style={{ paddingLeft: 34, height: 38, fontSize: '0.82rem' }}
+              />
             </div>
           </div>
 
@@ -774,30 +924,49 @@ export default function POSPage() {
           )}
 
           {/* Payment Modes */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
-            {PAYMENT_MODES.map((mode) => (
-              <button
-                key={mode.id}
-                onClick={() => setPaymentMode(mode.id)}
-                style={{
-                  padding: '8px 4px',
-                  borderRadius: 8,
-                  cursor: 'pointer',
-                  background: paymentMode === mode.id ? 'rgba(139,92,246,0.2)' : 'rgb(var(--surface-2))',
-                  border: `1px solid ${paymentMode === mode.id ? 'rgb(139,92,246)' : 'rgba(255,255,255,0.06)'}`,
-                  color: paymentMode === mode.id ? 'rgb(167,139,250)' : 'rgb(161,161,170)',
-                  fontWeight: paymentMode === mode.id ? 700 : 500,
-                  fontSize: '0.75rem',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 2,
-                }}
-              >
-                <span>{mode.emoji}</span>
-                <span>{mode.label}</span>
-              </button>
-            ))}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
+            {PAYMENT_MODES.map((mode) => {
+              const isSelected = paymentMode === mode.id;
+              const isDisabled = mode.disabled;
+
+              return (
+                <button
+                  key={mode.id}
+                  disabled={isDisabled}
+                  onClick={() => {
+                    if (isDisabled) {
+                      toast.error('Card terminal is not configured yet. Please select Cash or UPI.');
+                      return;
+                    }
+                    setPaymentMode(mode.id);
+                  }}
+                  style={{
+                    padding: '8px 4px',
+                    borderRadius: 8,
+                    cursor: isDisabled ? 'not-allowed' : 'pointer',
+                    opacity: isDisabled ? 0.45 : 1,
+                    background: isSelected ? 'rgba(139,92,246,0.2)' : 'rgb(var(--surface-2))',
+                    border: `1px solid ${isSelected ? 'rgb(139,92,246)' : 'rgba(255,255,255,0.06)'}`,
+                    color: isSelected ? 'rgb(167,139,250)' : 'rgb(161,161,170)',
+                    fontWeight: isSelected ? 700 : 500,
+                    fontSize: '0.75rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 2,
+                    position: 'relative',
+                  }}
+                >
+                  <span>{mode.emoji}</span>
+                  <span>{mode.label}</span>
+                  {mode.badge && (
+                    <span style={{ fontSize: '0.58rem', color: '#f87171', fontWeight: 700 }}>
+                      {mode.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
 
           {/* Bill Totals Box */}
@@ -825,13 +994,41 @@ export default function POSPage() {
           {/* Finalize Button */}
           <button
             className="btn-primary"
-            style={{ width: '100%', height: 46, fontSize: '0.95rem', fontWeight: 800, justifyContent: 'center' }}
+            style={{
+              width: '100%',
+              height: 48,
+              fontSize: '0.95rem',
+              fontWeight: 800,
+              justifyContent: 'center',
+              background: finalizeBillMutation.isPending
+                ? 'linear-gradient(135deg, rgb(16, 185, 129), rgb(139, 92, 246))'
+                : undefined,
+              boxShadow: finalizeBillMutation.isPending
+                ? '0 0 24px rgba(52, 211, 153, 0.6)'
+                : undefined,
+              transition: 'all 0.2s ease',
+            }}
             disabled={cartItems.length === 0 || finalizeBillMutation.isPending}
-            onClick={() => finalizeBillMutation.mutate()}
+            onClick={() => {
+              if (cartItems.length === 0) return;
+              if (paymentMode === 'UPI') {
+                setShowUpiQrModal(true);
+              } else {
+                playThermalPrintSound();
+                finalizeBillMutation.mutate();
+              }
+            }}
           >
-            {finalizeBillMutation.isPending
-              ? <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Generating Bill...</>
-              : <><CheckCircle2 size={16} /> Finalize Bill · ₹{grandTotal.toFixed(2)}</>}
+            {finalizeBillMutation.isPending ? (
+              <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Printer size={18} style={{ animation: 'printerBounce 0.5s infinite alternate' }} />
+                <span>Printing Bill...</span>
+              </span>
+            ) : (
+              <>
+                <CheckCircle2 size={16} /> Finalize Bill · ₹{grandTotal.toFixed(2)}
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -899,24 +1096,46 @@ export default function POSPage() {
               ))}
             </div>
 
-            {/* Mobile Customer Phone Input */}
-            <div style={{ marginBottom: 12 }}>
-              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#a1a1aa', display: 'block', marginBottom: 6 }}>
-                Customer Phone (Sends Digital Bill via WhatsApp)
-              </label>
-              <div style={{ position: 'relative' }}>
-                <Phone size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'rgb(113,113,122)' }} />
-                <input
-                  type="tel"
-                  className="input"
-                  placeholder="e.g. 9876543210 (Optional)"
-                  value={customerPhoneInput}
-                  onChange={(e) => {
-                    setCustomerPhoneInput(e.target.value);
-                    setCustomer(e.target.value, customerNameInput);
-                  }}
-                  style={{ paddingLeft: 40, height: 44, fontSize: '0.9rem', borderRadius: 12 }}
-                />
+            {/* Mobile Customer Phone & Name Inputs */}
+            <div style={{ marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div>
+                <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#a1a1aa', display: 'block', marginBottom: 6 }}>
+                  Customer Phone (Sends Digital Bill via WhatsApp)
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <Phone size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'rgb(113,113,122)' }} />
+                  <input
+                    type="tel"
+                    className="input"
+                    placeholder="e.g. 9876543210 (Optional)"
+                    value={customerPhoneInput}
+                    onChange={(e) => {
+                      setCustomerPhoneInput(e.target.value);
+                      setCustomer(e.target.value, customerNameInput);
+                    }}
+                    style={{ paddingLeft: 40, height: 44, fontSize: '0.9rem', borderRadius: 12 }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#a1a1aa', display: 'block', marginBottom: 6 }}>
+                  Customer Name (Optional)
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <User size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'rgb(113,113,122)' }} />
+                  <input
+                    type="text"
+                    className="input"
+                    placeholder="e.g. Rahul Sharma"
+                    value={customerNameInput}
+                    onChange={(e) => {
+                      setCustomerNameInput(e.target.value);
+                      setCustomer(customerPhoneInput, e.target.value);
+                    }}
+                    style={{ paddingLeft: 40, height: 44, fontSize: '0.9rem', borderRadius: 12 }}
+                  />
+                </div>
               </div>
             </div>
 
@@ -964,30 +1183,48 @@ export default function POSPage() {
               <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#a1a1aa', display: 'block', marginBottom: 6 }}>
                 Payment Method
               </label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-                {PAYMENT_MODES.map((mode) => (
-                  <button
-                    key={mode.id}
-                    onClick={() => setPaymentMode(mode.id)}
-                    style={{
-                      padding: '10px 6px',
-                      borderRadius: 12,
-                      cursor: 'pointer',
-                      background: paymentMode === mode.id ? 'rgba(139,92,246,0.25)' : 'rgb(28,28,35)',
-                      border: `1px solid ${paymentMode === mode.id ? 'rgb(139,92,246)' : 'rgba(255,255,255,0.06)'}`,
-                      color: paymentMode === mode.id ? 'rgb(167,139,250)' : 'rgb(161,161,170)',
-                      fontWeight: paymentMode === mode.id ? 800 : 500,
-                      fontSize: '0.8rem',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: 4,
-                    }}
-                  >
-                    <span style={{ fontSize: '1.2rem' }}>{mode.emoji}</span>
-                    <span>{mode.label}</span>
-                  </button>
-                ))}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                {PAYMENT_MODES.map((mode) => {
+                  const isSelected = paymentMode === mode.id;
+                  const isDisabled = mode.disabled;
+
+                  return (
+                    <button
+                      key={mode.id}
+                      disabled={isDisabled}
+                      onClick={() => {
+                        if (isDisabled) {
+                          toast.error('Card terminal is not configured yet. Please select Cash or UPI.');
+                          return;
+                        }
+                        setPaymentMode(mode.id);
+                      }}
+                      style={{
+                        padding: '10px 6px',
+                        borderRadius: 12,
+                        cursor: isDisabled ? 'not-allowed' : 'pointer',
+                        opacity: isDisabled ? 0.45 : 1,
+                        background: isSelected ? 'rgba(139,92,246,0.25)' : 'rgb(28,28,35)',
+                        border: `1px solid ${isSelected ? 'rgb(139,92,246)' : 'rgba(255,255,255,0.06)'}`,
+                        color: isSelected ? 'rgb(167,139,250)' : 'rgb(161,161,170)',
+                        fontWeight: isSelected ? 800 : 500,
+                        fontSize: '0.8rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 4,
+                      }}
+                    >
+                      <span style={{ fontSize: '1.2rem' }}>{mode.emoji}</span>
+                      <span>{mode.label}</span>
+                      {mode.badge && (
+                        <span style={{ fontSize: '0.62rem', color: '#f87171', fontWeight: 700 }}>
+                          {mode.badge}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -1023,15 +1260,35 @@ export default function POSPage() {
                 fontWeight: 800,
                 borderRadius: 14,
                 justifyContent: 'center',
-                background: 'linear-gradient(135deg, rgb(139,92,246), rgb(109,40,217))',
-                boxShadow: '0 4px 18px rgba(139,92,246,0.4)',
+                background: finalizeBillMutation.isPending
+                  ? 'linear-gradient(135deg, rgb(16, 185, 129), rgb(139, 92, 246))'
+                  : 'linear-gradient(135deg, rgb(139,92,246), rgb(109,40,217))',
+                boxShadow: finalizeBillMutation.isPending
+                  ? '0 0 24px rgba(52, 211, 153, 0.6)'
+                  : '0 4px 18px rgba(139,92,246,0.4)',
+                transition: 'all 0.2s ease',
               }}
               disabled={cartItems.length === 0 || finalizeBillMutation.isPending}
-              onClick={() => finalizeBillMutation.mutate()}
+              onClick={() => {
+                if (cartItems.length === 0) return;
+                if (paymentMode === 'UPI') {
+                  setShowUpiQrModal(true);
+                } else {
+                  playThermalPrintSound();
+                  finalizeBillMutation.mutate();
+                }
+              }}
             >
-              {finalizeBillMutation.isPending
-                ? <><Loader2 size={20} style={{ animation: 'spin 1s linear infinite' }} /> Creating Bill...</>
-                : <><CheckCircle2 size={20} /> Finalize & Print Bill · ₹{grandTotal.toFixed(2)}</>}
+              {finalizeBillMutation.isPending ? (
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Printer size={20} style={{ animation: 'printerBounce 0.5s infinite alternate' }} />
+                  <span>Printing Bill...</span>
+                </span>
+              ) : (
+                <>
+                  <CheckCircle2 size={18} /> Finalize & Print Bill · ₹{grandTotal.toFixed(2)}
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -1055,9 +1312,48 @@ export default function POSPage() {
         onScan={(barcode) => {
           handleBarcodeScanned(barcode);
         }}
+        autoCloseOnScan={false}
+        cartItems={cartItems}
+        onUpdateQty={updateQty}
+        onRemoveItem={removeItem}
+        grandTotal={getGrandTotal()}
         title="Scan Barcode with Phone Camera"
-        subtitle="Point camera at any product barcode to instantly add it to the bill"
+        subtitle="Camera remains active. Scan barcodes continuously and adjust item quantities below."
       />
+
+      {/* ── Dynamic UPI QR Code Payment Modal ── */}
+      <UpiQrPaymentModal
+        isOpen={showUpiQrModal}
+        onClose={() => setShowUpiQrModal(false)}
+        grandTotal={grandTotal}
+        upiId={shopSettings?.upiId}
+        shopName={shopSettings?.tenant?.name || 'Retail Store'}
+        isPending={finalizeBillMutation.isPending}
+        onConfirmPayment={() => {
+          setShowUpiQrModal(false);
+          playThermalPrintSound();
+          finalizeBillMutation.mutate();
+        }}
+        onSaveUpiId={async (newUpiId) => {
+          await updateSettingsMutation.mutateAsync({ upiId: newUpiId });
+        }}
+      />
+
+      {/* ── Parked Orders & Held Bills Modal ── */}
+      <HeldBillsSectionModal
+        isOpen={showHeldModal}
+        onClose={() => setShowHeldModal(false)}
+        heldBills={heldBills}
+        onResumeHeld={(holdId) => resumeHeldMutation.mutate(holdId)}
+        isResuming={resumeHeldMutation.isPending}
+      />
+
+      <style jsx global>{`
+        @keyframes printerBounce {
+          0% { transform: translateY(0) scale(1); }
+          100% { transform: translateY(-3px) scale(1.1); }
+        }
+      `}</style>
     </div>
   );
 }

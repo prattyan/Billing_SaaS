@@ -14,10 +14,13 @@ async function bootstrap() {
   // Security
   app.use(helmet());
   app.enableCors({
-    origin: process.env.CORS_ORIGINS
-      ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
-      : true,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      return callback(null, true);
+    },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
   });
 
   // Global validation pipe — auto-validates all DTOs
@@ -47,8 +50,8 @@ async function bootstrap() {
   logger.log('Swagger docs available at /api/docs');
 
   const port = process.env.PORT ?? 4000;
-  await app.listen(port);
-  logger.log(`🚀 API running on http://localhost:${port}/api/v1`);
+  await app.listen(port, '0.0.0.0');
+  logger.log(`🚀 API running on port ${port} (listening on 0.0.0.0 / http://localhost:${port}/api/v1)`);
 }
 
 bootstrap();

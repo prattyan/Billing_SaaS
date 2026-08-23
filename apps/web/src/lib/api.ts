@@ -1,16 +1,22 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+export const getBaseApiUrl = () => {
+  if (process.env.NEXT_PUBLIC_API_URL && !process.env.NEXT_PUBLIC_API_URL.includes('localhost')) {
+    return process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '');
+  }
+  return 'https://billing-saas-api.onrender.com';
+};
 
 const api = axios.create({
-  baseURL: `${API_URL}/api/v1`,
+  baseURL: `${getBaseApiUrl()}/api/v1`,
   headers: { 'Content-Type': 'application/json' },
-  timeout: 10000,
+  timeout: 35000,
 });
 
-// Attach JWT token from localStorage
+// Attach JWT token from localStorage & update baseURL dynamically
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
+    config.baseURL = `${getBaseApiUrl()}/api/v1`;
     const token = localStorage.getItem('accessToken');
     if (token) config.headers.Authorization = `Bearer ${token}`;
   }
@@ -30,7 +36,7 @@ api.interceptors.response.use(
         const refreshToken = localStorage.getItem('refreshToken');
         if (!refreshToken) throw new Error('No refresh token');
 
-        const { data } = await axios.post(`${API_URL}/api/v1/auth/refresh`, {
+        const { data } = await axios.post(`${getBaseApiUrl()}/api/v1/auth/refresh`, {
           refreshToken,
         });
 
@@ -79,7 +85,7 @@ export const billingApi = {
   create: (data: any) => api.post('/billing', data),
   list: (params?: any) => api.get('/billing', { params }),
   get: (id: string) => api.get(`/billing/${id}`),
-  getPublic: (id: string) => axios.get(`${API_URL}/api/v1/billing/public/${id}`),
+  getPublic: (id: string) => axios.get(`${getBaseApiUrl()}/api/v1/billing/public/${id}`),
   holdBill: (data: any) => api.post('/billing/hold', data),
   hold: (data: any) => api.post('/billing/hold', data),
   getHeld: () => api.get('/billing/held/list'),

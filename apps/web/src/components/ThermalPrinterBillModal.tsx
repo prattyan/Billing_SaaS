@@ -41,7 +41,8 @@ export default function ThermalPrinterBillModal({ bill, onClose }: ThermalPrinte
   };
 
   const handleShareWhatsApp = () => {
-    const phone = bill.customer?.phone || bill.customerPhone || '';
+    const rawPhone = bill.customer?.phone || bill.customerPhone || '';
+    const phone = rawPhone.startsWith('GUEST-') ? '' : rawPhone;
     const invoiceUrl = getPublicInvoiceUrl(bill.id);
     const text = formatWhatsAppBillMessage(bill, invoiceUrl);
 
@@ -167,8 +168,8 @@ export default function ThermalPrinterBillModal({ bill, onClose }: ThermalPrinte
                 <span>Customer:</span>
                 <span>
                   {bill.customer?.name && bill.customer.name !== 'Walk-in Customer'
-                    ? `${bill.customer.name}${bill.customer?.phone ? ` (${bill.customer.phone})` : ''}`
-                    : (bill.customer?.phone || bill.customerPhone ? `Walk-in (${bill.customer?.phone || bill.customerPhone})` : 'Walk-in Customer')}
+                    ? `${bill.customer.name}${bill.customer?.phone && !bill.customer.phone.startsWith('GUEST-') ? ` (${bill.customer.phone})` : ''}`
+                    : (bill.customer?.phone && !bill.customer.phone.startsWith('GUEST-') || bill.customerPhone ? `Walk-in (${bill.customer?.phone || bill.customerPhone})` : 'Walk-in Customer')}
                 </span>
               </div>
             </div>
