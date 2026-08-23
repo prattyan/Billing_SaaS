@@ -4,7 +4,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { BillingService } from './billing.service';
-import { CreateBillDto, HoldBillDto, ReturnBillDto } from './dto/billing.dto';
+import { CreateBillDto, HoldBillDto, ReturnBillDto, BillQueryDto } from './dto/billing.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { TenantGuard } from '../auth/guards/tenant.guard';
@@ -41,7 +41,7 @@ export class BillingController {
   @ApiOperation({ summary: 'List bills (paginated)' })
   async findAll(
     @TenantId() tenantId: string,
-    @Query() query: { page?: number; limit?: number; search?: string },
+    @Query() query: BillQueryDto,
   ) {
     return this.billingService.findAll(tenantId, query);
   }

@@ -258,13 +258,19 @@ export class BillingService {
   // ── List bills ────────────────────────────────────────────────────────────────
 
   async findAll(tenantId: string, query: { page?: number; limit?: number; search?: string }) {
-    const { page = 1, limit = 20, search } = query;
+    const page = Math.max(1, Number(query?.page) || 1);
+    const limit = Math.max(1, Math.min(100, Number(query?.limit) || 20));
     const skip = (page - 1) * limit;
-    const where: any = { tenantId, status: { not: 'HELD' } };
-    if (search) {
+    const cleanSearch = query?.search?.trim();
+
+    const tenantFilter = tenantId ? { tenantId } : {};
+    const where: any = { ...tenantFilter, status: { not: 'HELD' } };
+
+    if (cleanSearch) {
       where.OR = [
-        { billNumber: { contains: search, mode: 'insensitive' } },
-        { customer: { phone: { contains: search } } },
+        { billNumber: { contains: cleanSearch, mode: 'insensitive' } },
+        { customer: { is: { phone: { contains: cleanSearch } } } },
+        { customer: { is: { name: { contains: cleanSearch, mode: 'insensitive' } } } },
       ];
     }
 
@@ -289,8 +295,9 @@ export class BillingService {
   // ── Get one bill ──────────────────────────────────────────────────────────────
 
   async findOne(tenantId: string, id: string) {
+    const tenantFilter = tenantId ? { tenantId } : {};
     const bill = await this.prisma.bill.findFirst({
-      where: { id, tenantId },
+      where: { id, ...tenantFilter },
       include: {
         items: { include: { item: { select: { name: true, barcode: true, unit: true } } } },
         customer: true,

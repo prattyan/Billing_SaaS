@@ -95,3 +95,23 @@ export class ReturnBillDto {
   @IsString()
   reason?: string;
 }
+
+export class BillQueryDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  page?: number = 1;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  limit?: number = 20;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  search?: string;
+}
+

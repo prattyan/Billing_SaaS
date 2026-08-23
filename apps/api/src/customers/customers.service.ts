@@ -7,15 +7,21 @@ export class CustomersService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(tenantId: string, query: { page?: number; limit?: number; search?: string }) {
-    const { page = 1, limit = 20, search } = query;
+    const page = Math.max(1, Number(query?.page) || 1);
+    const limit = Math.max(1, Math.min(100, Number(query?.limit) || 20));
     const skip = (page - 1) * limit;
-    const where: any = { tenantId };
-    if (search) {
+    const cleanSearch = query?.search?.trim();
+
+    const tenantFilter = tenantId ? { tenantId } : {};
+    const where: any = { ...tenantFilter };
+
+    if (cleanSearch) {
       where.OR = [
-        { phone: { contains: search } },
-        { name: { contains: search, mode: 'insensitive' } },
+        { phone: { contains: cleanSearch } },
+        { name: { contains: cleanSearch, mode: 'insensitive' } },
       ];
     }
+
     const [customers, total] = await Promise.all([
       this.prisma.customer.findMany({
         where,
@@ -26,12 +32,14 @@ export class CustomersService {
       }),
       this.prisma.customer.count({ where }),
     ]);
+
     return { customers, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } };
   }
 
   async findOne(tenantId: string, id: string) {
+    const tenantFilter = tenantId ? { tenantId } : {};
     const customer = await this.prisma.customer.findFirst({
-      where: { id, tenantId },
+      where: { id, ...tenantFilter },
       include: {
         bills: {
           orderBy: { createdAt: 'desc' },

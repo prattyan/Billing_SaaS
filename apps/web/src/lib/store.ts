@@ -72,6 +72,7 @@ interface CartItem {
   priceAtSale: number;
   taxPercent: number;
   unit: string;
+  stock?: number;
 }
 
 interface CartState {

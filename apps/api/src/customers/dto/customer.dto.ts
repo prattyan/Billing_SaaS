@@ -1,5 +1,6 @@
 import { IsString, IsOptional, IsEmail, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 
 export class CreateCustomerDto {
   @ApiProperty({ example: '9876543210' })
@@ -35,3 +36,21 @@ export class UpdateCustomerDto {
   @IsEmail()
   email?: string;
 }
+
+export class CustomerQueryDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Number)
+  page?: number = 1;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Number)
+  limit?: number = 20;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  search?: string;
+}
+
