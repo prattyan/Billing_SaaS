@@ -68,16 +68,16 @@ export default function InventoryPage() {
   const meta = data?.meta;
 
   return (
-    <div style={{ padding: '28px 24px' }}>
+    <div className="page-container" style={{ padding: '28px 24px' }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: 4 }}>Inventory & Stock</h1>
           <p style={{ color: 'rgb(161,161,170)', fontSize: '0.875rem' }}>
             {meta?.total ?? '—'} registered stock items
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div className="page-header-actions" style={{ display: 'flex', gap: 10 }}>
           <button
             className="btn-secondary"
             style={{ display: 'flex', alignItems: 'center', gap: 6 }}
@@ -93,15 +93,15 @@ export default function InventoryPage() {
               setShowAddModal(true);
             }}
           >
-            <Plus size={16} /> Add Item to Stock
+            <Plus size={16} /> Add Item
           </button>
         </div>
       </div>
 
       {/* Plan usage bar */}
       {planUsage && (
-        <div className="card" style={{ marginBottom: 20, padding: '14px 20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+        <div className="card plan-usage-bar" style={{ marginBottom: 20, padding: '14px 20px' }}>
+          <div className="plan-usage-text" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
             <div>
               <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'rgb(161,161,170)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                 {planUsage.currentTier} Plan
@@ -138,7 +138,7 @@ export default function InventoryPage() {
 
       {/* Filters */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-        <div style={{ flex: 1, minWidth: 200, position: 'relative' }}>
+        <div className="search-container" style={{ maxWidth: 400, position: 'relative', marginBottom: 20 }}>
           <Search size={15} style={{
             position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
             color: 'rgb(113,113,122)',
@@ -162,8 +162,8 @@ export default function InventoryPage() {
         </button>
       </div>
 
-      {/* Table */}
-      <div className="table-wrapper">
+      {/* Desktop Table */}
+      <div className="table-wrapper desktop-table">
         <table className="data-table">
           <thead>
             <tr>
@@ -264,6 +264,86 @@ export default function InventoryPage() {
         </table>
       </div>
 
+      {/* Mobile Card List */}
+      <div className="mobile-card-list" style={{ display: 'none' }}>
+        {isLoading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="mobile-item-card">
+              <div className="skeleton" style={{ height: 18, width: '60%', marginBottom: 6 }} />
+              <div className="skeleton" style={{ height: 14, width: '40%' }} />
+            </div>
+          ))
+        ) : items.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: 40, color: 'rgb(113,113,122)' }}>
+            <Package size={32} style={{ opacity: 0.3, marginBottom: 8, display: 'block', margin: '0 auto 8px' }} />
+            No items found
+          </div>
+        ) : (
+          items.map((item: any) => (
+            <div key={item.id} className="mobile-item-card">
+              <div className="card-top">
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {item.name}
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: 'rgb(113,113,122)' }}>
+                    {item.brand} · {item.unit}
+                    {item.barcode && (
+                      <> · <code style={{ fontSize: '0.68rem', background: 'rgb(var(--surface-3))', padding: '1px 4px', borderRadius: 3 }}>{item.barcode}</code></>
+                    )}
+                  </div>
+                </div>
+                <span className={`badge ${item.isActive ? 'badge-success' : 'badge-gray'}`} style={{ flexShrink: 0 }}>
+                  {item.isActive ? 'Active' : 'Inactive'}
+                </span>
+              </div>
+
+              <div className="card-meta">
+                {item.category && (
+                  <span className="badge badge-purple" style={{ fontSize: '0.68rem' }}>{item.category.name}</span>
+                )}
+                <span style={{ color: 'rgb(var(--text-secondary))' }}>MRP ₹{Number(item.mrp).toFixed(2)}</span>
+                <span style={{ color: 'rgb(52,211,153)', fontWeight: 600 }}>₹{Number(item.offerPrice ?? item.mrp).toFixed(2)}</span>
+                <span style={{ color: 'rgb(var(--text-muted))' }}>GST {Number(item.taxPercent)}%</span>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{
+                  fontWeight: 700, fontSize: '0.88rem',
+                  color: item.isLowStock ? 'rgb(239,100,100)' : 'rgb(52,211,153)',
+                  display: 'flex', alignItems: 'center', gap: 4,
+                }}>
+                  {Number(item.currentStock).toFixed(0)} {item.unit}
+                  {item.isLowStock && <AlertTriangle size={13} />}
+                  {item.isLowStock && <span style={{ fontSize: '0.7rem', fontWeight: 500, color: 'rgb(239,100,100)' }}>Low Stock</span>}
+                </div>
+              </div>
+
+              <div className="card-actions">
+                <button
+                  className="btn-secondary"
+                  style={{ display: 'flex', alignItems: 'center', gap: 5 }}
+                  onClick={() => setShowRestockModal(item)}
+                >
+                  <RefreshCw size={13} /> Restock
+                </button>
+                <button
+                  className="btn-danger"
+                  style={{ display: 'flex', alignItems: 'center', gap: 5 }}
+                  onClick={() => {
+                    if (confirm(`Deactivate "${item.name}"?`)) {
+                      deleteMutation.mutate(item.id);
+                    }
+                  }}
+                >
+                  <Trash2 size={13} /> Delete
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
       {/* Pagination */}
       {meta && meta.totalPages > 1 && (
         <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 20 }}>
@@ -337,7 +417,7 @@ function RestockModal({ item, onClose, onSuccess }: { item: any; onClose: () => 
       background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center',
       backdropFilter: 'blur(4px)',
     }} onClick={onClose}>
-      <div className="glass-card" style={{ width: 400, padding: 28 }} onClick={(e) => e.stopPropagation()}>
+      <div className="glass-card modal-content" style={{ width: 400, padding: 28 }} onClick={(e) => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
           <h2 style={{ fontSize: '1rem', fontWeight: 800 }}>Restock: {item.name}</h2>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgb(113,113,122)' }}>
@@ -421,7 +501,7 @@ function AddItemModal({
         background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center',
         backdropFilter: 'blur(4px)',
       }} onClick={onClose}>
-        <div className="glass-card" style={{ width: 520, padding: 28, maxHeight: '90vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
+        <div className="glass-card modal-content" style={{ width: 520, padding: 28, maxHeight: '90vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
             <h2 style={{ fontSize: '1rem', fontWeight: 800 }}>Add New Item</h2>
             <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgb(113,113,122)' }}>

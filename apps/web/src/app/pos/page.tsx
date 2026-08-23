@@ -6,7 +6,7 @@ import { itemsApi, billingApi, customersApi, categoriesApi } from '@/lib/api';
 import { useCartStore, useAuthStore } from '@/lib/store';
 import toast from 'react-hot-toast';
 import {
-  Scan, Search, X, Plus, Minus, Trash2, ShoppingCart,
+  Scan, Search, X, Plus, Minus, Trash2, ShoppingCart, ShoppingBag,
   Phone, User, Loader2, CheckCircle2, PauseCircle, PlayCircle,
   ChevronDown, Receipt, IndianRupee, Tag, Camera, Printer, Share2, FileText, ExternalLink,
   Sparkles, Layers, ArrowRight,

@@ -55,7 +55,7 @@ export default function SettingsPage() {
   });
 
   return (
-    <div style={{ padding: '28px 24px' }}>
+    <div className="page-container" style={{ padding: '28px 24px' }}>
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: 4 }}>Shop Settings</h1>
@@ -65,7 +65,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 8, borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: 12, marginBottom: 28 }}>
+      <div style={{ display: 'flex', gap: 8, borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: 12, marginBottom: 28, overflowX: 'auto' }}>
         {[
           { id: 'general', label: 'Shop Details & GST', icon: Store },
           { id: 'pos', label: 'POS & Billing Rules', icon: Printer },

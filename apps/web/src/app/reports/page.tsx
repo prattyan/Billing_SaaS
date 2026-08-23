@@ -70,16 +70,16 @@ export default function ReportsPage() {
   };
 
   return (
-    <div style={{ padding: '28px 24px' }}>
+    <div className="page-container" style={{ padding: '28px 24px' }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
         <div>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: 4 }}>Reports & Analytics</h1>
           <p style={{ color: 'rgb(161,161,170)', fontSize: '0.875rem' }}>
             GST tax filing reports, sales performance, fast moving items & stock audit trails
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div className="page-header-actions" style={{ display: 'flex', gap: 8 }}>
           <button className="btn-secondary" onClick={handlePrint}>
             <Download size={15} /> Print / Export
           </button>

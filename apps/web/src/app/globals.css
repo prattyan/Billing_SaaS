@@ -552,3 +552,154 @@ table.data-table tbody tr:hover { background: rgb(var(--surface-2)); }
   animation: slideUp 0.3s ease-out;
 }
 
+/* ─── Mobile Page Responsive Utilities ─── */
+
+/* Page container adjustments on mobile */
+@media (max-width: 1024px) {
+  .page-container {
+    padding: 16px 12px !important;
+  }
+
+  /* Make all page headers stack vertically on mobile */
+  .page-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  .page-header h1 {
+    font-size: 1.25rem !important;
+  }
+
+  .page-header-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .page-header-actions .btn-primary,
+  .page-header-actions .btn-secondary {
+    flex: 1;
+    min-width: 0;
+    justify-content: center;
+    font-size: 0.78rem !important;
+    padding: 10px 12px !important;
+  }
+
+  /* Dashboard grid responsiveness */
+  .dashboard-grid-2col {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Stat cards: 2 columns on mobile */
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .stat-card {
+    padding: 14px !important;
+  }
+
+  .stat-card .stat-value {
+    font-size: 1.25rem !important;
+  }
+
+  /* Hide desktop tables on mobile */
+  .desktop-table {
+    display: none !important;
+  }
+
+  /* Show mobile card list on mobile */
+  .mobile-card-list {
+    display: flex !important;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* Mobile item cards */
+  .mobile-item-card {
+    background: rgb(var(--surface-1));
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 14px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: transform 0.12s, border-color 0.12s;
+  }
+
+  .mobile-item-card:active {
+    transform: scale(0.985);
+    border-color: rgba(139, 92, 246, 0.35);
+  }
+
+  .mobile-item-card .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .mobile-item-card .card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    font-size: 0.72rem;
+  }
+
+  .mobile-item-card .card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 2px;
+  }
+
+  .mobile-item-card .card-actions button {
+    flex: 1;
+    padding: 9px 10px !important;
+    font-size: 0.76rem !important;
+    justify-content: center;
+    border-radius: 10px;
+  }
+
+  /* Modals: fullscreen on mobile */
+  .modal-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    border-radius: 20px 20px 0 0 !important;
+    max-height: 92vh !important;
+    align-self: flex-end !important;
+  }
+
+  /* Ensure forms adapt on mobile */
+  .modal-content form {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Search bar full width */
+  .search-container {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  /* Plan usage bar compact on mobile */
+  .plan-usage-bar {
+    padding: 12px 14px !important;
+  }
+
+  .plan-usage-bar .plan-usage-text {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+  }
+}
+
+/* Desktop: hide mobile card list */
+@media (min-width: 1025px) {
+  .mobile-card-list {
+    display: none !important;
+  }
+}
+

@@ -83,7 +83,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div style={{ padding: '28px 24px' }}>
+    <div className="page-container" style={{ padding: '28px 24px' }}>
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: 4 }}>Dashboard</h1>
@@ -93,7 +93,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stat cards */}
-      <div style={{
+      <div className="stat-grid" style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
         gap: 16,
@@ -127,7 +127,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Charts + quick actions */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 16, marginBottom: 24 }}>
+      <div className="dashboard-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 16, marginBottom: 24 }}>
         {/* Revenue chart */}
         <div className="card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>

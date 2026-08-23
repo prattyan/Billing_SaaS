@@ -120,7 +120,7 @@ export default function SubscriptionPage() {
   const usagePercent = Math.min(100, Math.round((skuCount / skuLimit) * 100));
 
   return (
-    <div style={{ padding: '28px 24px' }}>
+    <div className="page-container" style={{ padding: '28px 24px' }}>
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: 4 }}>Subscription & Plan</h1>

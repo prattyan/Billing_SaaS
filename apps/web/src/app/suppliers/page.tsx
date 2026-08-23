@@ -42,27 +42,27 @@ export default function SuppliersPage() {
   });
 
   return (
-    <div style={{ padding: '28px 24px' }}>
+    <div className="page-container" style={{ padding: '28px 24px' }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
         <div>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: 4 }}>Suppliers & Purchase Orders</h1>
           <p style={{ color: 'rgb(161,161,170)', fontSize: '0.875rem' }}>
             Manage wholesale vendor contacts & purchase orders with auto-restock
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div className="page-header-actions" style={{ display: 'flex', gap: 10 }}>
           <button className="btn-secondary" onClick={() => setShowAddSupplierModal(true)}>
             <Plus size={15} /> Add Supplier
           </button>
           <button className="btn-primary" onClick={() => setShowCreatePoModal(true)}>
-            <FileText size={15} /> Create Purchase Order
+            <FileText size={15} /> New PO
           </button>
         </div>
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 8, borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: 12, marginBottom: 24 }}>
+      <div style={{ display: 'flex', gap: 8, borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: 12, marginBottom: 24, overflowX: 'auto' }}>
         <button
           onClick={() => setActiveTab('suppliers')}
           style={{
@@ -89,7 +89,7 @@ export default function SuppliersPage() {
 
       {/* ── TAB 1: Suppliers Directory ─────────────────────────────────── */}
       {activeTab === 'suppliers' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
           {isLoadingSuppliers ? (
             Array.from({ length: 3 }).map((_, i) => <div key={i} className="skeleton" style={{ height: 160 }} />)
           ) : suppliers?.length === 0 ? (

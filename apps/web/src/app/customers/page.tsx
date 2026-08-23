@@ -124,26 +124,28 @@ export default function CustomersPage() {
   const meta = data?.meta;
 
   return (
-    <div style={{ padding: '28px 24px' }}>
+    <div className="page-container" style={{ padding: '28px 24px' }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: 4 }}>Customers</h1>
           <p style={{ color: 'rgb(161,161,170)', fontSize: '0.875rem' }}>
             Auto-captured from counter sales & manual registry · Loyalty points & order history
           </p>
         </div>
-        <button
-          onClick={openCreateModal}
-          className="btn-primary"
-          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 16px', fontSize: '0.875rem' }}
-        >
-          <Plus size={16} /> Add New Customer
-        </button>
+        <div className="page-header-actions">
+          <button
+            onClick={openCreateModal}
+            className="btn-primary"
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 16px', fontSize: '0.875rem' }}
+          >
+            <Plus size={16} /> Add Customer
+          </button>
+        </div>
       </div>
 
       {/* Search Filter */}
-      <div style={{ maxWidth: 400, position: 'relative', marginBottom: 20 }}>
+      <div className="search-container" style={{ maxWidth: 400, position: 'relative', marginBottom: 20 }}>
         <Search size={15} style={{
           position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
           color: 'rgb(113,113,122)',
@@ -158,8 +160,8 @@ export default function CustomersPage() {
         />
       </div>
 
-      {/* Customers Table */}
-      <div className="table-wrapper">
+      {/* Desktop Customers Table */}
+      <div className="table-wrapper desktop-table">
         <table className="data-table">
           <thead>
             <tr>
@@ -275,6 +277,98 @@ export default function CustomersPage() {
         </table>
       </div>
 
+      {/* Mobile Customer Card List */}
+      <div className="mobile-card-list" style={{ display: 'none' }}>
+        {isLoading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="mobile-item-card">
+              <div className="skeleton" style={{ height: 18, width: '50%', marginBottom: 6 }} />
+              <div className="skeleton" style={{ height: 14, width: '35%' }} />
+            </div>
+          ))
+        ) : customers.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: 40, color: 'rgb(113,113,122)' }}>
+            <Users size={32} style={{ opacity: 0.3, display: 'block', margin: '0 auto 8px' }} />
+            No customer records found.
+          </div>
+        ) : (
+          customers.map((c: any) => (
+            <div key={c.id} className="mobile-item-card">
+              <div className="card-top">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                    background: 'linear-gradient(135deg, rgba(139,92,246,0.2), rgba(52,211,153,0.2))',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontWeight: 700, fontSize: '0.8rem', color: 'rgb(167,139,250)',
+                  }}>
+                    {c.name?.[0]?.toUpperCase() ?? c.phone?.slice(-2)}
+                  </div>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {c.name || 'Walk-in Customer'}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.72rem', color: 'rgb(113,113,122)' }}>
+                      <Phone size={10} /> {c.phone}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="card-meta" style={{ justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div>
+                    <div style={{ fontSize: '0.68rem', color: 'rgb(113,113,122)', textTransform: 'uppercase' }}>Orders</div>
+                    <div style={{ fontWeight: 700, fontSize: '0.88rem' }}>{c._count?.bills ?? 0}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.68rem', color: 'rgb(113,113,122)', textTransform: 'uppercase' }}>Spent</div>
+                    <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'rgb(52,211,153)' }}>₹{Number(c.totalSpend).toFixed(0)}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.68rem', color: 'rgb(113,113,122)', textTransform: 'uppercase' }}>Loyalty</div>
+                    <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'rgb(251,191,36)', display: 'flex', alignItems: 'center', gap: 3 }}>
+                      <Award size={12} /> {Number(c.loyaltyPoints).toFixed(0)}
+                    </div>
+                  </div>
+                </div>
+                <div style={{ fontSize: '0.7rem', color: 'rgb(113,113,122)' }}>
+                  {format(new Date(c.createdAt), 'dd MMM yy')}
+                </div>
+              </div>
+
+              <div className="card-actions">
+                <button
+                  className="btn-secondary"
+                  style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+                  onClick={() => setSelectedCustomerId(c.id)}
+                >
+                  <Eye size={13} /> View
+                </button>
+                <button
+                  className="btn-secondary"
+                  style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+                  onClick={() => openEditModal(c)}
+                >
+                  <Edit2 size={13} /> Edit
+                </button>
+                <button
+                  className="btn-secondary"
+                  style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'rgb(248,113,113)' }}
+                  onClick={() => {
+                    if (confirm(`Delete customer ${c.name || c.phone}?`)) {
+                      deleteCustomerMutation.mutate(c.id);
+                    }
+                  }}
+                >
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
       {/* Pagination */}
       {meta && meta.totalPages > 1 && (
         <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 24 }}>
@@ -306,7 +400,7 @@ export default function CustomersPage() {
           onClick={closeCustomerModal}
         >
           <div
-            className="glass-card animate-fadeIn"
+            className="glass-card modal-content animate-fadeIn"
             style={{ width: '100%', maxWidth: 460, padding: 24, borderRadius: 16 }}
             onClick={(e) => e.stopPropagation()}
           >
