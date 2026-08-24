@@ -54,6 +54,9 @@ export default function InventoryPage() {
     onSuccess: () => {
       toast.success('Item deactivated');
       qc.invalidateQueries({ queryKey: ['items'] });
+      qc.invalidateQueries({ queryKey: ['posCatalog'] });
+      qc.invalidateQueries({ queryKey: ['dashboard'] });
+      qc.invalidateQueries({ queryKey: ['planUsage'] });
     },
     onError: () => toast.error('Failed to delete item'),
   });
@@ -389,6 +392,8 @@ export default function InventoryPage() {
           onClose={() => { setShowAddModal(false); setPrefilledBarcode(''); }}
           onSuccess={() => {
             qc.invalidateQueries({ queryKey: ['items'] });
+            qc.invalidateQueries({ queryKey: ['posCatalog'] });
+            qc.invalidateQueries({ queryKey: ['dashboard'] });
             qc.invalidateQueries({ queryKey: ['planUsage'] });
             setShowAddModal(false);
             setPrefilledBarcode('');
@@ -405,6 +410,8 @@ export default function InventoryPage() {
           onClose={() => setShowEditModal(null)}
           onSuccess={() => {
             qc.invalidateQueries({ queryKey: ['items'] });
+            qc.invalidateQueries({ queryKey: ['posCatalog'] });
+            qc.invalidateQueries({ queryKey: ['dashboard'] });
             setShowEditModal(null);
           }}
         />

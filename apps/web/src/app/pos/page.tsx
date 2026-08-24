@@ -99,14 +99,18 @@ export default function POSPage() {
   const [discountInput, setDiscountInput] = useState('');
   const [pointsToRedeemInput, setPointsToRedeemInput] = useState('');
 
-  // Catalog items for quick grid selling (with local offline caching)
+  // Catalog items for quick grid selling (with instant local RAM/disk cache + real-time cloud background sync)
   const { data: catalogData } = useQuery({
     queryKey: ['posCatalog'],
     queryFn: () => itemsApi.list({ page: 1, limit: 100 }).then((r) => r.data),
+    initialData: () => {
+      const cached = getLocalCatalog();
+      return cached && cached.length > 0 ? { items: cached, total: cached.length, page: 1, limit: 100 } : undefined;
+    },
   });
 
   useEffect(() => {
-    if (catalogData?.items) {
+    if (catalogData?.items && catalogData.items.length > 0) {
       cacheCatalogLocally(catalogData.items);
     }
   }, [catalogData]);
@@ -324,6 +328,9 @@ export default function POSPage() {
       qc.invalidateQueries({ queryKey: ['heldBills'] });
       qc.invalidateQueries({ queryKey: ['posCatalog'] });
       qc.invalidateQueries({ queryKey: ['items'] });
+      qc.invalidateQueries({ queryKey: ['dashboard'] });
+      qc.invalidateQueries({ queryKey: ['bills'] });
+      qc.invalidateQueries({ queryKey: ['customers'] });
       toast.success(`Bill #${bill.billNumber} created successfully!`, { duration: 4000 });
     },
     onError: (err: any) => {
