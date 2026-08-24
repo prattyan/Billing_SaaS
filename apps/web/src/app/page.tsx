@@ -8,10 +8,25 @@ export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.location.replace('/login');
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+    let role = '';
+    try {
+      if (userStr) role = JSON.parse(userStr)?.role;
+    } catch (_) {}
+
+    if (token) {
+      if (role === 'SUPER_ADMIN') {
+        router.replace('/superadmin');
+      } else if (role === 'BILLER') {
+        router.replace('/pos');
+      } else {
+        router.replace('/dashboard');
+      }
+    } else {
+      router.replace('/login');
     }
-  }, []);
+  }, [router]);
 
   return (
     <div style={{
