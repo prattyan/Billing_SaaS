@@ -117,12 +117,13 @@ autoUpdater.logger = console;
 autoUpdater.autoDownload = true;
 autoUpdater.autoInstallOnAppQuit = true;
 
-// 100% Silent Background Update Engine — No Reinstallation Required!
+// 100% Silent Background Update Engine — Automatically installs on app quit/restart
 autoUpdater.on('update-downloaded', (info) => {
-  console.log('New update downloaded silently:', info.version);
-  setTimeout(() => {
-    autoUpdater.quitAndInstall(true, true);
-  }, 2000);
+  console.log(`[AutoUpdater] Version ${info.version} downloaded silently in background. It will apply on next app restart.`);
+});
+
+autoUpdater.on('error', (err) => {
+  console.log('[AutoUpdater] Update check notice:', err.message);
 });
 
 app.whenReady().then(async () => {
