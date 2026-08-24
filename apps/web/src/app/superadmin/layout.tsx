@@ -81,6 +81,36 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
             <LogOut size={16} />
             <span>Sign out</span>
           </button>
+
+          {/* App Version Tag */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '6px 10px',
+            marginTop: 8,
+            borderRadius: 6,
+            background: 'rgba(255, 255, 255, 0.03)',
+            border: '1px solid rgba(255, 255, 255, 0.06)',
+            fontSize: '0.7rem',
+            color: 'rgb(161, 161, 170)',
+          }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
+              <span>BillFlow Admin</span>
+            </span>
+            <span style={{
+              fontFamily: 'monospace',
+              fontWeight: 700,
+              color: '#a78bfa',
+              background: 'rgba(139, 92, 246, 0.15)',
+              padding: '2px 6px',
+              borderRadius: 4,
+              fontSize: '0.68rem',
+            }}>
+              v1.0.3
+            </span>
+          </div>
         </div>
       </aside>
 
