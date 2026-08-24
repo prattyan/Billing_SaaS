@@ -44,7 +44,7 @@ export default function NotificationsPage() {
 
   const sendTestNotification = () => {
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-      new Notification('⚠️ Test Low Stock Alert — BillFlow POS', {
+      new Notification('Test Low Stock Alert — BillFlow POS', {
         body: 'Sample Item (Basmati Rice 5kg) has only 2 units left! Click to restock.',
         icon: '/icon.png',
       });
@@ -58,7 +58,7 @@ export default function NotificationsPage() {
   const { data: lowStockData, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['lowStockItems'],
     queryFn: () => reportsApi.lowStock().then((r) => r.data),
-    refetchInterval: 30000,
+    refetchInterval: 5000,
   });
 
   const lowStockItems: any[] = Array.isArray(lowStockData) ? lowStockData : (lowStockData?.items ?? []);
@@ -67,7 +67,7 @@ export default function NotificationsPage() {
   useEffect(() => {
     if (lowStockItems.length > 0 && typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
       const firstItem = lowStockItems[0];
-      new Notification(`⚠️ Low Stock Alert: ${firstItem.name}`, {
+      new Notification(`Low Stock Alert: ${firstItem.name}`, {
         body: `Only ${firstItem.stockQuantity ?? 0} units left in stock! Restock threshold is ${firstItem.minStockLevel ?? 5}.`,
         icon: '/icon.png',
       });
@@ -160,8 +160,16 @@ export default function NotificationsPage() {
             <Monitor size={22} color={permission === 'granted' ? 'rgb(52,211,153)' : 'rgb(167,139,250)'} />
           </div>
           <div>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: 2, color: '#fafafa' }}>
-              Desktop Push Notifications: {permission === 'granted' ? 'Enabled ✅' : 'Action Needed 🔔'}
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: 2, color: '#fafafa', display: 'flex', alignItems: 'center', gap: 6 }}>
+              Desktop Push Notifications: {permission === 'granted' ? (
+                <span style={{ color: 'rgb(52,211,153)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                  <CheckCircle2 size={14} /> Enabled
+                </span>
+              ) : (
+                <span style={{ color: 'rgb(245,158,11)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                  <Bell size={14} /> Action Needed
+                </span>
+              )}
             </h3>
             <p style={{ fontSize: '0.78rem', color: 'rgb(161,161,170)' }}>
               Receive instant Windows desktop pop-up notifications whenever stock runs low or important alerts trigger.
@@ -178,8 +186,8 @@ export default function NotificationsPage() {
             Enable Desktop Notifications
           </button>
         ) : (
-          <span className="badge badge-success" style={{ padding: '6px 14px', fontSize: '0.78rem' }}>
-            <CheckCircle2 size={13} style={{ display: 'inline', marginRight: 4 }} /> Active & Listening
+          <span className="badge badge-success" style={{ padding: '6px 14px', fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            <CheckCircle2 size={13} /> Active & Listening
           </span>
         )}
       </div>
@@ -187,24 +195,31 @@ export default function NotificationsPage() {
       {/* Filter Tabs */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 20, overflowX: 'auto', paddingBottom: 4 }}>
         {[
-          { key: 'ALL', label: `All Alerts (${allNotifications.length})` },
-          { key: 'LOW_STOCK', label: `⚠️ Low Stock (${lowStockItems.length})` },
-          { key: 'SYSTEM', label: `🔒 System & Security` },
-        ].map((t) => (
-          <button
-            key={t.key}
-            onClick={() => setFilter(t.key as any)}
-            style={{
-              padding: '8px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
-              background: filter === t.key ? 'rgb(var(--color-primary))' : 'rgba(255,255,255,0.05)',
-              color: filter === t.key ? 'white' : 'rgb(161,161,170)',
-              fontWeight: 600, fontSize: '0.82rem', whiteSpace: 'nowrap',
-              transition: 'all 0.2s ease',
-            }}
-          >
-            {t.label}
-          </button>
-        ))}
+          { key: 'ALL', label: `All Alerts (${allNotifications.length})`, icon: Bell },
+          { key: 'LOW_STOCK', label: `Low Stock (${lowStockItems.length})`, icon: AlertTriangle },
+          { key: 'SYSTEM', label: `System & Security`, icon: Shield },
+        ].map((t) => {
+          const Icon = t.icon;
+          return (
+            <button
+              key={t.key}
+              onClick={() => setFilter(t.key as any)}
+              style={{
+                padding: '8px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                background: filter === t.key ? 'rgb(var(--color-primary))' : 'rgba(255,255,255,0.05)',
+                color: filter === t.key ? 'white' : 'rgb(161,161,170)',
+                fontWeight: 600, fontSize: '0.82rem', whiteSpace: 'nowrap',
+                transition: 'all 0.2s ease',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              <Icon size={14} />
+              {t.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Notifications List */}

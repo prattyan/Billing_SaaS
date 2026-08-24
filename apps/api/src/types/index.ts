@@ -21,10 +21,10 @@ export type NotificationChannel = 'WHATSAPP' | 'SMS' | 'EMAIL';
 // ─────────────────────────────────────────────
 
 export const PLAN_LIMITS: Record<PlanTier, number> = {
-  STARTER: 100,
-  GROWTH: 2000,
-  BUSINESS: 5000,
-  ENTERPRISE: 10000,
+  STARTER: 10,
+  GROWTH: 100,
+  BUSINESS: 500,
+  ENTERPRISE: 2000,
 };
 
 export const PLAN_PRICES: Record<Exclude<PlanTier, 'STARTER'>, number> = {

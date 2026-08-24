@@ -1,8 +1,11 @@
 import axios from 'axios';
 
 export const getBaseApiUrl = () => {
-  if (process.env.NEXT_PUBLIC_API_URL && !process.env.NEXT_PUBLIC_API_URL.includes('localhost')) {
+  if (process.env.NEXT_PUBLIC_API_URL) {
     return process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '');
+  }
+  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    return 'http://localhost:4000';
   }
   return 'https://billing-saas-api.onrender.com';
 };
@@ -146,6 +149,7 @@ export const tenantsApi = {
   getProfile: () => api.get('/tenants/profile'),
   getSettings: () => api.get('/tenants/settings'),
   updateSettings: (data: any) => api.put('/tenants/settings', data),
+  deleteMyShop: () => api.delete('/tenants/my-shop'),
 };
 
 export const subscriptionsApi = {
@@ -165,4 +169,9 @@ export const superAdminApi = {
   overridePlan: (id: string, data: any) => api.put(`/superadmin/tenants/${id}/plan`, data),
   toggleStatus: (id: string, data: any) => api.put(`/superadmin/tenants/${id}/status`, data),
   deleteTenant: (id: string) => api.delete(`/superadmin/tenants/${id}`),
+  restoreTenant: (id: string) => api.post(`/superadmin/tenants/${id}/restore`),
+  // Subscription approvals
+  getPendingApprovals: () => api.get('/superadmin/subscriptions/pending'),
+  approveUpgrade: (id: string) => api.post(`/superadmin/subscriptions/${id}/approve`),
+  rejectUpgrade: (id: string, reason?: string) => api.post(`/superadmin/subscriptions/${id}/reject`, { reason }),
 };

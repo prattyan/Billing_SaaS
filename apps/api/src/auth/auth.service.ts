@@ -106,9 +106,18 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    if (user.tenant && (user.tenant as any).isDeleted) {
+      const scheduledAt = (user.tenant as any).scheduledDeletionAt ? new Date((user.tenant as any).scheduledDeletionAt) : new Date(Date.now() + 10 * 86400000);
+      const daysLeft = Math.max(1, Math.ceil((scheduledAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+      this.logger.warn(`Attempted login to soft-deleted shop: "${dto.email}"`);
+      throw new UnauthorizedException(
+        `This shop account was scheduled for deletion and will be permanently removed in ${daysLeft} day(s). If you wish to recover your shop and data, please contact the Super Admin.`,
+      );
+    }
+
     if (!user.isActive) {
       this.logger.warn(`User is inactive: "${dto.email}"`);
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Your account is deactivated. Please contact your shop administrator.');
     }
 
     const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);

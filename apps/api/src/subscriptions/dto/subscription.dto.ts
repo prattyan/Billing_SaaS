@@ -17,4 +17,9 @@ export class VerifyPaymentDto {
   @IsOptional()
   @IsString()
   paymentId?: string;
+
+  @ApiPropertyOptional({ enum: ['GROWTH', 'BUSINESS', 'ENTERPRISE'] })
+  @IsOptional()
+  @IsEnum(['GROWTH', 'BUSINESS', 'ENTERPRISE'])
+  planTier?: Exclude<PlanTier, 'STARTER'>;
 }

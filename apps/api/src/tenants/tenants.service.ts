@@ -55,4 +55,30 @@ export class TenantsService {
       update: data,
     });
   }
+
+  async deleteMyShop(tenantId: string) {
+    const scheduledDate = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000);
+    const now = new Date();
+
+    await this.prisma.$transaction([
+      this.prisma.tenant.update({
+        where: { id: tenantId },
+        data: {
+          isActive: false,
+          isDeleted: true,
+          deletedAt: now,
+          scheduledDeletionAt: scheduledDate,
+        } as any,
+      }),
+      this.prisma.user.updateMany({
+        where: { tenantId },
+        data: { isActive: false },
+      }),
+    ]);
+
+    return {
+      message: 'Shop account deactivated and scheduled for deletion in 10 days. If this was a mistake, a Super Admin can recover your shop within 10 days.',
+      scheduledDeletionAt: scheduledDate,
+    };
+  }
 }

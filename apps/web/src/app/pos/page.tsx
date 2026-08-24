@@ -422,8 +422,8 @@ export default function POSPage() {
         {/* Top Sticky Bar: Search + Camera Scan */}
         <div style={{
           padding: '12px 16px',
-          background: 'rgba(14, 14, 18, 0.95)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.07)',
+          background: 'rgb(10, 10, 14)',
+          borderBottom: '1px solid rgb(38, 40, 52)',
           position: 'sticky',
           top: 0,
           zIndex: 40,
@@ -463,13 +463,13 @@ export default function POSPage() {
               style={{
                 height: 44,
                 padding: '0 16px',
-                borderRadius: 12,
+                borderRadius: 10,
                 display: 'flex',
                 alignItems: 'center',
                 gap: 8,
                 flexShrink: 0,
-                background: 'linear-gradient(135deg, rgb(139,92,246), rgb(52,211,153))',
-                boxShadow: '0 4px 14px rgba(139,92,246,0.35)',
+                background: 'rgb(22, 163, 74)',
+                boxShadow: '0 4px 14px rgba(22,163,74,0.25)',
               }}
               onClick={() => setShowCameraScanner(true)}
               title="Open mobile camera barcode scanner"
@@ -484,13 +484,13 @@ export default function POSPage() {
               style={{
                 height: 44,
                 padding: '0 14px',
-                borderRadius: 12,
+                borderRadius: 10,
                 display: 'flex',
                 alignItems: 'center',
                 gap: 8,
-                background: (heldBills?.length || 0) > 0 ? 'rgba(251, 191, 36, 0.12)' : undefined,
-                border: (heldBills?.length || 0) > 0 ? '1px solid rgba(251, 191, 36, 0.4)' : undefined,
-                color: (heldBills?.length || 0) > 0 ? 'rgb(251, 191, 36)' : undefined,
+                background: (heldBills?.length || 0) > 0 ? 'rgba(251, 191, 36, 0.12)' : 'rgb(18, 20, 26)',
+                border: (heldBills?.length || 0) > 0 ? '1px solid rgba(251, 191, 36, 0.4)' : '1px solid rgb(38, 40, 52)',
+                color: (heldBills?.length || 0) > 0 ? 'rgb(251, 191, 36)' : 'rgb(148, 163, 184)',
                 fontWeight: 700,
               }}
               onClick={() => setShowHeldModal(true)}
@@ -516,7 +516,7 @@ export default function POSPage() {
             {cartItems.length > 0 && (
               <button
                 className="btn-secondary hide-mobile"
-                style={{ height: 44, padding: '0 12px', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 6 }}
+                style={{ height: 44, padding: '0 12px', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 6, background: 'rgb(18, 20, 26)', border: '1px solid rgb(38, 40, 52)' }}
                 onClick={() => holdBillMutation.mutate()}
                 disabled={holdBillMutation.isPending}
                 title="Hold current bill"
@@ -528,39 +528,41 @@ export default function POSPage() {
           </div>
 
           {/* Category Filter Carousel */}
-          <div className="mobile-pill-bar" style={{ marginTop: 10 }}>
+          <div className="mobile-pill-bar" style={{ marginTop: 12, gap: 8 }}>
             <button
               onClick={() => setSelectedCategory('ALL')}
               style={{
-                padding: '6px 14px',
+                padding: '7px 16px',
                 borderRadius: 999,
                 fontSize: '0.78rem',
-                fontWeight: 600,
+                fontWeight: 700,
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
-                background: selectedCategory === 'ALL' ? 'rgb(139,92,246)' : 'rgb(var(--surface-2))',
-                color: selectedCategory === 'ALL' ? 'white' : 'rgb(161,161,170)',
-                border: `1px solid ${selectedCategory === 'ALL' ? 'rgb(139,92,246)' : 'rgba(255,255,255,0.06)'}`,
-                transition: 'all 0.15s',
+                background: selectedCategory === 'ALL' ? 'rgb(22, 163, 74)' : 'rgb(18, 20, 26)',
+                color: selectedCategory === 'ALL' ? '#ffffff' : 'rgb(148, 163, 184)',
+                border: `1px solid ${selectedCategory === 'ALL' ? 'rgb(22, 163, 74)' : 'rgb(38, 40, 52)'}`,
+                boxShadow: selectedCategory === 'ALL' ? '0 2px 10px rgba(22,163,74,0.3)' : 'none',
+                transition: 'all 0.15s ease',
               }}
             >
-              ✨ All Items ({catalogItems.length})
+              All Items ({catalogItems.length})
             </button>
             {categories?.map((cat: any) => (
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
                 style={{
-                  padding: '6px 14px',
+                  padding: '7px 16px',
                   borderRadius: 999,
                   fontSize: '0.78rem',
                   fontWeight: 600,
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
-                  background: selectedCategory === cat.id ? 'rgb(139,92,246)' : 'rgb(var(--surface-2))',
-                  color: selectedCategory === cat.id ? 'white' : 'rgb(161,161,170)',
-                  border: `1px solid ${selectedCategory === cat.id ? 'rgb(139,92,246)' : 'rgba(255,255,255,0.06)'}`,
-                  transition: 'all 0.15s',
+                  background: selectedCategory === cat.id ? 'rgb(22, 163, 74)' : 'rgb(18, 20, 26)',
+                  color: selectedCategory === cat.id ? '#ffffff' : 'rgb(148, 163, 184)',
+                  border: `1px solid ${selectedCategory === cat.id ? 'rgb(22, 163, 74)' : 'rgb(38, 40, 52)'}`,
+                  boxShadow: selectedCategory === cat.id ? '0 2px 10px rgba(22,163,74,0.3)' : 'none',
+                  transition: 'all 0.15s ease',
                 }}
               >
                 {cat.name}
@@ -570,20 +572,25 @@ export default function POSPage() {
 
           {/* Search Dropdown (if user searches) */}
           {showResults && searchResults.length > 0 && (
-            <div className="glass-card" style={{
+            <div className="card" style={{
               position: 'absolute', top: '100%', left: 16, right: 16, zIndex: 120,
               maxHeight: 340, overflowY: 'auto', padding: 8, marginTop: 4,
-              boxShadow: '0 10px 30px rgba(0,0,0,0.7)',
+              border: '1px solid rgb(38, 40, 52)',
+              boxShadow: '0 12px 32px rgba(0,0,0,0.8)',
             }}>
               {searchResults.map((item: any) => (
                 <div
                   key={item.id}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '10px 12px', borderRadius: 10, cursor: 'pointer',
+                    padding: '10px 12px', borderRadius: 8, cursor: 'pointer',
                     background: 'rgba(255,255,255,0.02)',
                     marginBottom: 4,
+                    border: '1px solid transparent',
+                    transition: 'border-color 0.15s',
                   }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(22,163,74,0.4)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'transparent'; }}
                   onClick={() => {
                     addItemToCart(item);
                     setShowResults(false);
@@ -591,23 +598,26 @@ export default function POSPage() {
                   }}
                 >
                   <div style={{
-                    width: 38, height: 38, borderRadius: 10, flexShrink: 0,
-                    background: 'rgba(139,92,246,0.15)',
+                    width: 38, height: 38, borderRadius: 8, flexShrink: 0,
+                    background: 'rgba(22, 163, 74, 0.12)',
+                    color: '#4ade80',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '1.2rem',
-                  }}>🛍️</div>
+                    fontSize: '0.9rem', fontWeight: 800,
+                  }}>
+                    <ShoppingBag size={18} />
+                  </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '0.9rem', fontWeight: 700 }}>{item.name}</div>
-                    <div style={{ fontSize: '0.72rem', color: 'rgb(113,113,122)' }}>
-                      {item.barcode} · Stock: {Number(item.currentStock).toFixed(0)} {item.unit}
+                    <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#f8fafc' }}>{item.name}</div>
+                    <div style={{ fontSize: '0.72rem', color: 'rgb(100, 116, 139)' }}>
+                      {item.barcode ? `${item.barcode} · ` : ''}Stock: {Number(item.currentStock).toFixed(0)} {item.unit}
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '0.95rem', fontWeight: 800, color: 'rgb(52,211,153)' }}>
+                    <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#4ade80' }}>
                       ₹{Number(item.offerPrice ?? item.mrp).toFixed(2)}
                     </div>
                     {item.offerPrice && Number(item.offerPrice) < Number(item.mrp) && (
-                      <div style={{ fontSize: '0.7rem', color: 'rgb(113,113,122)', textDecoration: 'line-through' }}>
+                      <div style={{ fontSize: '0.7rem', color: 'rgb(100, 116, 139)', textDecoration: 'line-through' }}>
                         ₹{Number(item.mrp).toFixed(2)}
                       </div>
                     )}
@@ -619,18 +629,18 @@ export default function POSPage() {
         </div>
 
         {/* ── Catalog Item Grid (1-Tap Sell on Mobile & Desktop) ── */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '14px 16px 90px 16px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 18px 90px 18px' }}>
           {filteredCatalog.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px 20px', color: 'rgb(113,113,122)' }}>
-              <ShoppingBag size={40} style={{ opacity: 0.3, margin: '0 auto 12px' }} />
-              <p style={{ fontWeight: 600 }}>No items in this category</p>
-              <p style={{ fontSize: '0.8rem' }}>Scan a barcode or add products in Inventory</p>
+            <div style={{ textAlign: 'center', padding: '60px 20px', color: 'rgb(100, 116, 139)' }}>
+              <ShoppingBag size={44} style={{ opacity: 0.25, margin: '0 auto 14px' }} />
+              <p style={{ fontWeight: 700, fontSize: '0.95rem', color: '#f8fafc', marginBottom: 4 }}>No items in this category</p>
+              <p style={{ fontSize: '0.82rem', color: 'rgb(100, 116, 139)' }}>Scan a barcode or add products in Inventory</p>
             </div>
           ) : (
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-              gap: 12,
+              gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+              gap: 14,
             }}>
               {filteredCatalog.map((item: any) => {
                 const inCart = cartItems.find((ci) => ci.itemId === item.id);
@@ -639,16 +649,32 @@ export default function POSPage() {
                 return (
                   <div
                     key={item.id}
-                    className="mobile-card"
+                    className="animate-fadeIn"
                     style={{
                       cursor: isOut ? 'not-allowed' : 'pointer',
-                      opacity: isOut ? 0.5 : 1,
+                      opacity: isOut ? 0.45 : 1,
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'space-between',
                       position: 'relative',
-                      border: inCart ? '1px solid rgb(139,92,246)' : '1px solid rgba(255,255,255,0.06)',
-                      background: inCart ? 'rgba(139,92,246,0.08)' : 'rgb(var(--surface-1))',
+                      borderRadius: 14,
+                      padding: '16px 14px 14px',
+                      background: inCart ? 'rgba(22, 163, 74, 0.08)' : 'rgb(18, 20, 26)',
+                      border: inCart ? '1.5px solid rgb(22, 163, 74)' : '1px solid rgb(38, 40, 52)',
+                      boxShadow: inCart ? '0 4px 16px rgba(22,163,74,0.15)' : '0 2px 8px rgba(0,0,0,0.3)',
+                      transition: 'all 0.15s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isOut && !inCart) {
+                        e.currentTarget.style.borderColor = 'rgba(22,163,74,0.4)';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isOut && !inCart) {
+                        e.currentTarget.style.borderColor = 'rgb(38, 40, 52)';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                      }
                     }}
                     onClick={() => {
                       if (!isOut) addItemToCart(item);
@@ -657,9 +683,9 @@ export default function POSPage() {
                     {inCart && (
                       <div style={{
                         position: 'absolute',
-                        top: 8,
-                        right: 8,
-                        background: 'rgb(139,92,246)',
+                        top: 10,
+                        right: 10,
+                        background: 'rgb(22, 163, 74)',
                         color: 'white',
                         borderRadius: 999,
                         width: 22,
@@ -669,6 +695,7 @@ export default function POSPage() {
                         justifyContent: 'center',
                         fontSize: '0.72rem',
                         fontWeight: 800,
+                        boxShadow: '0 2px 6px rgba(22,163,74,0.4)',
                       }}>
                         {inCart.qty}
                       </div>
@@ -676,36 +703,43 @@ export default function POSPage() {
 
                     <div>
                       <div style={{
-                        fontSize: '0.85rem',
+                        fontSize: '0.92rem',
                         fontWeight: 700,
-                        lineHeight: 1.25,
-                        marginBottom: 4,
-                        color: '#fafafa',
+                        lineHeight: 1.3,
+                        marginBottom: 6,
+                        color: '#f8fafc',
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: 'vertical',
                         overflow: 'hidden',
+                        paddingRight: inCart ? 24 : 0,
                       }}>
                         {item.name}
                       </div>
-                      <div style={{ fontSize: '0.68rem', color: 'rgb(161,161,170)', marginBottom: 8 }}>
+                      <div style={{ fontSize: '0.72rem', color: 'rgb(100, 116, 139)', marginBottom: 12 }}>
                         {item.unit} · {Number(item.currentStock) <= 5 ? (
-                          <span style={{ color: 'rgb(239,100,100)', fontWeight: 700 }}>
+                          <span style={{ color: '#f87171', fontWeight: 700 }}>
                             {Number(item.currentStock) <= 0 ? 'Out of stock' : `${Number(item.currentStock)} left`}
                           </span>
                         ) : (
-                          `Stock: ${Number(item.currentStock).toFixed(0)}`
+                          <span>Stock: {Number(item.currentStock).toFixed(0)}</span>
                         )}
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 6 }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'flex-end',
+                      justifyContent: 'space-between',
+                      paddingTop: 10,
+                      borderTop: '1px solid rgba(255,255,255,0.04)',
+                    }}>
                       <div>
-                        <div style={{ fontSize: '0.95rem', fontWeight: 800, color: 'rgb(52,211,153)' }}>
+                        <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#4ade80', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
                           ₹{Number(item.offerPrice ?? item.mrp).toFixed(2)}
                         </div>
                         {item.offerPrice && Number(item.offerPrice) < Number(item.mrp) && (
-                          <div style={{ fontSize: '0.68rem', color: 'rgb(113,113,122)', textDecoration: 'line-through' }}>
+                          <div style={{ fontSize: '0.7rem', color: 'rgb(100, 116, 139)', textDecoration: 'line-through', marginTop: 2 }}>
                             ₹{Number(item.mrp).toFixed(2)}
                           </div>
                         )}
@@ -717,16 +751,17 @@ export default function POSPage() {
                           width: 32,
                           height: 32,
                           borderRadius: 8,
-                          background: inCart ? 'rgb(139,92,246)' : 'rgb(var(--surface-3))',
-                          border: 'none',
-                          color: 'white',
+                          background: inCart ? 'rgb(22, 163, 74)' : 'rgba(255,255,255,0.06)',
+                          border: inCart ? '1px solid rgb(22, 163, 74)' : '1px solid rgb(38, 40, 52)',
+                          color: inCart ? '#ffffff' : '#f8fafc',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           cursor: 'pointer',
+                          transition: 'all 0.15s ease',
                         }}
                       >
-                        <Plus size={16} />
+                        <Plus size={15} strokeWidth={2.5} />
                       </button>
                     </div>
                   </div>
@@ -1333,9 +1368,6 @@ export default function POSPage() {
           setShowUpiQrModal(false);
           playThermalPrintSound();
           finalizeBillMutation.mutate();
-        }}
-        onSaveUpiId={async (newUpiId) => {
-          await updateSettingsMutation.mutateAsync({ upiId: newUpiId });
         }}
       />
 

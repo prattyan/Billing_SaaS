@@ -31,6 +31,12 @@ export class SubscriptionsService {
     const limit = PLAN_LIMITS[tenant.planTier as PlanTier];
     const usagePercent = Math.round((tenant.skuCount / limit) * 100);
 
+    // Check if there's a pending approval request
+    const pendingRequest = await this.prisma.subscription.findFirst({
+      where: { tenantId, status: 'PENDING_APPROVAL' },
+      orderBy: { createdAt: 'desc' },
+    });
+
     return {
       currentTier: tenant.planTier,
       skuCount: tenant.skuCount,
@@ -39,6 +45,14 @@ export class SubscriptionsService {
       subscriptionStatus: tenant.subscriptionStatus,
       subscriptionExpiry: tenant.subscriptionExpiry,
       gracePeriodEndsAt: tenant.gracePeriodEndsAt,
+      pendingRequest: pendingRequest
+        ? {
+            id: pendingRequest.id,
+            requestedPlanTier: (pendingRequest as any).requestedPlanTier,
+            createdAt: pendingRequest.createdAt,
+            status: pendingRequest.status,
+          }
+        : null,
       history: tenant.subscriptions,
     };
   }
@@ -50,12 +64,23 @@ export class SubscriptionsService {
     });
 
     if (!tenant) throw new NotFoundException('Shop not found');
+
+    // Block if there's already a pending approval for this tenant
+    const existingPending = await this.prisma.subscription.findFirst({
+      where: { tenantId, status: 'PENDING_APPROVAL' },
+    });
+    if (existingPending) {
+      throw new BadRequestException(
+        `You already have a pending upgrade request for ${(existingPending as any).requestedPlanTier} plan awaiting super admin approval.`,
+      );
+    }
+
     const user = tenant.users[0];
 
     const price = PLAN_PRICES[dto.planTier];
     if (!price) throw new BadRequestException('Invalid plan tier for purchase');
 
-    const orderId = `SUB_${tenant.slug.toUpperCase().slice(0, 8)}_${Date.now()}`;
+    const orderId = `SUB_${tenant.slug.toUpperCase().slice(0, 8)}_${dto.planTier}_${Date.now()}`;
     const appId = this.configService.get<string>('cashfree.appId');
     const secretKey = this.configService.get<string>('cashfree.secretKey');
     const env = this.configService.get<string>('cashfree.env', 'TEST');
@@ -122,12 +147,35 @@ export class SubscriptionsService {
 
     if (!tenant) throw new NotFoundException('Shop not found');
 
-    // Extract target tier from order ID or pass in
+    // Priority 1: Direct planTier in DTO
+    // Priority 2: Extract target tier from orderId (format: SUB_SLUG_TIER_timestamp)
+    const tierFromOrderId = dto.orderId.split('_').slice(-2, -1)[0] as PlanTier;
+    const VALID_TIERS: PlanTier[] = ['GROWTH', 'BUSINESS', 'ENTERPRISE'];
+
+    let newTier: PlanTier;
+    if (dto.planTier && VALID_TIERS.includes(dto.planTier)) {
+      newTier = dto.planTier;
+    } else if (tierFromOrderId && VALID_TIERS.includes(tierFromOrderId)) {
+      newTier = tierFromOrderId;
+    } else {
+      this.logger.warn(`Could not extract tier from DTO or orderId "${dto.orderId}", falling back to one-step upgrade`);
+      if (tenant.planTier === 'STARTER') newTier = 'GROWTH';
+      else if (tenant.planTier === 'GROWTH') newTier = 'BUSINESS';
+      else if (tenant.planTier === 'BUSINESS') newTier = 'ENTERPRISE';
+      else newTier = 'ENTERPRISE';
+    }
+
+    // Validate the target tier is actually an upgrade
+    const tierRank: Record<PlanTier, number> = { STARTER: 0, GROWTH: 1, BUSINESS: 2, ENTERPRISE: 3 };
+    if (tierRank[newTier] <= tierRank[tenant.planTier as PlanTier]) {
+      throw new BadRequestException(`Cannot downgrade from ${tenant.planTier} to ${newTier}`);
+    }
+
     const appId = this.configService.get<string>('cashfree.appId');
     const secretKey = this.configService.get<string>('cashfree.secretKey');
     const env = this.configService.get<string>('cashfree.env', 'TEST');
 
-    let paymentSuccess = true; // In test mode or when verified
+    let paymentSuccess = true;
 
     if (appId && secretKey && appId.trim() !== '') {
       try {
@@ -156,47 +204,32 @@ export class SubscriptionsService {
       throw new BadRequestException('Payment has not been completed or was declined');
     }
 
-    // Determine target tier from previous state
-    let newTier: PlanTier = 'GROWTH';
-    if (tenant.planTier === 'STARTER') newTier = 'GROWTH';
-    else if (tenant.planTier === 'GROWTH') newTier = 'BUSINESS';
-    else if (tenant.planTier === 'BUSINESS') newTier = 'ENTERPRISE';
-    else newTier = 'ENTERPRISE';
-
     const price = PLAN_PRICES[newTier as Exclude<PlanTier, 'STARTER'>] ?? 10000;
     const now = new Date();
     const expiry = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
 
-    return this.prisma.$transaction(async (tx) => {
-      await tx.tenant.update({
-        where: { id: tenantId },
-        data: {
-          planTier: newTier,
-          subscriptionStatus: 'ACTIVE',
-          subscriptionExpiry: expiry,
-          gracePeriodEndsAt: null,
-        },
-      });
-
-      const sub = await tx.subscription.create({
-        data: {
-          tenantId,
-          planTier: newTier,
-          amount: new Decimal(price),
-          cashfreeOrderId: dto.orderId,
-          cashfreePaymentId: dto.paymentId ?? `PAY_${Date.now()}`,
-          startDate: now,
-          endDate: expiry,
-          status: 'ACTIVE',
-        },
-      });
-
-      return {
-        success: true,
-        message: `Upgraded to ${newTier} plan! Expiry: ${expiry.toLocaleDateString()}`,
-        subscription: sub,
-        newPlanTier: newTier,
-      };
+    // Create a PENDING_APPROVAL subscription record — plan is NOT activated yet
+    // Super admin must approve before the tenant's planTier is updated
+    const sub = await this.prisma.subscription.create({
+      data: {
+        tenantId,
+        planTier: tenant.planTier,          // current plan (unchanged until approved)
+        requestedPlanTier: newTier,          // what they want to upgrade to
+        amount: new Decimal(price),
+        cashfreeOrderId: dto.orderId,
+        cashfreePaymentId: dto.paymentId ?? `PAY_${Date.now()}`,
+        startDate: now,
+        endDate: expiry,
+        status: 'PENDING_APPROVAL',
+      } as any,
     });
+
+    return {
+      success: true,
+      message: `Upgrade request for ${newTier} plan submitted. Awaiting super admin approval — your current plan remains active until approved.`,
+      subscription: sub,
+      newPlanTier: newTier,
+      pendingApproval: true,
+    };
   }
 }

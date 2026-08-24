@@ -245,7 +245,7 @@ export class ItemsService {
     return { message: 'Item deactivated successfully' };
   }
 
-  // ── Plan limit enforcement ────────────────────────────────────────────────────
+  // ── Plan limit enforcement (Strict Hard Block) ───────────────────────────────
 
   async enforceSkuLimit(tenantId: string) {
     const tenant = await this.prisma.tenant.findUnique({
@@ -253,53 +253,18 @@ export class ItemsService {
       select: {
         skuCount: true,
         planTier: true,
-        subscriptionStatus: true,
-        gracePeriodEndsAt: true,
       },
     });
 
     if (!tenant) throw new NotFoundException('Tenant not found');
 
     const limit = PLAN_LIMITS[tenant.planTier as PlanTier];
-    const isOverLimit = tenant.skuCount >= limit;
-
-    if (!isOverLimit) return; // All good
-
-    // Check grace period
-    if (tenant.subscriptionStatus === 'GRACE' && tenant.gracePeriodEndsAt) {
-      if (tenant.gracePeriodEndsAt > new Date()) {
-        this.logger.warn(
-          `Tenant ${tenantId} is in grace period (${tenant.skuCount}/${limit} SKUs)`,
-        );
-        return; // Allow during grace
-      }
+    if (tenant.skuCount >= limit) {
+      const nextTier = this.getNextTier(tenant.planTier as PlanTier);
+      throw new ForbiddenException(
+        `Plan SKU Limit Reached: Your ${tenant.planTier} plan allows up to ${limit} items (currently ${tenant.skuCount}/${limit} used). Please upgrade to ${nextTier ?? 'Enterprise'} plan to add more products.`,
+      );
     }
-
-    // If first time exceeding — start grace period
-    if (!tenant.gracePeriodEndsAt || tenant.gracePeriodEndsAt < new Date()) {
-      if (tenant.subscriptionStatus === 'ACTIVE') {
-        const gracePeriodEndsAt = new Date(
-          Date.now() + GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000,
-        );
-        await this.prisma.tenant.update({
-          where: { id: tenantId },
-          data: { subscriptionStatus: 'GRACE', gracePeriodEndsAt },
-        });
-        this.logger.warn(`Tenant ${tenantId} entered grace period`);
-        return; // Allow first time
-      }
-    }
-
-    // Grace expired — hard block
-    const nextTier = this.getNextTier(tenant.planTier as PlanTier);
-    throw new ForbiddenException({
-      code: 'PLAN_LIMIT_EXCEEDED',
-      message: `Your ${tenant.planTier} plan allows up to ${limit} items. Please upgrade to ${nextTier} to add more.`,
-      currentTier: tenant.planTier,
-      limit,
-      currentCount: tenant.skuCount,
-      suggestedUpgrade: nextTier,
-    });
   }
 
   async getPlanUsage(tenantId: string) {

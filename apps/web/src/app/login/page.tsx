@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
-import { Eye, EyeOff, ShoppingBag, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, ShoppingBag, Loader2, ShieldCheck } from 'lucide-react';
 import { authApi } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 
@@ -27,7 +27,6 @@ export default function LoginPage() {
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
   } = useForm<LoginForm>({ resolver: zodResolver(loginSchema) });
 
@@ -54,58 +53,52 @@ export default function LoginPage() {
     }
   };
 
-  const handleQuickLogin = (email: string, pwd: string) => {
-    setValue('email', email, { shouldValidate: true });
-    setValue('password', pwd, { shouldValidate: true });
-    onSubmit({ email, password: pwd });
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center p-4"
-      style={{ background: 'radial-gradient(ellipse at top left, rgba(139,92,246,0.12) 0%, transparent 60%), rgb(9,9,11)' }}>
+      style={{
+        background: 'rgb(10, 10, 14)',
+      }}>
 
       {/* Background decoration */}
-      <div style={{
-        position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none',
-      }}>
+      <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
         <div style={{
-          position: 'absolute', top: '-20%', right: '-10%',
+          position: 'absolute', top: '-15%', right: '-10%',
           width: '600px', height: '600px',
-          background: 'radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(22, 163, 74, 0.07) 0%, transparent 70%)',
           borderRadius: '50%',
         }} />
         <div style={{
-          position: 'absolute', bottom: '-20%', left: '-10%',
+          position: 'absolute', bottom: '-15%', left: '-10%',
           width: '500px', height: '500px',
-          background: 'radial-gradient(circle, rgba(52,211,153,0.06) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(22, 163, 74, 0.04) 0%, transparent 70%)',
           borderRadius: '50%',
         }} />
       </div>
 
-      <div className="w-full max-w-md animate-fadeIn">
+      <div className="w-full max-w-md animate-fadeIn" style={{ position: 'relative', zIndex: 10 }}>
         {/* Logo */}
         <div className="text-center mb-8">
           <div style={{
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-            width: 56, height: 56, borderRadius: 16,
-            background: 'linear-gradient(135deg, rgb(139,92,246), rgb(109,40,217))',
-            boxShadow: '0 8px 32px rgba(139,92,246,0.4)',
-            marginBottom: 16,
+            width: 58, height: 58, borderRadius: 16,
+            background: 'rgb(22, 163, 74)',
+            boxShadow: '0 6px 24px rgba(22,163,74,0.3)',
+            marginBottom: 18,
           }}>
             <ShoppingBag size={28} color="white" />
           </div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: 6 }}>
-            <span className="gradient-text">BillFlow</span>
+          <h1 style={{ fontSize: '1.9rem', fontWeight: 800, marginBottom: 6, letterSpacing: '-0.03em' }}>
+            BillFlow POS
           </h1>
-          <p style={{ color: 'rgb(161,161,170)', fontSize: '0.875rem' }}>
-            Sign in to your shop dashboard
+          <p style={{ color: 'rgb(100,116,139)', fontSize: '0.88rem', fontWeight: 500 }}>
+            Enterprise Cloud POS & Billing SaaS
           </p>
         </div>
 
         {/* Card */}
-        <div className="glass-card" style={{ padding: '32px' }}>
+        <div className="card" style={{ padding: '34px', border: '1px solid rgb(38,40,52)' }}>
           <form onSubmit={handleSubmit(onSubmit)} noValidate>
-            <div style={{ marginBottom: '20px' }}>
+            <div style={{ marginBottom: '22px' }}>
               <label className="label" htmlFor="email">Email Address</label>
               <input
                 id="email"
@@ -116,13 +109,13 @@ export default function LoginPage() {
                 {...register('email')}
               />
               {errors.email && (
-                <p style={{ color: 'rgb(239,100,100)', fontSize: '0.75rem', marginTop: 4 }}>
+                <p style={{ color: 'rgb(251, 113, 133)', fontSize: '0.78rem', marginTop: 6, fontWeight: 600 }}>
                   {errors.email.message}
                 </p>
               )}
             </div>
 
-            <div style={{ marginBottom: '24px' }}>
+            <div style={{ marginBottom: '26px' }}>
               <label className="label" htmlFor="password">Password</label>
               <div style={{ position: 'relative' }}>
                 <input
@@ -138,32 +131,36 @@ export default function LoginPage() {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   style={{
-                    position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                    position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
                     background: 'none', border: 'none', cursor: 'pointer',
-                    color: 'rgb(113,113,122)',
+                    color: 'rgb(161, 161, 170)',
                   }}
                 >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
               {errors.password && (
-                <p style={{ color: 'rgb(239,100,100)', fontSize: '0.75rem', marginTop: 4 }}>
+                <p style={{ color: 'rgb(251, 113, 133)', fontSize: '0.78rem', marginTop: 6, fontWeight: 600 }}>
                   {errors.password.message}
                 </p>
               )}
             </div>
 
-            <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center' }} disabled={isLoading}>
-              {isLoading ? <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Signing in...</> : 'Sign In'}
+            <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center', height: 46, fontSize: '0.95rem' }} disabled={isLoading}>
+              {isLoading ? <><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Signing in...</> : 'Sign In to POS'}
             </button>
           </form>
 
-          <hr className="divider" style={{ margin: '24px 0' }} />
+          <hr className="divider" style={{ margin: '26px 0' }} />
 
-          <p style={{ textAlign: 'center', fontSize: '0.875rem', color: 'rgb(161,161,170)' }}>
+          <div style={{ textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: '0.78rem', color: 'rgb(100,116,139)' }}>
+            <ShieldCheck size={15} color="rgb(22, 163, 74)" /> 256-bit Encrypted Multi-Tenant SaaS
+          </div>
+
+          <p style={{ textAlign: 'center', fontSize: '0.88rem', color: 'rgb(100,116,139)', marginTop: 16 }}>
             New shop?{' '}
-            <Link href="/register" style={{ color: 'rgb(167,139,250)', fontWeight: 600, textDecoration: 'none' }}>
-              Create your account →
+            <Link href="/register" style={{ color: '#4ade80', fontWeight: 700, textDecoration: 'none' }}>
+              Create your shop account →
             </Link>
           </p>
         </div>

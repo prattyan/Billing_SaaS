@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTenantByAdminDto, OverridePlanDto, ToggleTenantStatusDto } from './dto/superadmin.dto';
 import * as bcrypt from 'bcryptjs';
@@ -195,6 +195,157 @@ export class SuperAdminService {
       await tx.tenant.delete({ where: { id: tenantId } });
     });
 
-    return { message: `Shop ${tenant.name} purged successfully` };
+    return { message: `Shop ${tenant.name} permanently purged successfully` };
+  }
+
+  async restoreTenant(tenantId: string) {
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { id: tenantId },
+    });
+    if (!tenant) throw new NotFoundException('Tenant not found');
+
+    await this.prisma.$transaction([
+      this.prisma.tenant.update({
+        where: { id: tenantId },
+        data: {
+          isDeleted: false,
+          deletedAt: null,
+          scheduledDeletionAt: null,
+          isActive: true,
+        } as any,
+      }),
+      this.prisma.user.updateMany({
+        where: { tenantId },
+        data: { isActive: true },
+      }),
+    ]);
+
+    return { message: `Shop "${tenant.name}" has been fully recovered! All data, inventory, bills, customers, and billers are active.` };
+  }
+
+  async purgeExpiredTenants() {
+    const expiredTenants = await (this.prisma.tenant as any).findMany({
+      where: {
+        isDeleted: true,
+        scheduledDeletionAt: { lte: new Date() },
+      },
+      select: { id: true, name: true },
+    });
+
+    for (const t of expiredTenants) {
+      await this.deleteTenant(t.id);
+    }
+
+    return { purgedCount: expiredTenants.length };
+  }
+
+  // ──────────────────────────────────────────────
+  // SUBSCRIPTION APPROVAL WORKFLOW
+  // ──────────────────────────────────────────────
+
+  async getPendingApprovals() {
+    return this.prisma.subscription.findMany({
+      where: { status: 'PENDING_APPROVAL' },
+      include: {
+        tenant: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            planTier: true,
+            skuCount: true,
+            users: {
+              where: { role: 'OWNER' },
+              select: { name: true, email: true, phone: true },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async approveUpgrade(subscriptionId: string) {
+    const sub = await this.prisma.subscription.findUnique({
+      where: { id: subscriptionId },
+      include: { tenant: true },
+    });
+
+    if (!sub) throw new NotFoundException('Subscription request not found');
+    if (sub.status !== 'PENDING_APPROVAL') {
+      throw new BadRequestException(`Cannot approve a subscription with status "${sub.status}"`);
+    }
+    if (!(sub as any).requestedPlanTier) {
+      throw new BadRequestException('Subscription has no requested plan tier');
+    }
+
+    const { PLAN_LIMITS } = await import('../types');
+    const newTier = (sub as any).requestedPlanTier;
+    const expiry = sub.endDate;
+
+    return this.prisma.$transaction(async (tx) => {
+      // Activate the subscription
+      await tx.subscription.update({
+        where: { id: subscriptionId },
+        data: {
+          status: 'ACTIVE',
+          planTier: newTier,
+          approvedAt: new Date(),
+        } as any,
+      });
+
+      // Reject any other pending requests for this tenant
+      await tx.subscription.updateMany({
+        where: {
+          tenantId: sub.tenantId,
+          status: 'PENDING_APPROVAL',
+          id: { not: subscriptionId },
+        },
+        data: { status: 'REJECTED', rejectedAt: new Date(), rejectionReason: 'Superseded by newer request' } as any,
+      });
+
+      // Update the tenant's plan
+      await tx.tenant.update({
+        where: { id: sub.tenantId },
+        data: {
+          planTier: newTier,
+          subscriptionStatus: 'ACTIVE',
+          subscriptionExpiry: expiry,
+          gracePeriodEndsAt: null,
+        },
+      });
+
+      return {
+        success: true,
+        message: `Shop "${sub.tenant.name}" upgraded to ${newTier} plan successfully`,
+        newPlanTier: newTier,
+      };
+    });
+  }
+
+  async rejectUpgrade(subscriptionId: string, reason?: string) {
+    const sub = await this.prisma.subscription.findUnique({
+      where: { id: subscriptionId },
+      include: { tenant: true },
+    });
+
+    if (!sub) throw new NotFoundException('Subscription request not found');
+    if (sub.status !== 'PENDING_APPROVAL') {
+      throw new BadRequestException(`Cannot reject a subscription with status "${sub.status}"`);
+    }
+
+    await this.prisma.subscription.update({
+      where: { id: subscriptionId },
+      data: {
+        status: 'REJECTED',
+        rejectedAt: new Date(),
+        rejectionReason: reason ?? 'Rejected by super admin',
+      } as any,
+    });
+
+    return {
+      success: true,
+      message: `Upgrade request for "${sub.tenant.name}" has been rejected`,
+    };
   }
 }

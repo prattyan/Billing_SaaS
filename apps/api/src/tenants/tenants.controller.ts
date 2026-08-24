@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Put, Delete, Body, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { TenantsService } from './tenants.service';
 import { UpdateShopSettingsDto } from './dto/tenant.dto';
@@ -36,4 +36,12 @@ export class TenantsController {
   ) {
     return this.tenantsService.updateSettings(tenantId, dto);
   }
+
+  @Delete('my-shop')
+  @Roles('OWNER')
+  @ApiOperation({ summary: 'Request shop deletion with 10-day recovery window' })
+  async deleteMyShop(@TenantId() tenantId: string) {
+    return this.tenantsService.deleteMyShop(tenantId);
+  }
 }
+

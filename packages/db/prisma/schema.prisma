@@ -24,6 +24,9 @@ model Tenant {
   skuCount            Int       @default(0)
   gracePeriodEndsAt   DateTime?
   isActive            Boolean   @default(true)
+  isDeleted           Boolean   @default(false)
+  deletedAt           DateTime?
+  scheduledDeletionAt DateTime?
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
@@ -342,19 +345,24 @@ model HeldBill {
 model Subscription {
   id                  String    @id @default(cuid())
   tenantId            String
-  planTier            String    // STARTER, GROWTH, BUSINESS, ENTERPRISE
+  planTier            String    // STARTER, GROWTH, BUSINESS, ENTERPRISE (approved/active tier)
+  requestedPlanTier   String?   // tier requested, pending approval
   amount              Decimal
   cashfreeOrderId     String?
   cashfreePaymentId   String?
   startDate           DateTime
   endDate             DateTime
-  status              String    // ACTIVE, GRACE, EXPIRED, CANCELLED
+  status              String    // ACTIVE, GRACE, EXPIRED, CANCELLED, PENDING_APPROVAL, REJECTED
+  approvedAt          DateTime?
+  rejectedAt          DateTime?
+  rejectionReason     String?
   invoicePdfUrl       String?
   createdAt           DateTime  @default(now())
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
+  @@index([status])
   @@map("subscriptions")
 }
 

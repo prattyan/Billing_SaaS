@@ -79,7 +79,7 @@ export default function RegisterPage() {
             Create Your Shop
           </h1>
           <p style={{ color: 'rgb(161,161,170)', fontSize: '0.875rem' }}>
-            Free Starter plan · 100 SKUs · No credit card required
+            Free Starter plan · 10 SKUs · No credit card required
           </p>
         </div>
 

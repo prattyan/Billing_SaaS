@@ -1,30 +1,54 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { superAdminApi } from '@/lib/api';
 import toast from 'react-hot-toast';
 import {
   ShieldCheck, Store, Users, IndianRupee, Search, Edit3,
   Power, CheckCircle2, AlertTriangle, X, Loader2, CreditCard,
-  Plus, Trash2, Phone, Mail, Lock, Building2
+  Plus, Trash2, Phone, Mail, Lock, Building2, Clock, CheckCheck, XCircle,
+  ArrowRight, Sparkles, AlertCircle, RotateCcw, ShieldAlert, History
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useForm } from 'react-hook-form';
+import { useSearchParams, useRouter } from 'next/navigation';
 
-export default function SuperAdminDashboardPage() {
+function SuperAdminContent() {
   const qc = useQueryClient();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab');
+
+  const [activeTab, setActiveTab] = useState<'shops' | 'approvals' | 'recovery'>(
+    tabParam === 'approvals' ? 'approvals' : tabParam === 'recovery' ? 'recovery' : 'shops'
+  );
   const [search, setSearch] = useState('');
   const [selectedPlanFilter, setSelectedPlanFilter] = useState('');
   const [editingTenant, setEditingTenant] = useState<any | null>(null);
   const [showCreateShopModal, setShowCreateShopModal] = useState(false);
 
-  const { data: metrics, isLoading: isLoadingMetrics } = useQuery({
+  useEffect(() => {
+    if (tabParam === 'approvals') {
+      setActiveTab('approvals');
+    } else if (tabParam === 'recovery') {
+      setActiveTab('recovery');
+    } else if (tabParam === 'shops') {
+      setActiveTab('shops');
+    }
+  }, [tabParam]);
+
+  const handleTabChange = (tab: 'shops' | 'approvals' | 'recovery') => {
+    setActiveTab(tab);
+    router.push(`/superadmin?tab=${tab}`);
+  };
+
+  const { data: metrics } = useQuery({
     queryKey: ['superAdminMetrics'],
     queryFn: () => superAdminApi.getMetrics().then((r) => r.data),
   });
 
-  const { data: tenants, isLoading: isLoadingTenants } = useQuery({
+  const { data: tenants = [], isLoading: isLoadingTenants } = useQuery({
     queryKey: ['superAdminTenants', search, selectedPlanFilter],
     queryFn: () => superAdminApi.getTenants({ search, planTier: selectedPlanFilter || undefined }).then((r) => r.data),
   });
@@ -42,12 +66,24 @@ export default function SuperAdminDashboardPage() {
   const deleteShopMutation = useMutation({
     mutationFn: (id: string) => superAdminApi.deleteTenant(id),
     onSuccess: () => {
-      toast.success('Shop purged from database');
+      toast.success('Shop permanently purged from database');
       qc.invalidateQueries({ queryKey: ['superAdminTenants'] });
       qc.invalidateQueries({ queryKey: ['superAdminMetrics'] });
     },
     onError: (err: any) => {
       toast.error(err.response?.data?.message ?? 'Failed to delete shop');
+    },
+  });
+
+  const restoreShopMutation = useMutation({
+    mutationFn: (id: string) => superAdminApi.restoreTenant(id),
+    onSuccess: (res: any) => {
+      toast.success(res.data?.message ?? 'Shop account successfully restored!');
+      qc.invalidateQueries({ queryKey: ['superAdminTenants'] });
+      qc.invalidateQueries({ queryKey: ['superAdminMetrics'] });
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message ?? 'Failed to restore shop');
     },
   });
 
@@ -65,187 +101,656 @@ export default function SuperAdminDashboardPage() {
     },
   });
 
+  const { data: pendingApprovals = [], isLoading: isLoadingPending } = useQuery({
+    queryKey: ['pendingSubscriptions'],
+    queryFn: () => superAdminApi.getPendingApprovals().then((r) => r.data),
+    refetchInterval: 5000,
+  });
+
+  const approveMutation = useMutation({
+    mutationFn: (id: string) => superAdminApi.approveUpgrade(id),
+    onSuccess: (res: any) => {
+      toast.success(res.data?.message ?? 'Plan approved and activated!');
+      qc.invalidateQueries({ queryKey: ['pendingSubscriptions'] });
+      qc.invalidateQueries({ queryKey: ['superAdminTenants'] });
+      qc.invalidateQueries({ queryKey: ['superAdminMetrics'] });
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message ?? 'Failed to approve'),
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: (id: string) => superAdminApi.rejectUpgrade(id, 'Rejected by super admin'),
+    onSuccess: (res: any) => {
+      toast.success(res.data?.message ?? 'Upgrade request rejected');
+      qc.invalidateQueries({ queryKey: ['pendingSubscriptions'] });
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message ?? 'Failed to reject'),
+  });
+
+  const activeTenantsList = tenants.filter((t: any) => !t.isDeleted);
+  const deletedTenantsList = tenants.filter((t: any) => t.isDeleted);
+
+  const PLAN_PRICES: Record<string, string> = {
+    GROWTH: '₹10,000 / year',
+    BUSINESS: '₹20,000 / year',
+    ENTERPRISE: '₹30,000 / year',
+  };
+
+  const PLAN_LIMITS: Record<string, number> = {
+    STARTER: 10,
+    GROWTH: 100,
+    BUSINESS: 500,
+    ENTERPRISE: 2000,
+  };
+
   return (
     <div style={{ padding: '28px 24px' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
+      {/* Top Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
         <div>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: 4 }}>Platform Super Admin</h1>
-          <p style={{ color: 'rgb(161,161,170)', fontSize: '0.875rem' }}>
-            Live platform metrics · Real-time shop database · Create and manage grocery shops & owners
+          <p style={{ color: 'rgb(100,116,139)', fontSize: '0.875rem' }}>
+            Live platform metrics · Tenant management · 10-day recovery queue & subscription approvals
           </p>
         </div>
         <button
           className="btn-primary"
-          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgb(22, 163, 74)' }}
           onClick={() => setShowCreateShopModal(true)}
         >
           <Plus size={16} /> Onboard New Shop
         </button>
       </div>
 
-      {/* Global Stat Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 32 }}>
-        <div className="stat-card">
-          <div style={{ fontSize: '0.72rem', color: 'rgb(113,113,122)', textTransform: 'uppercase', fontWeight: 700, marginBottom: 6 }}>Total Shops</div>
-          <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'rgb(139,92,246)' }}>
-            {metrics?.overview?.totalTenants ?? 0}
-          </div>
-          <p style={{ fontSize: '0.75rem', color: 'rgb(52,211,153)', marginTop: 4 }}>{metrics?.overview?.activeTenants ?? 0} active</p>
-        </div>
-        <div className="stat-card">
-          <div style={{ fontSize: '0.72rem', color: 'rgb(113,113,122)', textTransform: 'uppercase', fontWeight: 700, marginBottom: 6 }}>Gross Invoiced GMV</div>
-          <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'rgb(52,211,153)' }}>
-            ₹{Number(metrics?.overview?.grossProcessedGMV ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-          </div>
-          <p style={{ fontSize: '0.75rem', color: 'rgb(113,113,122)', marginTop: 4 }}>{metrics?.overview?.totalBills ?? 0} customer bills</p>
-        </div>
-        <div className="stat-card">
-          <div style={{ fontSize: '0.72rem', color: 'rgb(113,113,122)', textTransform: 'uppercase', fontWeight: 700, marginBottom: 6 }}>SaaS Subscriptions Revenue</div>
-          <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'rgb(245,158,11)' }}>
-            ₹{Number(metrics?.overview?.saasSubscriptionRevenue ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-          </div>
-          <p style={{ fontSize: '0.75rem', color: 'rgb(113,113,122)', marginTop: 4 }}>Platform revenue collected</p>
-        </div>
-        <div className="stat-card">
-          <div style={{ fontSize: '0.72rem', color: 'rgb(113,113,122)', textTransform: 'uppercase', fontWeight: 700, marginBottom: 6 }}>Platform Users</div>
-          <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'rgb(59,130,246)' }}>
-            {metrics?.overview?.totalUsers ?? 0}
-          </div>
-          <p style={{ fontSize: '0.75rem', color: 'rgb(113,113,122)', marginTop: 4 }}>Owners, Cashiers & Admins</p>
-        </div>
-      </div>
-
-      {/* Filter Controls */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-        <div style={{ flex: 1, minWidth: 240, position: 'relative' }}>
-          <Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'rgb(113,113,122)' }} />
-          <input
-            type="text"
-            className="input"
-            placeholder="Search shops by name or slug…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{ paddingLeft: 36 }}
-          />
-        </div>
-
-        <select
-          className="input"
-          style={{ width: 180 }}
-          value={selectedPlanFilter}
-          onChange={(e) => setSelectedPlanFilter(e.target.value)}
+      {/* Navigation Tabs */}
+      <div style={{ display: 'flex', gap: 8, borderBottom: '1px solid rgb(38, 40, 52)', marginBottom: 28, overflowX: 'auto' }}>
+        <button
+          onClick={() => handleTabChange('shops')}
+          style={{
+            padding: '10px 18px',
+            fontSize: '0.88rem',
+            fontWeight: activeTab === 'shops' ? 700 : 500,
+            color: activeTab === 'shops' ? '#4ade80' : 'rgb(148, 163, 184)',
+            borderBottom: activeTab === 'shops' ? '2px solid rgb(22, 163, 74)' : '2px solid transparent',
+            background: 'none',
+            borderTop: 'none',
+            borderLeft: 'none',
+            borderRight: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            transition: 'all 0.15s ease',
+          }}
         >
-          <option value="">All Plan Tiers</option>
-          <option value="STARTER">Starter (100 SKUs)</option>
-          <option value="GROWTH">Growth (2k SKUs)</option>
-          <option value="BUSINESS">Business (5k SKUs)</option>
-          <option value="ENTERPRISE">Enterprise (10k SKUs)</option>
-        </select>
+          <Store size={16} />
+          <span>Active Shops ({activeTenantsList.length})</span>
+        </button>
+
+        <button
+          onClick={() => handleTabChange('approvals')}
+          style={{
+            padding: '10px 18px',
+            fontSize: '0.88rem',
+            fontWeight: activeTab === 'approvals' ? 700 : 500,
+            color: activeTab === 'approvals' ? '#fbbf24' : 'rgb(148, 163, 184)',
+            borderBottom: activeTab === 'approvals' ? '2px solid #f59e0b' : '2px solid transparent',
+            background: 'none',
+            borderTop: 'none',
+            borderLeft: 'none',
+            borderRight: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            transition: 'all 0.15s ease',
+          }}
+        >
+          <Clock size={16} />
+          <span>Subscription Approvals</span>
+          {pendingApprovals?.length > 0 && (
+            <span style={{
+              background: '#f59e0b',
+              color: '#000000',
+              fontSize: '0.68rem',
+              fontWeight: 900,
+              padding: '1px 7px',
+              borderRadius: 999,
+            }}>
+              {pendingApprovals.length}
+            </span>
+          )}
+        </button>
+
+        <button
+          onClick={() => handleTabChange('recovery')}
+          style={{
+            padding: '10px 18px',
+            fontSize: '0.88rem',
+            fontWeight: activeTab === 'recovery' ? 700 : 500,
+            color: activeTab === 'recovery' ? '#f87171' : 'rgb(148, 163, 184)',
+            borderBottom: activeTab === 'recovery' ? '2px solid #f87171' : '2px solid transparent',
+            background: 'none',
+            borderTop: 'none',
+            borderLeft: 'none',
+            borderRight: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            transition: 'all 0.15s ease',
+          }}
+        >
+          <RotateCcw size={16} />
+          <span>10-Day Recovery Queue</span>
+          {deletedTenantsList.length > 0 && (
+            <span style={{
+              background: '#ef4444',
+              color: '#ffffff',
+              fontSize: '0.68rem',
+              fontWeight: 900,
+              padding: '1px 7px',
+              borderRadius: 999,
+            }}>
+              {deletedTenantsList.length}
+            </span>
+          )}
+        </button>
       </div>
 
-      {/* Tenants Table */}
-      <div className="table-wrapper">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Shop Name</th>
-              <th>Owner Contact</th>
-              <th>Plan Tier</th>
-              <th>SKU Count</th>
-              <th>Total Bills</th>
-              <th>Status</th>
-              <th>Created</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoadingTenants ? (
-              <tr><td colSpan={8} style={{ textAlign: 'center', padding: 24 }}>Loading tenants…</td></tr>
-            ) : tenants?.length === 0 ? (
-              <tr>
-                <td colSpan={8} style={{ textAlign: 'center', padding: 48, color: 'rgb(161,161,170)' }}>
-                  <Store size={36} style={{ display: 'block', margin: '0 auto 12px', opacity: 0.4 }} />
-                  <p style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: 6 }}>No shops in database yet</p>
-                  <p style={{ fontSize: '0.8rem', color: 'rgb(113,113,122)', marginBottom: 16 }}>Click &quot;Onboard New Shop&quot; to create your first live shop and owner.</p>
-                  <button className="btn-primary" onClick={() => setShowCreateShopModal(true)}>
-                    <Plus size={15} /> Onboard New Shop
-                  </button>
-                </td>
-              </tr>
-            ) : (
-              tenants?.map((t: any) => {
+      {/* ── TAB 1: 10-DAY RECOVERY QUEUE ── */}
+      {activeTab === 'recovery' && (
+        <div>
+          <div style={{ marginBottom: 20 }}>
+            <h2 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: 4 }}>10-Day Deleted Shop Recovery Queue</h2>
+            <p style={{ color: 'rgb(100,116,139)', fontSize: '0.82rem' }}>
+              Shops deleted by owners are retained safely for 10 days before permanent purging. You can recover an account and all its customer & biller data in 1 click.
+            </p>
+          </div>
+
+          {deletedTenantsList.length === 0 ? (
+            <div className="card" style={{ padding: '60px 24px', textAlign: 'center', background: 'rgb(18, 20, 26)' }}>
+              <CheckCircle2 size={44} color="#4ade80" style={{ margin: '0 auto 14px', opacity: 0.8 }} />
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#f8fafc', marginBottom: 4 }}>Recovery Queue is Empty</h3>
+              <p style={{ color: 'rgb(100,116,139)', fontSize: '0.84rem' }}>
+                No shops are currently scheduled for deletion. All tenant accounts are in active standing.
+              </p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {deletedTenantsList.map((t: any) => {
                 const owner = t.users?.[0];
+                const schedDate = t.scheduledDeletionAt ? new Date(t.scheduledDeletionAt) : new Date(Date.now() + 10 * 86400000);
+                const diffMs = schedDate.getTime() - Date.now();
+                const daysLeft = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+
                 return (
-                  <tr key={t.id}>
-                    <td>
-                      <div style={{ fontWeight: 700 }}>{t.name}</div>
-                      <div style={{ fontSize: '0.7rem', color: 'rgb(113,113,122)' }}>slug: {t.slug}</div>
-                    </td>
-                    <td>
-                      <div>{owner?.name || '—'}</div>
-                      <div style={{ fontSize: '0.7rem', color: 'rgb(113,113,122)' }}>{owner?.email} · {owner?.phone || 'No phone'}</div>
-                    </td>
-                    <td>
-                      <span className="badge badge-purple">{t.planTier}</span>
-                    </td>
-                    <td>
-                      <div style={{ fontWeight: 700 }}>{t.skuCount} SKUs</div>
-                    </td>
-                    <td>{t._count?.bills ?? 0}</td>
-                    <td>
-                      <span className={`badge ${t.isActive ? 'badge-success' : 'badge-danger'}`}>
-                        {t.isActive ? 'Active' : 'Suspended'}
-                      </span>
-                    </td>
-                    <td style={{ fontSize: '0.75rem', color: 'rgb(113,113,122)' }}>
-                      {format(new Date(t.createdAt), 'dd MMM yyyy')}
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', gap: 6 }}>
-                        <button
-                          title="Override Plan"
-                          className="btn-secondary"
-                          style={{ padding: '6px 10px', fontSize: '0.75rem' }}
-                          onClick={() => setEditingTenant(t)}
-                        >
-                          <Edit3 size={13} />
-                        </button>
-                        <button
-                          title={t.isActive ? 'Suspend Shop' : 'Activate Shop'}
-                          className={t.isActive ? 'btn-secondary' : 'btn-primary'}
-                          style={{ padding: '6px 10px', fontSize: '0.75rem', color: t.isActive ? 'rgb(239,100,100)' : 'white' }}
-                          onClick={() => {
-                            if (confirm(`${t.isActive ? 'Suspend' : 'Activate'} "${t.name}"?`)) {
-                              toggleStatusMutation.mutate({ id: t.id, isActive: !t.isActive });
-                            }
-                          }}
-                        >
-                          <Power size={13} />
-                        </button>
-                        <button
-                          title="Purge Shop from Database"
-                          className="btn-danger"
-                          style={{ padding: '6px 10px', fontSize: '0.75rem' }}
-                          onClick={() => {
-                            if (confirm(`Permanently delete "${t.name}" and ALL its items, bills, and users?`)) {
-                              deleteShopMutation.mutate(t.id);
-                            }
-                          }}
-                        >
-                          <Trash2 size={13} />
-                        </button>
+                  <div
+                    key={t.id}
+                    className="card animate-fadeIn"
+                    style={{
+                      padding: '20px 24px',
+                      background: 'rgb(18, 20, 26)',
+                      border: '1px solid rgba(239, 68, 68, 0.35)',
+                      borderRadius: 14,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: 18,
+                    }}
+                  >
+                    <div style={{ flex: 1, minWidth: 280 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
+                        <span style={{ fontWeight: 800, fontSize: '1.05rem', color: '#f8fafc' }}>
+                          {t.name}
+                        </span>
+                        <span style={{
+                          background: 'rgba(239, 68, 68, 0.15)',
+                          color: '#f87171',
+                          fontSize: '0.72rem',
+                          fontWeight: 800,
+                          padding: '3px 9px',
+                          borderRadius: 6,
+                          border: '1px solid rgba(239,68,68,0.3)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 5,
+                        }}>
+                          <Clock size={12} /> {daysLeft} Day{daysLeft !== 1 ? 's' : ''} Remaining for Recovery
+                        </span>
+                        <span style={{ fontSize: '0.72rem', color: 'rgb(100,116,139)' }}>
+                          (Scheduled deletion: {format(schedDate, 'dd MMM yyyy')})
+                        </span>
                       </div>
+
+                      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: '0.76rem', color: 'rgb(100, 116, 139)' }}>
+                        <div>Owner: <strong style={{ color: '#f8fafc' }}>{owner?.name || 'Owner'}</strong> ({owner?.email})</div>
+                        <div>Preserved Bills: <strong style={{ color: '#f8fafc' }}>{t._count?.bills ?? 0}</strong></div>
+                        <div>Preserved Items: <strong style={{ color: '#f8fafc' }}>{t._count?.items ?? 0} SKUs</strong></div>
+                        <div>Preserved Staff: <strong style={{ color: '#f8fafc' }}>{t._count?.users ?? 0}</strong></div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
+                      <button
+                        className="btn-primary"
+                        style={{
+                          fontSize: '0.82rem',
+                          padding: '8px 18px',
+                          background: 'rgb(22, 163, 74)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 6,
+                        }}
+                        disabled={restoreShopMutation.isPending}
+                        onClick={() => restoreShopMutation.mutate(t.id)}
+                      >
+                        {restoreShopMutation.isPending ? (
+                          <><Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> Restoring...</>
+                        ) : (
+                          <><RotateCcw size={16} /> Recover Shop Account</>
+                        )}
+                      </button>
+
+                      <button
+                        className="btn-danger"
+                        style={{ fontSize: '0.82rem', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 6 }}
+                        disabled={deleteShopMutation.isPending}
+                        onClick={() => {
+                          if (confirm(`Are you sure you want to permanently purge "${t.name}" right now? All preserved data will be lost immediately.`)) {
+                            deleteShopMutation.mutate(t.id);
+                          }
+                        }}
+                      >
+                        <Trash2 size={15} /> Purge Now
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── TAB 2: SUBSCRIPTION APPROVALS ── */}
+      {activeTab === 'approvals' && (
+        <div>
+          <div style={{ marginBottom: 20 }}>
+            <h2 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: 4 }}>Subscription Upgrade Approvals Queue</h2>
+            <p style={{ color: 'rgb(100,116,139)', fontSize: '0.82rem' }}>
+              When shop owners request a plan upgrade, review the request and click Approve to activate the new tier and SKU limits.
+            </p>
+          </div>
+
+          {isLoadingPending ? (
+            <div className="card" style={{ padding: 48, textAlign: 'center', color: 'rgb(100,116,139)' }}>
+              <Loader2 size={24} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 12px' }} />
+              <p>Checking pending approval queue...</p>
+            </div>
+          ) : pendingApprovals.length === 0 ? (
+            <div className="card" style={{ padding: '60px 24px', textAlign: 'center', background: 'rgb(18, 20, 26)' }}>
+              <CheckCircle2 size={44} color="#4ade80" style={{ margin: '0 auto 14px', opacity: 0.8 }} />
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#f8fafc', marginBottom: 4 }}>All Caught Up!</h3>
+              <p style={{ color: 'rgb(100,116,139)', fontSize: '0.84rem' }}>
+                There are currently no pending subscription upgrade requests waiting for approval.
+              </p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {pendingApprovals.map((req: any) => {
+                const curTier = req.tenant?.planTier || 'STARTER';
+                const newTier = req.requestedPlanTier || 'GROWTH';
+                const owner = req.tenant?.users?.[0];
+
+                return (
+                  <div
+                    key={req.id}
+                    className="card animate-fadeIn"
+                    style={{
+                      padding: '20px 24px',
+                      background: 'rgb(18, 20, 26)',
+                      border: '1px solid rgba(251, 191, 36, 0.35)',
+                      borderRadius: 14,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: 18,
+                    }}
+                  >
+                    <div style={{ flex: 1, minWidth: 280 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
+                        <span style={{ fontWeight: 800, fontSize: '1.05rem', color: '#f8fafc' }}>
+                          {req.tenant?.name}
+                        </span>
+                        <span style={{
+                          background: 'rgba(100, 116, 139, 0.15)',
+                          color: 'rgb(148, 163, 184)',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          padding: '3px 8px',
+                          borderRadius: 6,
+                          border: '1px solid rgba(100,116,139,0.3)',
+                        }}>
+                          Current: {curTier} ({PLAN_LIMITS[curTier] ?? 10} SKUs)
+                        </span>
+                        <ArrowRight size={14} color="#fbbf24" />
+                        <span style={{
+                          background: 'rgba(22, 163, 74, 0.15)',
+                          color: '#4ade80',
+                          fontSize: '0.75rem',
+                          fontWeight: 800,
+                          padding: '3px 10px',
+                          borderRadius: 6,
+                          border: '1px solid rgba(22, 163, 74, 0.4)',
+                        }}>
+                          Requested: {newTier} ({PLAN_LIMITS[newTier] ?? 100} SKUs)
+                        </span>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: '0.76rem', color: 'rgb(100, 116, 139)' }}>
+                        <div>Owner: <strong style={{ color: '#f8fafc' }}>{owner?.name || 'Owner'}</strong> ({owner?.email})</div>
+                        {owner?.phone && <div>Phone: <strong style={{ color: '#f8fafc' }}>{owner.phone}</strong></div>}
+                        <div>Plan Price: <strong style={{ color: '#4ade80' }}>{PLAN_PRICES[newTier] ?? `₹${Number(req.amount).toLocaleString('en-IN')}`}</strong></div>
+                        <div>Date: <strong style={{ color: '#f8fafc' }}>{format(new Date(req.createdAt), 'dd MMM yyyy, hh:mm a')}</strong></div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
+                      <button
+                        className="btn-secondary"
+                        style={{
+                          fontSize: '0.82rem',
+                          padding: '8px 16px',
+                          color: '#f87171',
+                          borderColor: 'rgba(239, 68, 68, 0.3)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 6,
+                        }}
+                        disabled={rejectMutation.isPending}
+                        onClick={() => rejectMutation.mutate(req.id)}
+                      >
+                        <XCircle size={15} />
+                        <span>Reject</span>
+                      </button>
+                      <button
+                        className="btn-primary"
+                        style={{
+                          fontSize: '0.82rem',
+                          padding: '8px 18px',
+                          background: 'rgb(22, 163, 74)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 6,
+                        }}
+                        disabled={approveMutation.isPending}
+                        onClick={() => approveMutation.mutate(req.id)}
+                      >
+                        {approveMutation.isPending ? (
+                          <><Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> Activating...</>
+                        ) : (
+                          <><CheckCheck size={16} /> Approve & Activate Plan</>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── TAB 3: TENANT SHOPS ── */}
+      {activeTab === 'shops' && (
+        <div>
+          {/* Recovery Queue Alert if any deleted shops */}
+          {deletedTenantsList.length > 0 && (
+            <div
+              className="card"
+              style={{
+                marginBottom: 20,
+                padding: '12px 18px',
+                border: '1px solid rgba(239, 68, 68, 0.4)',
+                background: 'rgba(239, 68, 68, 0.06)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: 12,
+                cursor: 'pointer',
+              }}
+              onClick={() => handleTabChange('recovery')}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <RotateCcw size={16} color="#f87171" />
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#f87171' }}>
+                  {deletedTenantsList.length} Shop{deletedTenantsList.length > 1 ? 's' : ''} in 10-Day Safe Recovery Queue
+                </span>
+              </div>
+              <button
+                className="btn-secondary"
+                style={{ fontSize: '0.76rem', padding: '5px 12px', borderColor: 'rgba(239,68,68,0.4)', color: '#f87171' }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleTabChange('recovery');
+                }}
+              >
+                View Recovery Queue →
+              </button>
+            </div>
+          )}
+
+          {/* Pending Approvals Notice Banner if any exist */}
+          {pendingApprovals?.length > 0 && (
+            <div
+              className="card"
+              style={{
+                marginBottom: 24,
+                padding: '14px 20px',
+                border: '1px solid rgba(251, 191, 36, 0.4)',
+                background: 'rgba(251, 191, 36, 0.06)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: 12,
+                cursor: 'pointer',
+              }}
+              onClick={() => handleTabChange('approvals')}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <Clock size={18} color="#fbbf24" />
+                <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#fbbf24' }}>
+                  {pendingApprovals.length} Subscription Upgrade Request{pendingApprovals.length > 1 ? 's' : ''} Pending Approval
+                </span>
+              </div>
+              <button
+                className="btn-primary"
+                style={{ fontSize: '0.78rem', padding: '6px 14px', background: '#f59e0b', color: '#000000', fontWeight: 800 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleTabChange('approvals');
+                }}
+              >
+                Review Approvals Queue →
+              </button>
+            </div>
+          )}
+
+          {/* Global Stat Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 28 }}>
+            <div className="stat-card">
+              <div style={{ fontSize: '0.72rem', color: 'rgb(100,116,139)', textTransform: 'uppercase', fontWeight: 700, marginBottom: 6 }}>Active Shops</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#4ade80' }}>
+                {metrics?.overview?.activeTenants ?? activeTenantsList.length}
+              </div>
+              <p style={{ fontSize: '0.75rem', color: 'rgb(100,116,139)', marginTop: 4 }}>{tenants.length} total registered</p>
+            </div>
+            <div className="stat-card">
+              <div style={{ fontSize: '0.72rem', color: 'rgb(100,116,139)', textTransform: 'uppercase', fontWeight: 700, marginBottom: 6 }}>Gross Invoiced GMV</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#4ade80' }}>
+                ₹{Number(metrics?.overview?.grossProcessedGMV ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+              </div>
+              <p style={{ fontSize: '0.75rem', color: 'rgb(100,116,139)', marginTop: 4 }}>{metrics?.overview?.totalBills ?? 0} customer bills</p>
+            </div>
+            <div className="stat-card">
+              <div style={{ fontSize: '0.72rem', color: 'rgb(100,116,139)', textTransform: 'uppercase', fontWeight: 700, marginBottom: 6 }}>SaaS Subscriptions Revenue</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#fbbf24' }}>
+                ₹{Number(metrics?.overview?.saasSubscriptionRevenue ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+              </div>
+              <p style={{ fontSize: '0.75rem', color: 'rgb(100,116,139)', marginTop: 4 }}>Platform revenue collected</p>
+            </div>
+            <div className="stat-card">
+              <div style={{ fontSize: '0.72rem', color: 'rgb(100,116,139)', textTransform: 'uppercase', fontWeight: 700, marginBottom: 6 }}>Platform Users</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#60a5fa' }}>
+                {metrics?.overview?.totalUsers ?? 0}
+              </div>
+              <p style={{ fontSize: '0.75rem', color: 'rgb(100,116,139)', marginTop: 4 }}>Owners, Cashiers & Admins</p>
+            </div>
+          </div>
+
+          {/* Filter Controls */}
+          <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: 240, position: 'relative' }}>
+              <Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'rgb(100,116,139)' }} />
+              <input
+                type="text"
+                className="input"
+                placeholder="Search shops by name or slug…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                style={{ paddingLeft: 36 }}
+              />
+            </div>
+
+            <select
+              className="input"
+              style={{ width: 200 }}
+              value={selectedPlanFilter}
+              onChange={(e) => setSelectedPlanFilter(e.target.value)}
+            >
+              <option value="">All Plan Tiers</option>
+              <option value="STARTER">Starter (10 SKUs)</option>
+              <option value="GROWTH">Growth (100 SKUs)</option>
+              <option value="BUSINESS">Business (500 SKUs)</option>
+              <option value="ENTERPRISE">Enterprise (2,000+ SKUs)</option>
+            </select>
+          </div>
+
+          {/* Tenants Table */}
+          <div className="table-wrapper">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Shop Name</th>
+                  <th>Owner Contact</th>
+                  <th>Plan Tier</th>
+                  <th>SKU Count</th>
+                  <th>Total Bills</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {isLoadingTenants ? (
+                  <tr><td colSpan={8} style={{ textAlign: 'center', padding: 24 }}>Loading tenants…</td></tr>
+                ) : activeTenantsList.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} style={{ textAlign: 'center', padding: 48, color: 'rgb(100,116,139)' }}>
+                      <Store size={36} style={{ display: 'block', margin: '0 auto 12px', opacity: 0.4 }} />
+                      <p style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: 6 }}>No active shops found</p>
+                      <p style={{ fontSize: '0.8rem', color: 'rgb(100,116,139)', marginBottom: 16 }}>Click &quot;Onboard New Shop&quot; to create a new shop and owner.</p>
+                      <button className="btn-primary" onClick={() => setShowCreateShopModal(true)} style={{ background: 'rgb(22, 163, 74)' }}>
+                        <Plus size={15} /> Onboard New Shop
+                      </button>
                     </td>
                   </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+                ) : (
+                  activeTenantsList.map((t: any) => {
+                    const owner = t.users?.[0];
+                    return (
+                      <tr key={t.id}>
+                        <td>
+                          <div style={{ fontWeight: 700 }}>{t.name}</div>
+                          <div style={{ fontSize: '0.7rem', color: 'rgb(100,116,139)' }}>slug: {t.slug}</div>
+                        </td>
+                        <td>
+                          <div>{owner?.name || '—'}</div>
+                          <div style={{ fontSize: '0.7rem', color: 'rgb(100,116,139)' }}>{owner?.email} · {owner?.phone || 'No phone'}</div>
+                        </td>
+                        <td>
+                          <span className="badge badge-purple">{t.planTier}</span>
+                        </td>
+                        <td>
+                          <div style={{ fontWeight: 700 }}>{t.skuCount} SKUs</div>
+                        </td>
+                        <td>{t._count?.bills ?? 0}</td>
+                        <td>
+                          <span className={`badge ${t.isActive ? 'badge-success' : 'badge-danger'}`}>
+                            {t.isActive ? 'Active' : 'Suspended'}
+                          </span>
+                        </td>
+                        <td style={{ fontSize: '0.75rem', color: 'rgb(100,116,139)' }}>
+                          {format(new Date(t.createdAt), 'dd MMM yyyy')}
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <button
+                              className="btn-secondary"
+                              style={{ padding: '5px 10px', fontSize: '0.75rem' }}
+                              onClick={() => setEditingTenant(t)}
+                              title="Override Subscription Plan"
+                            >
+                              <Edit3 size={13} /> Edit Plan
+                            </button>
+                            <button
+                              className="btn-secondary"
+                              style={{ padding: '5px 10px', fontSize: '0.75rem', color: t.isActive ? '#f87171' : '#4ade80' }}
+                              onClick={() => toggleStatusMutation.mutate({ id: t.id, isActive: !t.isActive })}
+                              title={t.isActive ? 'Suspend shop' : 'Activate shop'}
+                            >
+                              <Power size={13} />
+                            </button>
+                            <button
+                              className="btn-secondary"
+                              style={{ padding: '5px 10px', fontSize: '0.75rem', color: '#f87171' }}
+                              onClick={() => {
+                                if (confirm(`Are you sure you want to permanently delete "${t.name}"?`)) {
+                                  deleteShopMutation.mutate(t.id);
+                                }
+                              }}
+                              title="Purge shop"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
-      {/* Create Shop Modal */}
+      {/* Override Plan Modal */}
+      {editingTenant && (
+        <OverridePlanModal
+          tenant={editingTenant}
+          onClose={() => setEditingTenant(null)}
+          onSave={(payload) => overridePlanMutation.mutate({ id: editingTenant.id, payload })}
+          isPending={overridePlanMutation.isPending}
+        />
+      )}
+
+      {/* Onboard New Shop Modal */}
       {showCreateShopModal && (
         <CreateShopModal
           onClose={() => setShowCreateShopModal(false)}
@@ -256,116 +761,87 @@ export default function SuperAdminDashboardPage() {
           }}
         />
       )}
-
-      {/* Override Plan Modal */}
-      {editingTenant && (
-        <OverridePlanModal
-          tenant={editingTenant}
-          onClose={() => setEditingTenant(null)}
-          onSave={(payload: any) => overridePlanMutation.mutate({ id: editingTenant.id, payload })}
-          isPending={overridePlanMutation.isPending}
-        />
-      )}
     </div>
   );
 }
 
-// ── Create Shop Modal ──────────────────────────────────────────────────
+export default function SuperAdminDashboardPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: 24, textAlign: 'center' }}><Loader2 size={24} style={{ animation: 'spin 1s linear infinite' }} /></div>}>
+      <SuperAdminContent />
+    </Suspense>
+  );
+}
 
-function CreateShopModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
-  const { register, handleSubmit, formState: { isSubmitting } } = useForm({
+// ── Override Plan Modal ───────────────────────────────────────────────────────
+
+function OverridePlanModal({
+  tenant,
+  onClose,
+  onSave,
+  isPending,
+}: {
+  tenant: any;
+  onClose: () => void;
+  onSave: (payload: any) => void;
+  isPending: boolean;
+}) {
+  const { register, handleSubmit } = useForm({
     defaultValues: {
-      shopName: '',
-      ownerName: '',
-      email: '',
-      password: '',
-      phone: '',
-      planTier: 'STARTER',
-      gstin: '',
+      planTier: tenant.planTier,
+      status: tenant.subscriptionStatus || 'ACTIVE',
+      graceDays: 7,
     },
   });
 
-  const onSubmit = async (data: any) => {
-    try {
-      await superAdminApi.createTenant(data);
-      toast.success(`Shop "${data.shopName}" created successfully! Owner login: ${data.email}`);
-      onSuccess();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message ?? 'Failed to create shop');
-    }
-  };
-
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 1000,
-      background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      backdropFilter: 'blur(6px)', padding: 16,
-    }} onClick={onClose}>
-      <div className="glass-card animate-fadeIn" style={{ width: '100%', maxWidth: 540, padding: 28, maxHeight: '90vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 10,
-              background: 'linear-gradient(135deg, rgb(139,92,246), rgb(52,211,153))',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <Building2 size={20} color="white" />
-            </div>
-            <div>
-              <h2 style={{ fontSize: '1.15rem', fontWeight: 800 }}>Onboard New Shop</h2>
-              <p style={{ fontSize: '0.75rem', color: 'rgb(161,161,170)' }}>Create shop tenant and owner account</p>
-            </div>
-          </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgb(113,113,122)' }}>
+    <div
+      style={{
+        position: 'fixed', inset: 0, zIndex: 1000,
+        background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        backdropFilter: 'blur(4px)',
+      }}
+      onClick={onClose}
+    >
+      <div className="card modal-content" style={{ width: 440, padding: 28, background: 'rgb(18, 20, 26)' }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>
+          <h2 style={{ fontSize: '1rem', fontWeight: 800 }}>Override Plan: {tenant.name}</h2>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgb(100,116,139)' }}>
             <X size={18} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-          <div style={{ gridColumn: '1 / -1' }}>
-            <label className="label">Shop / Supermarket Name *</label>
-            <input type="text" className="input" placeholder="e.g. Metro Grocery Mart" {...register('shopName', { required: true })} />
-          </div>
-
+        <form onSubmit={handleSubmit(onSave)} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
-            <label className="label">Owner Full Name *</label>
-            <input type="text" className="input" placeholder="e.g. Amit Verma" {...register('ownerName', { required: true })} />
-          </div>
-
-          <div>
-            <label className="label">Owner Mobile Number</label>
-            <input type="tel" className="input" placeholder="9876543210" {...register('phone')} />
-          </div>
-
-          <div>
-            <label className="label">Owner Email *</label>
-            <input type="email" className="input" placeholder="owner@shop.com" {...register('email', { required: true })} />
-          </div>
-
-          <div>
-            <label className="label">Owner Initial Password *</label>
-            <input type="password" className="input" placeholder="Minimum 6 characters" {...register('password', { required: true, minLength: 6 })} />
-          </div>
-
-          <div>
-            <label className="label">Initial Plan Tier</label>
+            <label className="label">Plan Tier</label>
             <select className="input" {...register('planTier')}>
-              <option value="STARTER">Starter (100 SKUs - Free)</option>
-              <option value="GROWTH">Growth (2,000 SKUs - ₹499/mo)</option>
-              <option value="BUSINESS">Business (5,000 SKUs - ₹999/mo)</option>
-              <option value="ENTERPRISE">Enterprise (10,000+ SKUs - ₹1,999/mo)</option>
+              <option value="STARTER">Starter — Free (10 SKUs)</option>
+              <option value="GROWTH">Growth — ₹10,000/yr (100 SKUs)</option>
+              <option value="BUSINESS">Business — ₹20,000/yr (500 SKUs)</option>
+              <option value="ENTERPRISE">Enterprise — ₹30,000/yr (2,000+ SKUs)</option>
             </select>
           </div>
 
           <div>
-            <label className="label">GSTIN (Optional)</label>
-            <input type="text" className="input" placeholder="e.g. 29ABCDE1234F1Z5" {...register('gstin')} />
+            <label className="label">Subscription Status</label>
+            <select className="input" {...register('status')}>
+              <option value="ACTIVE">ACTIVE (Normal Operation)</option>
+              <option value="GRACE">GRACE (Over Limit Warning)</option>
+              <option value="PENDING_APPROVAL">PENDING_APPROVAL</option>
+              <option value="EXPIRED">EXPIRED (Suspended)</option>
+              <option value="CANCELLED">CANCELLED</option>
+            </select>
           </div>
 
-          <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <div>
+            <label className="label">Extend Grace Period (Days)</label>
+            <input type="number" className="input" placeholder="7" min="0" {...register('graceDays')} />
+          </div>
+
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 12 }}>
             <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
-            <button type="submit" className="btn-primary" disabled={isSubmitting}>
-              {isSubmitting ? <><Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> Creating Shop...</> : '✓ Create & Onboard Shop'}
+            <button type="submit" className="btn-primary" disabled={isPending} style={{ background: 'rgb(22, 163, 74)' }}>
+              {isPending ? <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> : 'Apply Override'}
             </button>
           </div>
         </form>
@@ -374,52 +850,103 @@ function CreateShopModal({ onClose, onSuccess }: { onClose: () => void; onSucces
   );
 }
 
-// ── Override Plan Modal ────────────────────────────────────────────────
+// ── Onboard Shop Modal ────────────────────────────────────────────────────────
 
-function OverridePlanModal({ tenant, onClose, onSave, isPending }: any) {
-  const { register, handleSubmit } = useForm({
+function CreateShopModal({
+  onClose,
+  onSuccess,
+}: {
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const { register, handleSubmit, formState: { isSubmitting } } = useForm({
     defaultValues: {
-      planTier: tenant.planTier,
-      subscriptionStatus: tenant.subscriptionStatus,
+      shopName: '',
+      slug: '',
+      ownerName: '',
+      ownerEmail: '',
+      ownerPhone: '',
+      ownerPassword: '',
+      planTier: 'STARTER',
     },
   });
 
+  const onSubmit = async (data: any) => {
+    try {
+      await superAdminApi.createTenant(data);
+      toast.success(`Shop "${data.shopName}" onboarded successfully!`);
+      onSuccess();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message ?? 'Failed to create shop');
+    }
+  };
+
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 1000,
-      background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      backdropFilter: 'blur(4px)', padding: 16,
-    }} onClick={onClose}>
-      <div className="glass-card animate-fadeIn" style={{ width: 440, padding: 28 }} onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-          <h2 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Override Plan: {tenant.name}</h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgb(113,113,122)' }}>
+    <div
+      style={{
+        position: 'fixed', inset: 0, zIndex: 1000,
+        background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        backdropFilter: 'blur(4px)',
+      }}
+      onClick={onClose}
+    >
+      <div className="card modal-content" style={{ width: 500, padding: 28, maxHeight: '90vh', overflowY: 'auto', background: 'rgb(18, 20, 26)' }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Building2 size={20} color="#4ade80" />
+            <h2 style={{ fontSize: '1.05rem', fontWeight: 800 }}>Onboard New Shop & Owner</h2>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgb(100,116,139)' }}>
             <X size={18} />
           </button>
         </div>
-        <form onSubmit={handleSubmit(onSave)} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+        <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
-            <label className="label">Plan Tier</label>
+            <label className="label">Shop Name *</label>
+            <input type="text" className="input" placeholder="e.g. Metro Supermarket" {...register('shopName', { required: true })} />
+          </div>
+
+          <div>
+            <label className="label">Custom Subdomain / Slug (optional)</label>
+            <input type="text" className="input" placeholder="e.g. metro-supermarket" {...register('slug')} />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <label className="label">Owner Full Name *</label>
+              <input type="text" className="input" placeholder="John Doe" {...register('ownerName', { required: true })} />
+            </div>
+            <div>
+              <label className="label">Owner Phone</label>
+              <input type="text" className="input" placeholder="9876543210" {...register('ownerPhone')} />
+            </div>
+          </div>
+
+          <div>
+            <label className="label">Owner Login Email *</label>
+            <input type="email" className="input" placeholder="owner@store.com" {...register('ownerEmail', { required: true })} />
+          </div>
+
+          <div>
+            <label className="label">Temporary Password *</label>
+            <input type="password" className="input" placeholder="Min 8 characters" {...register('ownerPassword', { required: true, minLength: 8 })} />
+          </div>
+
+          <div>
+            <label className="label">Assigned Plan Tier</label>
             <select className="input" {...register('planTier')}>
-              <option value="STARTER">Starter (100 SKUs - Free)</option>
-              <option value="GROWTH">Growth (2,000 SKUs)</option>
-              <option value="BUSINESS">Business (5,000 SKUs)</option>
-              <option value="ENTERPRISE">Enterprise (10,000+ SKUs)</option>
+              <option value="STARTER">Starter — Free (10 SKUs)</option>
+              <option value="GROWTH">Growth — ₹10,000/yr (100 SKUs)</option>
+              <option value="BUSINESS">Business — ₹20,000/yr (500 SKUs)</option>
+              <option value="ENTERPRISE">Enterprise — ₹30,000/yr (2,000+ SKUs)</option>
             </select>
           </div>
-          <div>
-            <label className="label">Subscription Status</label>
-            <select className="input" {...register('subscriptionStatus')}>
-              <option value="ACTIVE">ACTIVE</option>
-              <option value="GRACE">GRACE</option>
-              <option value="EXPIRED">EXPIRED</option>
-              <option value="CANCELLED">CANCELLED</option>
-            </select>
-          </div>
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 10 }}>
+
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 12 }}>
             <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
-            <button type="submit" className="btn-primary" disabled={isPending}>
-              {isPending ? <><Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> Saving...</> : 'Save Override'}
+            <button type="submit" className="btn-primary" disabled={isSubmitting} style={{ background: 'rgb(22, 163, 74)' }}>
+              {isSubmitting ? <><Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> Creating...</> : 'Create Shop & Account'}
             </button>
           </div>
         </form>

@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ShieldCheck, LogOut, Store, BarChart3, ShoppingBag } from 'lucide-react';
+import { ShieldCheck, LogOut, Store, BarChart3, Clock, RotateCcw } from 'lucide-react';
 import { useAuthStore } from '@/lib/store';
 import toast from 'react-hot-toast';
 import { authApi } from '@/lib/api';
@@ -63,9 +63,13 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
             <Store size={17} className="nav-icon" />
             <span>Tenant Shops</span>
           </Link>
-          <Link href="/dashboard" className="sidebar-nav-item">
-            <ShoppingBag size={17} className="nav-icon" />
-            <span>Shop View Demo</span>
+          <Link href="/superadmin?tab=approvals" className="sidebar-nav-item">
+            <Clock size={17} className="nav-icon" />
+            <span>Subscription Approvals</span>
+          </Link>
+          <Link href="/superadmin?tab=recovery" className="sidebar-nav-item">
+            <RotateCcw size={17} className="nav-icon" />
+            <span>10-Day Recovery Queue</span>
           </Link>
         </nav>
 

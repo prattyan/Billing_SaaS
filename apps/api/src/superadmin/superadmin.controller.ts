@@ -54,8 +54,37 @@ export class SuperAdminController {
   }
 
   @Delete('tenants/:id')
-  @ApiOperation({ summary: 'Delete a shop and all associated data' })
+  @ApiOperation({ summary: 'Permanently delete a shop and all associated data' })
   async deleteTenant(@Param('id') id: string) {
     return this.superAdminService.deleteTenant(id);
+  }
+
+  @Post('tenants/:id/restore')
+  @ApiOperation({ summary: 'Recover and restore a soft-deleted shop within the 10-day window' })
+  async restoreTenant(@Param('id') id: string) {
+    return this.superAdminService.restoreTenant(id);
+  }
+
+  // ── Subscription Approval ──────────────────────
+
+  @Get('subscriptions/pending')
+  @ApiOperation({ summary: 'List all pending subscription upgrade requests awaiting approval' })
+  async getPendingApprovals() {
+    return this.superAdminService.getPendingApprovals();
+  }
+
+  @Post('subscriptions/:id/approve')
+  @ApiOperation({ summary: 'Approve a pending subscription upgrade — activates the new plan tier' })
+  async approveUpgrade(@Param('id') id: string) {
+    return this.superAdminService.approveUpgrade(id);
+  }
+
+  @Post('subscriptions/:id/reject')
+  @ApiOperation({ summary: 'Reject a pending subscription upgrade request' })
+  async rejectUpgrade(
+    @Param('id') id: string,
+    @Body('reason') reason?: string,
+  ) {
+    return this.superAdminService.rejectUpgrade(id, reason);
   }
 }

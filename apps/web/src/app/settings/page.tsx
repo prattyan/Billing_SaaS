@@ -6,14 +6,20 @@ import { tenantsApi, usersApi } from '@/lib/api';
 import toast from 'react-hot-toast';
 import {
   Settings, Store, Users, Plus, ShieldCheck, Printer,
-  MessageSquare, UserPlus, Trash2, Loader2, Save, KeyRound
+  MessageSquare, UserPlus, Trash2, Loader2, Save, KeyRound,
+  AlertTriangle, X, ShieldAlert, ArrowRight, CheckCircle2
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/lib/store';
 
 export default function SettingsPage() {
   const qc = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'general' | 'pos' | 'staff'>('general');
+  const router = useRouter();
+  const { clearAuth } = useAuthStore();
+  const [activeTab, setActiveTab] = useState<'general' | 'pos' | 'staff' | 'danger'>('general');
   const [showAddStaffModal, setShowAddStaffModal] = useState(false);
+  const [showDeleteShopModal, setShowDeleteShopModal] = useState(false);
 
   // Settings query
   const { data: settings, isLoading: isLoadingSettings } = useQuery({
@@ -54,36 +60,66 @@ export default function SettingsPage() {
     },
   });
 
+  const deleteShopMutation = useMutation({
+    mutationFn: () => tenantsApi.deleteMyShop(),
+    onSuccess: (res: any) => {
+      toast.success(res.data?.message ?? 'Shop scheduled for deletion (10-day recovery window active)');
+      clearAuth();
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      router.push('/login');
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message ?? 'Failed to delete shop');
+    },
+  });
+
   return (
     <div className="page-container" style={{ padding: '28px 24px' }}>
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: 4 }}>Shop Settings</h1>
-        <p style={{ color: 'rgb(161,161,170)', fontSize: '0.875rem' }}>
-          Configure billing defaults, GSTIN, WhatsApp e-invoices & cashier logins
+        <p style={{ color: 'rgb(100,116,139)', fontSize: '0.875rem' }}>
+          Configure billing defaults, GSTIN, WhatsApp e-invoices, cashier accounts & shop controls
         </p>
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 8, borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: 12, marginBottom: 28, overflowX: 'auto' }}>
+      <div style={{ display: 'flex', gap: 8, borderBottom: '1px solid rgb(38, 40, 52)', paddingBottom: 12, marginBottom: 28, overflowX: 'auto' }}>
         {[
           { id: 'general', label: 'Shop Details & GST', icon: Store },
           { id: 'pos', label: 'POS & Billing Rules', icon: Printer },
           { id: 'staff', label: 'Staff / Cashier Logins', icon: Users },
-        ].map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setActiveTab(t.id as any)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
-              background: activeTab === t.id ? 'rgba(139,92,246,0.15)' : 'transparent',
-              color: activeTab === t.id ? 'rgb(167,139,250)' : 'rgb(161,161,170)',
-              fontWeight: activeTab === t.id ? 700 : 500, fontSize: '0.875rem',
-            }}
-          >
-            <t.icon size={16} /> {t.label}
-          </button>
-        ))}
+          { id: 'danger', label: 'Danger Zone', icon: AlertTriangle, isDanger: true },
+        ].map((t) => {
+          const isActive = activeTab === t.id;
+          return (
+            <button
+              key={t.id}
+              onClick={() => setActiveTab(t.id as any)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '8px 16px',
+                borderRadius: 8,
+                border: 'none',
+                cursor: 'pointer',
+                background: isActive
+                  ? t.isDanger ? 'rgba(239,68,68,0.15)' : 'rgba(22,163,74,0.15)'
+                  : 'transparent',
+                color: isActive
+                  ? t.isDanger ? '#f87171' : '#4ade80'
+                  : 'rgb(148,163,184)',
+                fontWeight: isActive ? 700 : 500,
+                fontSize: '0.875rem',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              <t.icon size={16} /> {t.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* ── TAB 1: General Details ──────────────────────────────────────── */}
@@ -108,14 +144,18 @@ export default function SettingsPage() {
       {/* ── TAB 3: Staff / Cashiers ────────────────────────────────────── */}
       {activeTab === 'staff' && (
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
             <div>
               <h2 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Cashier & Staff Logins</h2>
-              <p style={{ fontSize: '0.8rem', color: 'rgb(161,161,170)' }}>
+              <p style={{ fontSize: '0.8rem', color: 'rgb(100,116,139)' }}>
                 Cashiers can only perform sales & view stock. They cannot alter pricing or delete records.
               </p>
             </div>
-            <button className="btn-primary" onClick={() => setShowAddStaffModal(true)}>
+            <button
+              className="btn-primary"
+              style={{ background: 'rgb(22, 163, 74)' }}
+              onClick={() => setShowAddStaffModal(true)}
+            >
               <UserPlus size={15} /> Add Cashier
             </button>
           </div>
@@ -175,12 +215,129 @@ export default function SettingsPage() {
         </div>
       )}
 
+      {/* ── TAB 4: Danger Zone ─────────────────────────────────────────── */}
+      {activeTab === 'danger' && (
+        <div style={{ maxWidth: 640 }}>
+          <div
+            className="card"
+            style={{
+              padding: 28,
+              background: 'rgb(18, 20, 26)',
+              border: '1px solid rgba(239, 68, 68, 0.35)',
+              borderRadius: 14,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+              <ShieldAlert size={22} color="#f87171" />
+              <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#f87171', margin: 0 }}>
+                Delete Shop Account
+              </h2>
+            </div>
+
+            <p style={{ fontSize: '0.85rem', color: 'rgb(148, 163, 184)', lineHeight: 1.5, marginBottom: 16 }}>
+              Deleting your shop will immediately deactivate your account and log out all cashiers.
+            </p>
+
+            <div
+              style={{
+                background: 'rgba(251, 191, 36, 0.08)',
+                border: '1px solid rgba(251, 191, 36, 0.3)',
+                borderRadius: 10,
+                padding: '14px 16px',
+                marginBottom: 24,
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 10,
+              }}
+            >
+              <AlertTriangle size={18} color="#fbbf24" style={{ flexShrink: 0, marginTop: 2 }} />
+              <div style={{ fontSize: '0.8rem', color: '#f8fafc', lineHeight: 1.45 }}>
+                <strong style={{ color: '#fbbf24', display: 'block', marginBottom: 2 }}>10-Day Safe Recovery Guarantee:</strong>
+                All your customer records, items, bills, inventory, and sales history will be safely preserved for <strong>10 days</strong>. If deleted by mistake, a platform Super Admin can restore your entire shop and data within this 10-day period.
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="btn-danger"
+              style={{ padding: '10px 20px', fontSize: '0.88rem', fontWeight: 700 }}
+              onClick={() => setShowDeleteShopModal(true)}
+            >
+              <Trash2 size={16} /> Request Shop Deletion (10-Day Grace Period)
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Add Staff Modal */}
       {showAddStaffModal && (
         <AddStaffModal
           onClose={() => setShowAddStaffModal(false)}
           onSuccess={() => { qc.invalidateQueries({ queryKey: ['staffList'] }); setShowAddStaffModal(false); }}
         />
+      )}
+
+      {/* Delete Shop Confirmation Modal */}
+      {showDeleteShopModal && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 2000,
+            background: 'rgba(0,0,0,0.8)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            backdropFilter: 'blur(6px)', padding: 16,
+          }}
+          onClick={() => setShowDeleteShopModal(false)}
+        >
+          <div
+            className="card modal-content"
+            style={{ width: 480, padding: 28, background: 'rgb(18, 20, 26)', border: '1px solid rgba(239,68,68,0.4)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <AlertTriangle size={22} color="#f87171" />
+                <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#f87171', margin: 0 }}>Confirm Shop Deletion</h3>
+              </div>
+              <button onClick={() => setShowDeleteShopModal(false)} style={{ background: 'none', border: 'none', color: 'rgb(100,116,139)', cursor: 'pointer' }}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <p style={{ fontSize: '0.86rem', color: '#f8fafc', marginBottom: 12 }}>
+              Are you sure you want to delete <strong style={{ color: '#f87171' }}>{profile?.name || 'your shop'}</strong>?
+            </p>
+
+            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '12px 14px', borderRadius: 8, fontSize: '0.78rem', color: 'rgb(148,163,184)', lineHeight: 1.45, marginBottom: 20 }}>
+              • All cashiers will be logged out immediately.<br />
+              • Your database records remain intact in the 10-day recovery queue.<br />
+              • A Super Admin can recover your account within 10 days if requested.
+            </div>
+
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => setShowDeleteShopModal(false)}
+                disabled={deleteShopMutation.isPending}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn-danger"
+                style={{ padding: '8px 18px', fontWeight: 700 }}
+                disabled={deleteShopMutation.isPending}
+                onClick={() => deleteShopMutation.mutate()}
+              >
+                {deleteShopMutation.isPending ? (
+                  <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Deleting...</>
+                ) : (
+                  'Confirm & Schedule Deletion'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -198,24 +355,24 @@ function GeneralSettingsForm({ initialData, profile, onSave, isPending }: any) {
   });
 
   return (
-    <form onSubmit={handleSubmit(onSave)} className="glass-card animate-fadeIn" style={{ maxWidth: 640, padding: 28 }}>
+    <form onSubmit={handleSubmit(onSave)} className="card animate-fadeIn" style={{ maxWidth: 640, padding: 28, background: 'rgb(18, 20, 26)' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
         <div>
           <label className="label">Shop Name</label>
           <input type="text" className="input" value={profile?.name ?? ''} disabled style={{ opacity: 0.7 }} />
-          <p style={{ fontSize: '0.7rem', color: 'rgb(113,113,122)', marginTop: 4 }}>Shop name can only be changed by platform support.</p>
+          <p style={{ fontSize: '0.7rem', color: 'rgb(100,116,139)', marginTop: 4 }}>Shop name can only be changed by platform support.</p>
         </div>
 
         <div>
           <label className="label">GSTIN / Tax ID</label>
           <input type="text" className="input" placeholder="29AABCU9603R1ZX" {...register('gstin')} />
-          <p style={{ fontSize: '0.7rem', color: 'rgb(113,113,122)', marginTop: 4 }}>Printed on customer tax invoices</p>
+          <p style={{ fontSize: '0.7rem', color: 'rgb(100,116,139)', marginTop: 4 }}>Printed on customer tax invoices</p>
         </div>
 
         <div>
           <label className="label">Invoice Number Prefix</label>
           <input type="text" className="input" placeholder="INV" maxLength={8} {...register('billPrefix')} />
-          <p style={{ fontSize: '0.7rem', color: 'rgb(113,113,122)', marginTop: 4 }}>e.g. INV will generate bills numbered INV-00001, INV-00002</p>
+          <p style={{ fontSize: '0.7rem', color: 'rgb(100,116,139)', marginTop: 4 }}>e.g. INV will generate bills numbered INV-00001, INV-00002</p>
         </div>
 
         <div>
@@ -224,7 +381,7 @@ function GeneralSettingsForm({ initialData, profile, onSave, isPending }: any) {
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
-          <button type="submit" className="btn-primary" disabled={isPending}>
+          <button type="submit" className="btn-primary" disabled={isPending} style={{ background: 'rgb(22, 163, 74)' }}>
             {isPending ? <><Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> Saving...</> : <><Save size={15} /> Save Changes</>}
           </button>
         </div>
@@ -247,7 +404,7 @@ function PosSettingsForm({ initialData, onSave, isPending }: any) {
   });
 
   return (
-    <form onSubmit={handleSubmit(onSave)} className="glass-card animate-fadeIn" style={{ maxWidth: 640, padding: 28 }}>
+    <form onSubmit={handleSubmit(onSave)} className="card animate-fadeIn" style={{ maxWidth: 640, padding: 28, background: 'rgb(18, 20, 26)' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         {/* Shop Merchant UPI ID */}
         <div>
@@ -258,21 +415,22 @@ function PosSettingsForm({ initialData, onSave, isPending }: any) {
             placeholder="e.g. myshop@upi or 9876543210@paytm"
             {...register('upiId')}
           />
-          <p style={{ fontSize: '0.72rem', color: 'rgb(113,113,122)', marginTop: 4 }}>
-            Used to generate dynamic instant UPI QR codes on the POS billing screen when paying via GPay, PhonePe, Paytm, etc.
+          <p style={{ fontSize: '0.72rem', color: 'rgb(100,116,139)', marginTop: 4 }}>
+            Used to generate dynamic instant UPI QR codes on the POS billing screen when paying via GPay, PhonePe, Paytm, etc. (Read-only at checkout).
           </p>
         </div>
 
         <div className="divider" style={{ margin: 0 }} />
+
         {/* Toggle 1: Mandatory Phone */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
           <div>
             <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>Require Customer Mobile Number</div>
-            <div style={{ fontSize: '0.75rem', color: 'rgb(113,113,122)' }}>
+            <div style={{ fontSize: '0.75rem', color: 'rgb(100,116,139)' }}>
               When enabled, cashiers must enter a 10-digit customer phone number before finalizing any bill.
             </div>
           </div>
-          <input type="checkbox" style={{ width: 18, height: 18, accentColor: 'rgb(139,92,246)', cursor: 'pointer' }} {...register('requireCustomerPhone')} />
+          <input type="checkbox" style={{ width: 18, height: 18, accentColor: 'rgb(22, 163, 74)', cursor: 'pointer' }} {...register('requireCustomerPhone')} />
         </div>
 
         <div className="divider" style={{ margin: 0 }} />
@@ -280,22 +438,22 @@ function PosSettingsForm({ initialData, onSave, isPending }: any) {
         {/* Toggle 2: WhatsApp */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
           <div>
-            <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>WhatsApp E-Invoice Delivery</div>
-            <div style={{ fontSize: '0.75rem', color: 'rgb(113,113,122)' }}>
-              Automatically trigger an official WhatsApp Cloud API bill link to the customer upon finalization.
+            <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>WhatsApp Digital Invoice</div>
+            <div style={{ fontSize: '0.75rem', color: 'rgb(100,116,139)' }}>
+              Automatically dispatch PDF receipt download link via WhatsApp to customer after billing.
             </div>
           </div>
-          <input type="checkbox" style={{ width: 18, height: 18, accentColor: 'rgb(139,92,246)', cursor: 'pointer' }} {...register('whatsappEnabled')} />
+          <input type="checkbox" style={{ width: 18, height: 18, accentColor: 'rgb(22, 163, 74)', cursor: 'pointer' }} {...register('whatsappEnabled')} />
         </div>
 
         <div className="divider" style={{ margin: 0 }} />
 
         {/* Printer width */}
         <div>
-          <label className="label">Thermal Printer Paper Width</label>
+          <label className="label">Thermal Printer Receipt Width</label>
           <select className="input" {...register('thermalPrinterWidth', { valueAsNumber: true })}>
-            <option value={80}>80mm (Standard POS receipt)</option>
-            <option value={58}>58mm (Compact portable / Bluetooth printer)</option>
+            <option value={80}>80mm (Standard 3-inch POS Thermal Printer)</option>
+            <option value={58}>58mm (2-inch Mobile Bluetooth / Handheld Printer)</option>
           </select>
         </div>
 
@@ -303,13 +461,13 @@ function PosSettingsForm({ initialData, onSave, isPending }: any) {
         <div>
           <label className="label">Loyalty Points Earn Rate</label>
           <input type="number" step="0.1" min="0" className="input" placeholder="1.0" {...register('loyaltyEarnRate', { valueAsNumber: true })} />
-          <p style={{ fontSize: '0.7rem', color: 'rgb(113,113,122)', marginTop: 4 }}>
+          <p style={{ fontSize: '0.7rem', color: 'rgb(100,116,139)', marginTop: 4 }}>
             Points awarded per ₹100 spent (e.g. 1.0 = 1% cashback in points)
           </p>
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
-          <button type="submit" className="btn-primary" disabled={isPending}>
+          <button type="submit" className="btn-primary" disabled={isPending} style={{ background: 'rgb(22, 163, 74)' }}>
             {isPending ? <><Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> Saving...</> : <><Save size={15} /> Save POS Rules</>}
           </button>
         </div>
@@ -338,10 +496,10 @@ function AddStaffModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 1000,
-      background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center',
       backdropFilter: 'blur(4px)', padding: 16,
     }} onClick={onClose}>
-      <div className="glass-card" style={{ width: 440, padding: 28 }} onClick={(e) => e.stopPropagation()}>
+      <div className="card modal-content" style={{ width: 440, padding: 28, background: 'rgb(18, 20, 26)' }} onClick={(e) => e.stopPropagation()}>
         <h2 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: 20 }}>Add Staff Member / Cashier</h2>
         <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
@@ -369,7 +527,7 @@ function AddStaffModal({ onClose, onSuccess }: { onClose: () => void; onSuccess:
           </div>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 10 }}>
             <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
-            <button type="submit" className="btn-primary" disabled={isSubmitting}>
+            <button type="submit" className="btn-primary" disabled={isSubmitting} style={{ background: 'rgb(22, 163, 74)' }}>
               {isSubmitting ? <><Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> Creating...</> : '+ Create Account'}
             </button>
           </div>

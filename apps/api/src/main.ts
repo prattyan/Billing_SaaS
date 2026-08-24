@@ -26,8 +26,8 @@ async function bootstrap() {
   // Global validation pipe — auto-validates all DTOs
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,          // strip unknown fields
-      forbidNonWhitelisted: true,
+      whitelist: true,          // strip unknown fields safely
+      forbidNonWhitelisted: false,
       transform: true,          // auto-cast to DTO types
       transformOptions: {
         enableImplicitConversion: true,
@@ -54,4 +54,5 @@ async function bootstrap() {
   logger.log(`🚀 API running on port ${port} (listening on 0.0.0.0 / http://localhost:${port}/api/v1)`);
 }
 
+// Touch to reload modules with updated DTOs
 bootstrap();
