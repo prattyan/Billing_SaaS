@@ -8,7 +8,7 @@
     "build": "next build",
     "electron:build": "next build && electron-builder --win -p never",
     "electron:release": "next build && electron-builder --win -p always",
-    "start": "next start -H 0.0.0.0 -p ${PORT:-3000}",
+    "start": "serve -s out -l ${PORT:-3000}",
     "lint": "eslint"
   },
   "dependencies": {
@@ -33,6 +33,7 @@
     "react-hook-form": "^7.86.0",
     "react-hot-toast": "^2.6.0",
     "recharts": "^3.10.1",
+    "serve": "^14.2.6",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.4.5",
