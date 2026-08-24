@@ -33,7 +33,6 @@ export default function DashboardPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['dashboard'],
     queryFn: () => reportsApi.dashboard().then((r) => r.data),
-    refetchInterval: 5000, // refresh every 5s
   });
 
   const stats = [

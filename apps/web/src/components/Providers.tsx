@@ -10,12 +10,12 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 10 * 1000, // 10 seconds cache validity — renders instantly from RAM cache
-            gcTime: 1000 * 60 * 60 * 24, // Keep in memory for 24 hours
-            refetchInterval: 10 * 1000, // Auto-sync in background every 10s for real-time multi-user stock consistency
-            refetchOnWindowFocus: true, // Auto-sync latest database records when cashier focuses window
+            staleTime: 60 * 1000, // 60 seconds instant cache — switching sections/pages renders in 0ms from RAM
+            gcTime: 1000 * 60 * 60 * 24, // Retain in memory for 24 hours
+            refetchInterval: 20 * 1000, // Background sync every 20s for real-time multi-user consistency
+            refetchOnWindowFocus: false, // Prevent aggressive network requests on every window click
             refetchOnReconnect: true,
-            retry: 2,
+            retry: 1,
           },
         },
       }),

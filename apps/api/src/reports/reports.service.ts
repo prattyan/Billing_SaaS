@@ -4,11 +4,21 @@ import Decimal from 'decimal.js';
 
 @Injectable()
 export class ReportsService {
+  private dashboardCache = new Map<string, { timestamp: number; data: any }>();
+
   constructor(private readonly prisma: PrismaService) {}
 
   // ── Dashboard summary ─────────────────────────────────────────────────────────
 
   async getDashboardSummary(tenantId?: string | null) {
+    const cacheKey = tenantId || 'global';
+    const cached = this.dashboardCache.get(cacheKey);
+    const now = Date.now();
+
+    if (cached && now - cached.timestamp < 10000) {
+      return cached.data;
+    }
+
     const today = new Date();
     const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -123,7 +133,7 @@ export class ReportsService {
       });
     }
 
-    return {
+    const result = {
       today: {
         revenue: todaySales._sum.grandTotal ?? 0,
         bills: todaySales._count.id,
@@ -140,6 +150,9 @@ export class ReportsService {
       topItemsToday,
       weeklyRevenue,
     };
+
+    this.dashboardCache.set(cacheKey, { timestamp: Date.now(), data: result });
+    return result;
   }
 
   // ── Sales report (date range) ─────────────────────────────────────────────────
