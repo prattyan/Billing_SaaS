@@ -81,12 +81,14 @@ function startStaticServer(outDir) {
 function createWindow(port) {
   const iconPath = path.join(__dirname, '../public/icon.png');
 
+  const packageJson = require('../package.json');
+
   mainWindow = new BrowserWindow({
     width: 1366,
     height: 850,
     minWidth: 1024,
     minHeight: 700,
-    title: 'BillFlow Pro POS v1.0.0',
+    title: `BillFlow Pro POS v${packageJson.version}`,
     icon: fs.existsSync(iconPath) ? iconPath : undefined,
     backgroundColor: '#09090b',
     autoHideMenuBar: true,
