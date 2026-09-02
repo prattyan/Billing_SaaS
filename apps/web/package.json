@@ -8,7 +8,7 @@
     "build": "next build",
     "electron:build": "next build && electron-builder --win -p never",
     "electron:release": "next build && electron-builder --win -p always",
-    "start": "serve -s out -l ${PORT:-3000}",
+    "start": "npx serve -s out -l ${PORT:-3000}",
     "lint": "eslint"
   },
   "dependencies": {
