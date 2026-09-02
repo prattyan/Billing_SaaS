@@ -1,8 +1,9 @@
 import axios from 'axios';
 
 export const getBaseApiUrl = () => {
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '');
+  const url = process.env.NEXT_API_URL || process.env.NEXT_PUBLIC_API_URL;
+  if (url) {
+    return url.replace(/\/+$/, '');
   }
   return 'https://billing-saas-api.onrender.com';
 };
