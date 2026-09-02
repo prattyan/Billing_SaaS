@@ -70,44 +70,44 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className="page-container" style={{ padding: '28px 24px' }}>
+    <div className="page-container" style={{ padding: '32px 36px', maxWidth: 1400, margin: '0 auto' }}>
       {/* Header */}
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28, flexWrap: 'wrap', gap: 14 }}>
         <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: 4 }}>Reports & Analytics</h1>
-          <p style={{ color: 'rgb(161,161,170)', fontSize: '0.875rem' }}>
+          <h1 style={{ fontSize: '1.65rem', fontWeight: 800, color: 'rgb(var(--text-primary))', marginBottom: 4 }}>Reports & Analytics</h1>
+          <p style={{ color: 'rgb(var(--text-secondary))', fontSize: '0.875rem' }}>
             GST tax filing reports, sales performance, fast moving items & stock audit trails
           </p>
         </div>
         <div className="page-header-actions" style={{ display: 'flex', gap: 8 }}>
-          <button className="btn-secondary" onClick={handlePrint}>
+          <button className="btn-secondary" style={{ padding: '8px 18px', fontSize: '0.85rem' }} onClick={handlePrint}>
             <Download size={15} /> Print / Export
           </button>
         </div>
       </div>
 
       {/* Date filter bar */}
-      <div className="card" style={{ padding: '14px 20px', marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+      <div className="card" style={{ padding: '16px 22px', marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, borderRadius: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'rgb(113,113,122)', textTransform: 'uppercase' }}>Range:</span>
-          <button className="btn-secondary" style={{ padding: '6px 12px', fontSize: '0.75rem' }} onClick={() => setDatePreset('today')}>Today</button>
-          <button className="btn-secondary" style={{ padding: '6px 12px', fontSize: '0.75rem' }} onClick={() => setDatePreset('week')}>Last 7 Days</button>
-          <button className="btn-secondary" style={{ padding: '6px 12px', fontSize: '0.75rem' }} onClick={() => setDatePreset('month')}>This Month</button>
+          <span style={{ fontSize: '0.74rem', fontWeight: 700, color: 'rgb(var(--text-muted))', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Range:</span>
+          <button className="btn-secondary" style={{ padding: '6px 14px', fontSize: '0.78rem', borderRadius: 999 }} onClick={() => setDatePreset('today')}>Today</button>
+          <button className="btn-secondary" style={{ padding: '6px 14px', fontSize: '0.78rem', borderRadius: 999 }} onClick={() => setDatePreset('week')}>Last 7 Days</button>
+          <button className="btn-secondary" style={{ padding: '6px 14px', fontSize: '0.78rem', borderRadius: 999 }} onClick={() => setDatePreset('month')}>This Month</button>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <input
             type="date"
             className="input"
-            style={{ width: 140, padding: '6px 10px', fontSize: '0.8rem' }}
+            style={{ width: 145, padding: '6px 12px', fontSize: '0.82rem' }}
             value={fromDate}
             onChange={(e) => setFromDate(e.target.value)}
           />
-          <span style={{ color: 'rgb(113,113,122)', fontSize: '0.8rem' }}>to</span>
+          <span style={{ color: 'rgb(var(--text-muted))', fontSize: '0.82rem' }}>to</span>
           <input
             type="date"
             className="input"
-            style={{ width: 140, padding: '6px 10px', fontSize: '0.8rem' }}
+            style={{ width: 145, padding: '6px 12px', fontSize: '0.82rem' }}
             value={toDate}
             onChange={(e) => setToDate(e.target.value)}
           />
@@ -115,7 +115,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 8, borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: 12, marginBottom: 24, overflowX: 'auto' }}>
+      <div style={{ display: 'flex', gap: 8, borderBottom: '1px solid rgb(var(--border-rgb))', paddingBottom: 12, marginBottom: 24, overflowX: 'auto' }}>
         {[
           { id: 'sales', label: 'Sales Summary', icon: TrendingUp },
           { id: 'bestSellers', label: 'Best Sellers', icon: Package },
@@ -128,16 +128,15 @@ export default function ReportsPage() {
             onClick={() => setActiveTab(tab.id as Tab)}
             style={{
               display: 'flex', alignItems: 'center', gap: 8,
-              padding: '8px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
-              background: activeTab === tab.id ? 'rgba(139,92,246,0.15)' : 'transparent',
-              color: activeTab === tab.id ? 'rgb(167,139,250)' : 'rgb(161,161,170)',
+              padding: '8px 18px', borderRadius: 999, border: 'none', cursor: 'pointer',
+              background: activeTab === tab.id ? 'rgb(var(--color-primary))' : 'rgb(var(--surface-2))',
+              color: activeTab === tab.id ? '#ffffff' : 'rgb(var(--text-secondary))',
               fontWeight: activeTab === tab.id ? 700 : 500,
-              fontSize: '0.875rem', transition: 'all 0.15s',
-              borderBottom: activeTab === tab.id ? '2px solid rgb(139,92,246)' : 'none',
+              fontSize: '0.84rem', transition: 'all 0.15s ease',
               whiteSpace: 'nowrap',
             }}
           >
-            <tab.icon size={16} />
+            <tab.icon size={15} />
             {tab.label}
           </button>
         ))}
@@ -147,27 +146,27 @@ export default function ReportsPage() {
       {activeTab === 'sales' && (
         <div className="animate-fadeIn">
           {/* Summary Cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 18, marginBottom: 24 }}>
             <div className="stat-card">
-              <div style={{ fontSize: '0.72rem', color: 'rgb(113,113,122)', textTransform: 'uppercase', fontWeight: 700, marginBottom: 6 }}>Gross Revenue</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'rgb(52,211,153)' }}>
-                ₹{Number(salesData?.summary?.totalRevenue ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+              <div style={{ fontSize: '0.74rem', color: 'rgb(var(--text-muted))', textTransform: 'uppercase', fontWeight: 700, marginBottom: 6 }}>Gross Revenue</div>
+              <div style={{ fontSize: '1.65rem', fontWeight: 800, color: 'rgb(var(--color-primary-dark))' }}>
+                ${Number(salesData?.summary?.totalRevenue ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
-              <p style={{ fontSize: '0.75rem', color: 'rgb(113,113,122)', marginTop: 4 }}>{salesData?.summary?.totalBills ?? 0} invoices issued</p>
+              <p style={{ fontSize: '0.78rem', color: 'rgb(var(--text-secondary))', marginTop: 4 }}>{salesData?.summary?.totalBills ?? 0} invoices issued</p>
             </div>
             <div className="stat-card">
-              <div style={{ fontSize: '0.72rem', color: 'rgb(113,113,122)', textTransform: 'uppercase', fontWeight: 700, marginBottom: 6 }}>Tax Collected</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'rgb(139,92,246)' }}>
-                ₹{Number(salesData?.summary?.totalTax ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+              <div style={{ fontSize: '0.74rem', color: 'rgb(var(--text-muted))', textTransform: 'uppercase', fontWeight: 700, marginBottom: 6 }}>Tax Collected</div>
+              <div style={{ fontSize: '1.65rem', fontWeight: 800, color: 'rgb(var(--text-primary))' }}>
+                ${Number(salesData?.summary?.totalTax ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
-              <p style={{ fontSize: '0.75rem', color: 'rgb(113,113,122)', marginTop: 4 }}>GST liabilities</p>
+              <p style={{ fontSize: '0.78rem', color: 'rgb(var(--text-secondary))', marginTop: 4 }}>GST liabilities</p>
             </div>
             <div className="stat-card">
-              <div style={{ fontSize: '0.72rem', color: 'rgb(113,113,122)', textTransform: 'uppercase', fontWeight: 700, marginBottom: 6 }}>Net Revenue</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'rgb(59,130,246)' }}>
-                ₹{Number(salesData?.summary?.netRevenue ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+              <div style={{ fontSize: '0.74rem', color: 'rgb(var(--text-muted))', textTransform: 'uppercase', fontWeight: 700, marginBottom: 6 }}>Net Revenue</div>
+              <div style={{ fontSize: '1.65rem', fontWeight: 800, color: 'rgb(var(--color-primary))' }}>
+                ${Number(salesData?.summary?.netRevenue ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
-              <p style={{ fontSize: '0.75rem', color: 'rgb(113,113,122)', marginTop: 4 }}>Excluding tax</p>
+              <p style={{ fontSize: '0.78rem', color: 'rgb(var(--text-secondary))', marginTop: 4 }}>Excluding tax</p>
             </div>
           </div>
 

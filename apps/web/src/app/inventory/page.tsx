@@ -97,30 +97,30 @@ export default function InventoryPage() {
   const meta = data?.meta;
 
   return (
-    <div className="page-container" style={{ padding: '28px 24px' }}>
+    <div className="page-container" style={{ padding: '32px 36px', maxWidth: 1400, margin: '0 auto' }}>
       {/* Header */}
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28, flexWrap: 'wrap', gap: 14 }}>
         <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: 4 }}>Inventory & Products</h1>
-          <p style={{ color: 'rgb(161,161,170)', fontSize: '0.875rem' }}>
+          <h1 style={{ fontSize: '1.65rem', fontWeight: 800, color: 'rgb(var(--text-primary))', marginBottom: 4 }}>Inventory & Products</h1>
+          <p style={{ color: 'rgb(var(--text-secondary))', fontSize: '0.875rem' }}>
             {meta?.total ?? '—'} registered items across {categories.length} categories
           </p>
         </div>
         <div className="page-header-actions" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           <button
             className="btn-secondary"
-            style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.84rem', padding: '8px 16px' }}
             onClick={() => setShowCategoriesModal(true)}
           >
-            <Tag size={16} color="rgb(139,92,246)" /> Manage Categories ({categories.length})
+            <Tag size={15} color="rgb(var(--color-primary-dark))" /> Manage Categories ({categories.length})
           </button>
           <button
             className="btn-secondary"
-            style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.84rem', padding: '8px 16px' }}
             onClick={() => setShowCameraLookup(true)}
             title="Scan an existing product barcode to restock inventory"
           >
-            <Camera size={16} /> Scan to Restock
+            <Camera size={15} /> Scan to Restock
           </button>
           <button
             className={isOverLimit ? "btn-secondary" : "btn-primary"}
@@ -128,9 +128,11 @@ export default function InventoryPage() {
               display: 'flex',
               alignItems: 'center',
               gap: 6,
+              fontSize: '0.84rem',
+              padding: '8px 20px',
               background: isOverLimit ? 'rgba(239, 68, 68, 0.1)' : undefined,
               border: isOverLimit ? '1px solid rgba(239, 68, 68, 0.35)' : undefined,
-              color: isOverLimit ? '#f87171' : undefined,
+              color: isOverLimit ? '#dc2626' : undefined,
             }}
             title={isOverLimit ? `SKU limit reached (${currentSkuCount}/${tierLimit} products). Upgrade your plan to add more.` : undefined}
             onClick={() => {
@@ -141,7 +143,7 @@ export default function InventoryPage() {
               setShowAddModal(true);
             }}
           >
-            {isOverLimit ? <Lock size={15} /> : <Plus size={16} />}
+            {isOverLimit ? <Lock size={15} /> : <Plus size={15} />}
             <span>{isOverLimit ? `Add Product (Locked)` : 'Add Product'}</span>
           </button>
         </div>
@@ -155,32 +157,32 @@ export default function InventoryPage() {
         const usagePercent = Math.min(100, Math.round((currentCount / tierLimit) * 100));
 
         return (
-          <div className="card plan-usage-bar" style={{ marginBottom: 20, padding: '14px 20px' }}>
+          <div className="card plan-usage-bar" style={{ marginBottom: 24, padding: '16px 22px' }}>
             <div className="plan-usage-text" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
               <div>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'rgb(161,161,170)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                <span style={{ fontSize: '0.74rem', fontWeight: 700, color: 'rgb(var(--text-muted))', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                   {planUsage.currentTier} Plan
                 </span>
-                <span style={{ fontSize: '0.875rem', fontWeight: 700, marginLeft: 12 }}>
+                <span style={{ fontSize: '0.9rem', fontWeight: 800, color: 'rgb(var(--text-primary))', marginLeft: 12 }}>
                   {currentCount} / {tierLimit} SKUs
                 </span>
               </div>
               <span style={{
-                fontSize: '0.875rem', fontWeight: 800,
-                color: usagePercent >= 90 ? 'rgb(239,100,100)' : usagePercent >= 70 ? 'rgb(245,158,11)' : '#4ade80',
+                fontSize: '0.88rem', fontWeight: 800,
+                color: usagePercent >= 90 ? '#dc2626' : usagePercent >= 70 ? '#d97706' : 'rgb(var(--color-primary-dark))',
               }}>
                 {usagePercent}%
               </span>
             </div>
-            <div style={{ height: 6, background: 'rgb(var(--surface-3))', borderRadius: 999, overflow: 'hidden' }}>
+            <div style={{ height: 7, background: 'rgb(var(--surface-2))', borderRadius: 999, overflow: 'hidden' }}>
               <div style={{
                 height: '100%', borderRadius: 999, transition: 'width 0.5s ease',
                 width: `${usagePercent}%`,
                 background: usagePercent >= 90
-                  ? 'rgb(239,68,68)'
+                  ? '#ef4444'
                   : usagePercent >= 70
-                  ? 'rgb(245,158,11)'
-                  : 'rgb(22, 163, 74)',
+                  ? '#f59e0b'
+                  : 'rgb(var(--color-primary))',
               }} />
             </div>
           </div>
@@ -188,11 +190,11 @@ export default function InventoryPage() {
       })()}
 
       {/* Filters Bar */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap', alignItems: 'center' }}>
         <div className="search-container" style={{ flex: 1, minWidth: 260, maxWidth: 400, position: 'relative' }}>
           <Search size={15} style={{
-            position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
-            color: 'rgb(113,113,122)',
+            position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
+            color: 'rgb(var(--text-muted))',
           }} />
           <input
             type="text"
@@ -200,18 +202,18 @@ export default function InventoryPage() {
             placeholder="Search by name, barcode, brand…"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            style={{ paddingLeft: 36 }}
+            style={{ paddingLeft: 38 }}
           />
         </div>
 
         {/* Category Dropdown Filter */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Tag size={15} color="rgb(161,161,170)" />
+          <Tag size={15} color="rgb(var(--text-muted))" />
           <select
             className="input"
             value={selectedCategory}
             onChange={(e) => { setSelectedCategory(e.target.value); setPage(1); }}
-            style={{ minWidth: 160, padding: '8px 12px', fontSize: '0.85rem' }}
+            style={{ minWidth: 160, padding: '8px 14px', fontSize: '0.85rem' }}
           >
             <option value="ALL">All Categories ({categories.length})</option>
             {categories.map((cat: any) => (
@@ -222,7 +224,7 @@ export default function InventoryPage() {
 
         <button
           className={filterLowStock ? 'btn-primary' : 'btn-secondary'}
-          style={{ padding: '8px 16px', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: 6 }}
+          style={{ padding: '8px 18px', fontSize: '0.84rem', display: 'flex', alignItems: 'center', gap: 6 }}
           onClick={() => setFilterLowStock(!filterLowStock)}
         >
           <AlertTriangle size={14} />
@@ -235,7 +237,7 @@ export default function InventoryPage() {
         <table className="data-table">
           <thead>
             <tr>
-              <th>Product / Item</th>
+              <th style={{ minWidth: 220 }}>Product / Item</th>
               <th>Barcode</th>
               <th>Category</th>
               <th>MRP</th>
@@ -243,7 +245,7 @@ export default function InventoryPage() {
               <th>GST</th>
               <th>Stock</th>
               <th>Status</th>
-              <th>Actions</th>
+              <th style={{ textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -257,7 +259,7 @@ export default function InventoryPage() {
               ))
             ) : items.length === 0 ? (
               <tr>
-                <td colSpan={9} style={{ textAlign: 'center', padding: '48px', color: 'rgb(113,113,122)' }}>
+                <td colSpan={9} style={{ textAlign: 'center', padding: '48px', color: 'rgb(var(--text-secondary))' }}>
                   <Package size={36} style={{ opacity: 0.3, marginBottom: 8, display: 'block', margin: '0 auto 8px' }} />
                   No items found in this filter
                 </td>
@@ -266,38 +268,39 @@ export default function InventoryPage() {
               items.map((item: any) => (
                 <tr key={item.id}>
                   <td>
-                    <div style={{ fontWeight: 600, color: '#fafafa' }}>{item.name}</div>
-                    <div style={{ fontSize: '0.72rem', color: 'rgb(161,161,170)' }}>{item.brand ? `${item.brand} · ` : ''}{item.unit}</div>
+                    <div style={{ fontWeight: 700, color: 'rgb(var(--text-primary))', fontSize: '0.9rem', marginBottom: 2 }}>{item.name}</div>
+                    <div style={{ fontSize: '0.74rem', color: 'rgb(var(--text-secondary))' }}>{item.brand ? `${item.brand} · ` : ''}{item.unit}</div>
                   </td>
                   <td>
                     <code style={{
-                      fontSize: '0.72rem', background: 'rgb(var(--surface-3))',
-                      padding: '2px 6px', borderRadius: 4, color: '#a1a1aa'
+                      fontSize: '0.74rem', background: 'rgb(var(--surface-2))',
+                      padding: '3px 8px', borderRadius: 6, color: 'rgb(var(--text-secondary))',
+                      fontFamily: 'monospace',
                     }}>
                       {item.barcode ?? '—'}
                     </code>
                   </td>
                   <td>
                     {item.category ? (
-                      <span className="badge badge-purple" style={{ fontSize: '0.72rem', fontWeight: 600 }}>
+                      <span className="badge badge-purple" style={{ fontSize: '0.74rem', fontWeight: 600 }}>
                         {item.category.name}
                       </span>
                     ) : (
-                      <span style={{ fontSize: '0.75rem', color: 'rgb(113,113,122)' }}>Uncategorized</span>
+                      <span style={{ fontSize: '0.75rem', color: 'rgb(var(--text-muted))' }}>Uncategorized</span>
                     )}
                   </td>
-                  <td style={{ fontWeight: 600 }}>₹{Number(item.mrp).toFixed(2)}</td>
-                  <td style={{ color: 'rgb(52,211,153)', fontWeight: 600 }}>
-                    ₹{Number(item.offerPrice ?? item.mrp).toFixed(2)}
+                  <td style={{ fontWeight: 600, color: 'rgb(var(--text-primary))' }}>${Number(item.mrp).toFixed(2)}</td>
+                  <td style={{ color: 'rgb(var(--color-primary-dark))', fontWeight: 700 }}>
+                    ${Number(item.offerPrice ?? item.mrp).toFixed(2)}
                   </td>
-                  <td>{Number(item.taxPercent)}%</td>
+                  <td style={{ color: 'rgb(var(--text-secondary))' }}>{Number(item.taxPercent)}%</td>
                   <td>
                     <div style={{
                       fontWeight: 700,
-                      color: item.isLowStock ? 'rgb(239,100,100)' : 'rgb(var(--text-primary))',
+                      color: item.isLowStock ? '#dc2626' : 'rgb(var(--text-primary))',
                     }}>
                       {Number(item.currentStock).toFixed(0)} {item.unit}
-                      {item.isLowStock && <AlertTriangle size={12} style={{ display: 'inline', marginLeft: 4 }} />}
+                      {item.isLowStock && <AlertTriangle size={12} style={{ display: 'inline', marginLeft: 4, color: '#d97706' }} />}
                     </div>
                   </td>
                   <td>
@@ -306,34 +309,34 @@ export default function InventoryPage() {
                     </span>
                   </td>
                   <td>
-                    <div style={{ display: 'flex', gap: 6 }}>
+                    <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
                       <button
                         title="Edit Item & Category"
                         className="btn-secondary"
-                        style={{ padding: '6px 10px', fontSize: '0.75rem' }}
+                        style={{ padding: '6px 10px', fontSize: '0.75rem', borderRadius: 8 }}
                         onClick={() => setShowEditModal(item)}
                       >
-                        <Edit2 size={12} />
+                        <Edit2 size={13} />
                       </button>
                       <button
                         title="Restock Inventory"
                         className="btn-secondary"
-                        style={{ padding: '6px 10px', fontSize: '0.75rem' }}
+                        style={{ padding: '6px 10px', fontSize: '0.75rem', borderRadius: 8 }}
                         onClick={() => setShowRestockModal(item)}
                       >
-                        <RefreshCw size={12} />
+                        <RefreshCw size={13} />
                       </button>
                       <button
                         title="Delete Item"
                         className="btn-danger"
-                        style={{ padding: '6px 10px', fontSize: '0.75rem' }}
+                        style={{ padding: '6px 10px', fontSize: '0.75rem', borderRadius: 8 }}
                         onClick={() => {
                           if (confirm(`Deactivate "${item.name}"?`)) {
                             deleteMutation.mutate(item.id);
                           }
                         }}
                       >
-                        <Trash2 size={12} />
+                        <Trash2 size={13} />
                       </button>
                     </div>
                   </td>
@@ -431,6 +434,8 @@ export default function InventoryPage() {
 
 // ── Category Manager Modal ───────────────────────────────────────────────────
 
+// ── Category Manager Modal ───────────────────────────────────────────────────
+
 function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
   const qc = useQueryClient();
   const [newCatName, setNewCatName] = useState('');
@@ -473,15 +478,15 @@ function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 1100,
-      background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      backdropFilter: 'blur(5px)',
+      background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      backdropFilter: 'blur(6px)', padding: 16,
     }} onClick={onClose}>
-      <div className="glass-card modal-content" style={{ width: 440, padding: 24 }} onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-          <h2 style={{ fontSize: '1.05rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Tag size={18} color="rgb(139,92,246)" /> Manage Product Categories
+      <div className="card modal-content animate-fadeIn" style={{ width: '100%', maxWidth: 440, padding: 28, background: '#ffffff', border: '1px solid rgb(var(--border-rgb))', borderRadius: 20, boxShadow: '0 20px 48px rgba(0,0,0,0.12)' }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
+          <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'rgb(var(--text-primary))', display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
+            <Tag size={18} color="rgb(var(--color-primary-dark))" /> Manage Product Categories
           </h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgb(113,113,122)' }}>
+          <button onClick={onClose} style={{ background: 'rgb(var(--surface-2))', border: 'none', borderRadius: 8, padding: 6, cursor: 'pointer', color: 'rgb(var(--text-secondary))' }}>
             <X size={18} />
           </button>
         </div>
@@ -491,12 +496,12 @@ function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
           <input
             type="text"
             className="input"
-            placeholder="New Category Name (e.g. Dairy, Snacks, Beverages)"
+            placeholder="New Category Name (e.g. Dairy, Bakery, Beverages)"
             value={newCatName}
             onChange={(e) => setNewCatName(e.target.value)}
             style={{ flex: 1, fontSize: '0.85rem' }}
           />
-          <button type="submit" className="btn-primary" style={{ padding: '0 16px', flexShrink: 0 }} disabled={isSubmitting || !newCatName.trim()}>
+          <button type="submit" className="btn-primary" style={{ padding: '0 18px', flexShrink: 0, borderRadius: 999 }} disabled={isSubmitting || !newCatName.trim()}>
             {isSubmitting ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : '+ Add'}
           </button>
         </form>
@@ -506,22 +511,22 @@ function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
           {isLoading ? (
             <div style={{ padding: 20, textAlign: 'center' }}><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /></div>
           ) : categories.length === 0 ? (
-            <div style={{ padding: 20, textAlign: 'center', color: 'rgb(161,161,170)', fontSize: '0.82rem' }}>
+            <div style={{ padding: 20, textAlign: 'center', color: 'rgb(var(--text-secondary))', fontSize: '0.82rem' }}>
               No custom categories yet. Add categories like Dairy, Bakery, Electronics to organize your products!
             </div>
           ) : (
             categories.map((cat: any) => (
               <div key={cat.id} style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                padding: '10px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.06)',
+                padding: '10px 14px', borderRadius: 10, background: 'rgb(var(--surface-2))',
+                border: '1px solid rgb(var(--border-rgb))',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span className="badge badge-purple" style={{ fontSize: '0.78rem', fontWeight: 600 }}>{cat.name}</span>
                 </div>
                 <button
                   onClick={() => handleDelete(cat.id, cat.name)}
-                  style={{ background: 'none', border: 'none', color: 'rgb(239,68,68)', cursor: 'pointer', padding: 4 }}
+                  style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', padding: 4 }}
                   title="Delete category"
                 >
                   <Trash2 size={14} />
@@ -555,18 +560,18 @@ function RestockModal({ item, onClose, onSuccess }: { item: any; onClose: () => 
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 1000,
-      background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      backdropFilter: 'blur(4px)',
+      background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      backdropFilter: 'blur(6px)', padding: 16,
     }} onClick={onClose}>
-      <div className="glass-card modal-content" style={{ width: 400, padding: 28 }} onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-          <h2 style={{ fontSize: '1rem', fontWeight: 800 }}>Restock: {item.name}</h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgb(113,113,122)' }}>
+      <div className="card modal-content animate-fadeIn" style={{ width: '100%', maxWidth: 420, padding: 28, background: '#ffffff', border: '1px solid rgb(var(--border-rgb))', borderRadius: 20, boxShadow: '0 20px 48px rgba(0,0,0,0.12)' }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+          <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'rgb(var(--text-primary))', margin: 0 }}>Restock: {item.name}</h2>
+          <button onClick={onClose} style={{ background: 'rgb(var(--surface-2))', border: 'none', borderRadius: 8, padding: 6, cursor: 'pointer', color: 'rgb(var(--text-secondary))' }}>
             <X size={18} />
           </button>
         </div>
-        <p style={{ fontSize: '0.8rem', color: 'rgb(113,113,122)', marginBottom: 20 }}>
-          Current stock: <strong style={{ color: 'white' }}>{Number(item.currentStock).toFixed(0)} {item.unit}</strong>
+        <p style={{ fontSize: '0.84rem', color: 'rgb(var(--text-secondary))', marginBottom: 20 }}>
+          Current stock: <strong style={{ color: 'rgb(var(--text-primary))' }}>{Number(item.currentStock).toFixed(0)} {item.unit}</strong>
         </p>
         <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
@@ -574,15 +579,15 @@ function RestockModal({ item, onClose, onSuccess }: { item: any; onClose: () => 
             <input type="number" className="input" min="0.001" step="any" {...register('quantity', { required: true, min: 0.001 })} />
           </div>
           <div>
-            <label className="label">Purchase/Cost Price (₹)</label>
+            <label className="label">Purchase/Cost Price ($)</label>
             <input type="number" className="input" placeholder="Optional" min="0" step="0.01" {...register('costPrice')} />
           </div>
           <div>
             <label className="label">Invoice Reference</label>
-            <input type="text" className="input" placeholder="e.g. INV-2024-001" {...register('invoiceRef')} />
+            <input type="text" className="input" placeholder="e.g. INV-2026-001" {...register('invoiceRef')} />
           </div>
-          <button type="submit" className="btn-primary" style={{ justifyContent: 'center' }} disabled={isSubmitting}>
-            {isSubmitting ? <><Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> Restocking...</> : 'Restock'}
+          <button type="submit" className="btn-primary" style={{ justifyContent: 'center', marginTop: 8 }} disabled={isSubmitting}>
+            {isSubmitting ? <><Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> Restocking...</> : 'Restock Item'}
           </button>
         </form>
       </div>
@@ -654,13 +659,13 @@ function AddItemModal({
     <>
       <div style={{
         position: 'fixed', inset: 0, zIndex: 1000,
-        background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        backdropFilter: 'blur(4px)',
+        background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        backdropFilter: 'blur(6px)', padding: 16,
       }} onClick={onClose}>
-        <div className="glass-card modal-content" style={{ width: 520, padding: 28, maxHeight: '90vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-            <h2 style={{ fontSize: '1rem', fontWeight: 800 }}>Add New Product</h2>
-            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgb(113,113,122)' }}>
+        <div className="card modal-content animate-fadeIn" style={{ width: '100%', maxWidth: 520, padding: 28, maxHeight: '90vh', overflowY: 'auto', background: '#ffffff', border: '1px solid rgb(var(--border-rgb))', borderRadius: 20, boxShadow: '0 20px 48px rgba(0,0,0,0.12)' }} onClick={(e) => e.stopPropagation()}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'rgb(var(--text-primary))', margin: 0 }}>Add New Product</h2>
+            <button onClick={onClose} style={{ background: 'rgb(var(--surface-2))', border: 'none', borderRadius: 8, padding: 6, cursor: 'pointer', color: 'rgb(var(--text-secondary))' }}>
               <X size={18} />
             </button>
           </div>
@@ -670,20 +675,20 @@ function AddItemModal({
             <div style={{
               background: 'rgba(239, 68, 68, 0.08)',
               border: '1px solid rgba(239, 68, 68, 0.3)',
-              borderRadius: 12,
+              borderRadius: 14,
               padding: '14px 16px',
               marginBottom: 18,
               display: 'flex',
               alignItems: 'flex-start',
               gap: 12,
             }}>
-              <AlertTriangle size={20} color="#f87171" style={{ flexShrink: 0, marginTop: 2 }} />
+              <AlertTriangle size={20} color="#dc2626" style={{ flexShrink: 0, marginTop: 2 }} />
               <div>
-                <div style={{ fontWeight: 800, fontSize: '0.88rem', color: '#f87171', marginBottom: 3 }}>
+                <div style={{ fontWeight: 800, fontSize: '0.88rem', color: '#dc2626', marginBottom: 3 }}>
                   Plan Limit Reached ({currentSkuCount} / {tierLimit} SKUs)
                 </div>
-                <p style={{ fontSize: '0.78rem', color: 'rgb(148, 163, 184)', margin: '0 0 10px 0', lineHeight: 1.4 }}>
-                  Your shop has reached the maximum of <strong style={{ color: '#f8fafc' }}>{tierLimit} products</strong> allowed on the <strong style={{ color: '#f8fafc' }}>{currentTier}</strong> plan. Upgrade your plan to unlock more product capacity.
+                <p style={{ fontSize: '0.78rem', color: 'rgb(var(--text-secondary))', margin: '0 0 10px 0', lineHeight: 1.4 }}>
+                  Your shop has reached the maximum of <strong style={{ color: 'rgb(var(--text-primary))' }}>{tierLimit} products</strong> allowed on the <strong style={{ color: 'rgb(var(--text-primary))' }}>{currentTier}</strong> plan. Upgrade your plan to unlock more product capacity.
                 </p>
                 <button
                   type="button"
@@ -691,8 +696,7 @@ function AddItemModal({
                   style={{
                     fontSize: '0.78rem',
                     padding: '6px 14px',
-                    borderRadius: 8,
-                    background: 'rgb(22, 163, 74)',
+                    borderRadius: 999,
                     fontWeight: 700,
                   }}
                   onClick={() => {
@@ -709,7 +713,7 @@ function AddItemModal({
           <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
             <div style={{ gridColumn: '1 / -1' }}>
               <label className="label">Item / Product Name *</label>
-              <input type="text" className="input" placeholder="e.g. Amul Milk 1L" disabled={isOverLimit} {...register('name', { required: true })} />
+              <input type="text" className="input" placeholder="e.g. Organic Almond Milk 1L" disabled={isOverLimit} {...register('name', { required: true })} />
             </div>
 
             {/* Category Field */}
@@ -718,7 +722,7 @@ function AddItemModal({
                 <label className="label" style={{ marginBottom: 0 }}>Product Category</label>
                 <button
                   type="button"
-                  style={{ background: 'none', border: 'none', color: '#4ade80', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 }}
+                  style={{ background: 'none', border: 'none', color: 'rgb(var(--color-primary-dark))', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 }}
                   onClick={onOpenCategoryManager}
                 >
                   + Add / Manage Categories
@@ -733,11 +737,11 @@ function AddItemModal({
             </div>
 
             <div>
-              <label className="label">MRP (₹) *</label>
+              <label className="label">MRP ($) *</label>
               <input type="number" className="input" placeholder="0.00" min="0" step="0.01" disabled={isOverLimit} {...register('mrp', { required: true })} />
             </div>
             <div>
-              <label className="label">Offer/Selling Price (₹)</label>
+              <label className="label">Offer/Selling Price ($)</label>
               <input type="number" className="input" placeholder="Leave blank = MRP" min="0" step="0.01" disabled={isOverLimit} {...register('offerPrice')} />
             </div>
             <div>
@@ -770,13 +774,11 @@ function AddItemModal({
                   type="button"
                   className="btn-secondary"
                   style={{
-                    padding: '0 12px',
+                    padding: '0 14px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    background: 'rgba(22,163,74,0.12)',
-                    border: '1px solid rgba(22,163,74,0.3)',
-                    color: '#4ade80',
+                    borderRadius: 10,
                   }}
                   disabled={isOverLimit}
                   onClick={() => setShowBarcodeScanner(true)}
@@ -790,7 +792,7 @@ function AddItemModal({
               <label className="label">Initial Stock Quantity</label>
               <input type="number" className="input" placeholder="0" min="0" step="any" disabled={isOverLimit} {...register('initialStock')} />
             </div>
-            <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
+            <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 10 }}>
               <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
               <button
                 type="submit"
@@ -867,13 +869,13 @@ function EditItemModal({
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 1000,
-      background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      backdropFilter: 'blur(4px)',
+      background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      backdropFilter: 'blur(6px)', padding: 16,
     }} onClick={onClose}>
-      <div className="glass-card modal-content" style={{ width: 500, padding: 28, maxHeight: '90vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-          <h2 style={{ fontSize: '1rem', fontWeight: 800 }}>Edit Product: {item.name}</h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgb(113,113,122)' }}>
+      <div className="card modal-content animate-fadeIn" style={{ width: '100%', maxWidth: 500, padding: 28, maxHeight: '90vh', overflowY: 'auto', background: '#ffffff', border: '1px solid rgb(var(--border-rgb))', borderRadius: 20, boxShadow: '0 20px 48px rgba(0,0,0,0.12)' }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'rgb(var(--text-primary))', margin: 0 }}>Edit Product: {item.name}</h2>
+          <button onClick={onClose} style={{ background: 'rgb(var(--surface-2))', border: 'none', borderRadius: 8, padding: 6, cursor: 'pointer', color: 'rgb(var(--text-secondary))' }}>
             <X size={18} />
           </button>
         </div>
@@ -892,11 +894,11 @@ function EditItemModal({
             </select>
           </div>
           <div>
-            <label className="label">MRP (₹) *</label>
+            <label className="label">MRP ($) *</label>
             <input type="number" className="input" step="0.01" {...register('mrp', { required: true })} />
           </div>
           <div>
-            <label className="label">Offer Price (₹)</label>
+            <label className="label">Offer Price ($)</label>
             <input type="number" className="input" step="0.01" {...register('offerPrice')} />
           </div>
           <div>
@@ -919,7 +921,7 @@ function EditItemModal({
             <label className="label">Barcode</label>
             <input type="text" className="input" {...register('barcode')} />
           </div>
-          <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
+          <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 10 }}>
             <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
             <button type="submit" className="btn-primary" disabled={isSubmitting}>
               {isSubmitting ? <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> : 'Save Changes'}

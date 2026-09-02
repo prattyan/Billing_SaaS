@@ -34,13 +34,14 @@ export default function HeldBillsSectionModal({
       onClick={onClose}
     >
       <div
+        className="card"
         style={{
           width: '100%', maxWidth: 580, maxHeight: '85vh',
-          background: 'rgb(24, 24, 32)',
-          border: '1px solid rgba(139, 92, 246, 0.3)',
-          borderRadius: 24,
+          background: '#ffffff',
+          border: '1px solid rgb(var(--border-rgb))',
+          borderRadius: 20,
           padding: '24px',
-          boxShadow: '0 20px 50px rgba(0,0,0,0.6)',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.12)',
           display: 'flex', flexDirection: 'column', gap: 16,
           overflow: 'hidden',
         }}
@@ -51,27 +52,29 @@ export default function HeldBillsSectionModal({
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{
               width: 38, height: 38, borderRadius: 12,
-              background: 'rgba(251, 191, 36, 0.15)',
-              border: '1px solid rgba(251, 191, 36, 0.3)',
+              background: 'rgba(234, 179, 8, 0.12)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <PauseCircle size={22} color="rgb(251, 191, 36)" />
+              <PauseCircle size={22} color="#b45309" />
             </div>
             <div>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#ffffff', margin: 0 }}>
-                Parked Orders & Held Bills ({heldBills.length})
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'rgb(var(--text-primary))', margin: 0 }}>
+                Parked & Held Orders
               </h3>
-              <p style={{ fontSize: '0.75rem', color: 'rgb(161, 161, 170)', margin: 0 }}>
-                All staff & owners can continue any parked order
+              <p style={{ fontSize: '0.75rem', color: 'rgb(var(--text-secondary))', margin: 0 }}>
+                Restore cart items or discard old held bills
               </p>
             </div>
           </div>
-
           <button
             onClick={onClose}
             style={{
-              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: 8, padding: 6, cursor: 'pointer', color: 'rgb(161,161,170)',
+              background: 'rgb(var(--surface-2))',
+              border: 'none',
+              borderRadius: 8,
+              padding: 6,
+              cursor: 'pointer',
+              color: 'rgb(var(--text-secondary))',
             }}
           >
             <X size={18} />
@@ -81,12 +84,12 @@ export default function HeldBillsSectionModal({
         {/* List of Held Bills */}
         <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12, paddingRight: 4 }}>
           {heldBills.length === 0 ? (
-            <div style={{ padding: '48px 20px', textAlign: 'center', color: '#a1a1aa' }}>
+            <div style={{ padding: '48px 20px', textAlign: 'center', color: 'rgb(var(--text-muted))' }}>
               <ShoppingBag size={42} style={{ opacity: 0.3, margin: '0 auto 12px' }} />
-              <div style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: 4, color: '#f4f4f5' }}>
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: 4, color: 'rgb(var(--text-primary))' }}>
                 No Parked Bills Currently
               </div>
-              <div style={{ fontSize: '0.8rem' }}>
+              <div style={{ fontSize: '0.8rem', color: 'rgb(var(--text-secondary))' }}>
                 When you click "Hold" on an active cart, it will appear here for any worker to resume.
               </div>
             </div>
@@ -110,8 +113,8 @@ export default function HeldBillsSectionModal({
                   style={{
                     padding: '16px 18px',
                     borderRadius: 16,
-                    background: 'rgba(255, 255, 255, 0.03)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    background: 'rgb(var(--surface-2))',
+                    border: '1px solid rgb(var(--border-rgb))',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 12,
@@ -121,30 +124,30 @@ export default function HeldBillsSectionModal({
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ fontSize: '0.9rem', fontWeight: 800, color: 'rgb(251, 191, 36)' }}>
+                        <span style={{ fontSize: '0.92rem', fontWeight: 800, color: '#d97706' }}>
                           Parked Order #{heldBills.length - idx}
                         </span>
                         {timeAgo && (
-                          <span style={{ fontSize: '0.72rem', color: '#a1a1aa', display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <span style={{ fontSize: '0.74rem', color: 'rgb(var(--text-muted))', display: 'flex', alignItems: 'center', gap: 4 }}>
                             <Clock size={12} /> {timeAgo}
                           </span>
                         )}
                       </div>
 
                       {(customerName || customerPhone) && (
-                        <div style={{ fontSize: '0.78rem', color: '#e4e4e7', marginTop: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <User size={13} color="rgb(167, 139, 250)" />
+                        <div style={{ fontSize: '0.8rem', color: 'rgb(var(--text-primary))', marginTop: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <User size={13} color="rgb(var(--color-primary-dark))" />
                           <span>{customerName || 'Customer'}</span>
-                          {customerPhone && <span style={{ color: '#a1a1aa' }}>({customerPhone})</span>}
+                          {customerPhone && <span style={{ color: 'rgb(var(--text-secondary))' }}>({customerPhone})</span>}
                         </div>
                       )}
                     </div>
 
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '1.1rem', fontWeight: 900, color: 'rgb(52, 211, 153)' }}>
+                      <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'rgb(var(--color-primary-dark))' }}>
                         ₹{estTotal.toFixed(2)}
                       </div>
-                      <div style={{ fontSize: '0.72rem', color: '#a1a1aa' }}>
+                      <div style={{ fontSize: '0.74rem', color: 'rgb(var(--text-secondary))' }}>
                         {itemCount} {itemCount === 1 ? 'item' : 'items'}
                       </div>
                     </div>
@@ -154,16 +157,17 @@ export default function HeldBillsSectionModal({
                   {items.length > 0 && (
                     <div style={{
                       padding: '8px 12px', borderRadius: 10,
-                      background: 'rgba(0,0,0,0.2)', fontSize: '0.76rem', color: '#d4d4d8',
+                      background: '#ffffff', border: '1px solid rgb(var(--border-rgb))',
+                      fontSize: '0.78rem', color: 'rgb(var(--text-secondary))',
                       display: 'flex', flexWrap: 'wrap', gap: '6px 12px',
                     }}>
                       {items.slice(0, 4).map((it: any, i: number) => (
                         <span key={i}>
-                          • {it.name || 'Item'} <strong style={{ color: 'rgb(167, 139, 250)' }}>x{it.qty}</strong>
+                          • {it.name || 'Item'} <strong style={{ color: 'rgb(var(--text-primary))' }}>x{it.qty}</strong>
                         </span>
                       ))}
                       {items.length > 4 && (
-                        <span style={{ color: '#a1a1aa' }}>+{items.length - 4} more</span>
+                        <span style={{ color: 'rgb(var(--text-muted))' }}>+{items.length - 4} more</span>
                       )}
                     </div>
                   )}
@@ -173,7 +177,7 @@ export default function HeldBillsSectionModal({
                     <button
                       type="button"
                       className="btn-primary"
-                      style={{ padding: '8px 16px', fontSize: '0.8rem', fontWeight: 800, borderRadius: 10 }}
+                      style={{ padding: '8px 18px', fontSize: '0.82rem', fontWeight: 800, borderRadius: 999 }}
                       disabled={isResuming}
                       onClick={() => {
                         onResumeHeld(held.id);

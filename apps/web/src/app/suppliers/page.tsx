@@ -42,88 +42,90 @@ export default function SuppliersPage() {
   });
 
   return (
-    <div className="page-container" style={{ padding: '28px 24px' }}>
+    <div className="page-container" style={{ padding: '32px 36px', maxWidth: 1400, margin: '0 auto' }}>
       {/* Header */}
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28, flexWrap: 'wrap', gap: 14 }}>
         <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: 4 }}>Suppliers & Purchase Orders</h1>
-          <p style={{ color: 'rgb(161,161,170)', fontSize: '0.875rem' }}>
+          <h1 style={{ fontSize: '1.65rem', fontWeight: 800, color: 'rgb(var(--text-primary))', marginBottom: 4 }}>Suppliers & Purchase Orders</h1>
+          <p style={{ color: 'rgb(var(--text-secondary))', fontSize: '0.875rem' }}>
             Manage wholesale vendor contacts & purchase orders with auto-restock
           </p>
         </div>
         <div className="page-header-actions" style={{ display: 'flex', gap: 10 }}>
-          <button className="btn-secondary" onClick={() => setShowAddSupplierModal(true)}>
+          <button className="btn-secondary" style={{ padding: '8px 16px', fontSize: '0.85rem' }} onClick={() => setShowAddSupplierModal(true)}>
             <Plus size={15} /> Add Supplier
           </button>
-          <button className="btn-primary" onClick={() => setShowCreatePoModal(true)}>
+          <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '0.85rem' }} onClick={() => setShowCreatePoModal(true)}>
             <FileText size={15} /> New PO
           </button>
         </div>
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 8, borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: 12, marginBottom: 24, overflowX: 'auto' }}>
+      <div style={{ display: 'flex', gap: 8, borderBottom: '1px solid rgb(var(--border-rgb))', paddingBottom: 12, marginBottom: 24, overflowX: 'auto' }}>
         <button
           onClick={() => setActiveTab('suppliers')}
           style={{
-            display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
-            background: activeTab === 'suppliers' ? 'rgba(139,92,246,0.15)' : 'transparent',
-            color: activeTab === 'suppliers' ? 'rgb(167,139,250)' : 'rgb(161,161,170)',
-            fontWeight: activeTab === 'suppliers' ? 700 : 500, fontSize: '0.875rem',
+            display: 'flex', alignItems: 'center', gap: 8, padding: '8px 18px', borderRadius: 999, border: 'none', cursor: 'pointer',
+            background: activeTab === 'suppliers' ? 'rgb(var(--color-primary))' : 'rgb(var(--surface-2))',
+            color: activeTab === 'suppliers' ? '#ffffff' : 'rgb(var(--text-secondary))',
+            fontWeight: activeTab === 'suppliers' ? 700 : 500, fontSize: '0.85rem',
+            transition: 'all 0.15s ease',
           }}
         >
-          <Truck size={16} /> Suppliers Directory ({suppliers?.length ?? 0})
+          <Truck size={15} /> Suppliers Directory ({suppliers?.length ?? 0})
         </button>
         <button
           onClick={() => setActiveTab('pos')}
           style={{
-            display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
-            background: activeTab === 'pos' ? 'rgba(139,92,246,0.15)' : 'transparent',
-            color: activeTab === 'pos' ? 'rgb(167,139,250)' : 'rgb(161,161,170)',
-            fontWeight: activeTab === 'pos' ? 700 : 500, fontSize: '0.875rem',
+            display: 'flex', alignItems: 'center', gap: 8, padding: '8px 18px', borderRadius: 999, border: 'none', cursor: 'pointer',
+            background: activeTab === 'pos' ? 'rgb(var(--color-primary))' : 'rgb(var(--surface-2))',
+            color: activeTab === 'pos' ? '#ffffff' : 'rgb(var(--text-secondary))',
+            fontWeight: activeTab === 'pos' ? 700 : 500, fontSize: '0.85rem',
+            transition: 'all 0.15s ease',
           }}
         >
-          <FileText size={16} /> Purchase Orders ({purchaseOrders?.length ?? 0})
+          <FileText size={15} /> Purchase Orders ({purchaseOrders?.length ?? 0})
         </button>
       </div>
 
       {/* ── TAB 1: Suppliers Directory ─────────────────────────────────── */}
       {activeTab === 'suppliers' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 18 }}>
           {isLoadingSuppliers ? (
-            Array.from({ length: 3 }).map((_, i) => <div key={i} className="skeleton" style={{ height: 160 }} />)
+            Array.from({ length: 3 }).map((_, i) => <div key={i} className="skeleton" style={{ height: 160, borderRadius: 16 }} />)
           ) : suppliers?.length === 0 ? (
-            <div className="card" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: 48, color: 'rgb(113,113,122)' }}>
+            <div className="card" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: 48, color: 'rgb(var(--text-secondary))' }}>
               <Truck size={36} style={{ opacity: 0.3, display: 'block', margin: '0 auto 12px' }} />
               No suppliers added yet. Click &quot;Add Supplier&quot; to begin.
             </div>
           ) : (
             suppliers?.map((s: any) => (
-              <div key={s.id} className="card animate-fadeIn" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div key={s.id} className="card animate-fadeIn" style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 22, borderRadius: 16 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
-                    <h3 style={{ fontSize: '1rem', fontWeight: 800 }}>{s.name}</h3>
-                    {s.gstin && <div style={{ fontSize: '0.7rem', color: 'rgb(113,113,122)' }}>GSTIN: {s.gstin}</div>}
+                    <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'rgb(var(--text-primary))', marginBottom: 2 }}>{s.name}</h3>
+                    {s.gstin && <div style={{ fontSize: '0.72rem', color: 'rgb(var(--text-muted))' }}>GSTIN: {s.gstin}</div>}
                   </div>
-                  <span className="badge badge-purple">{s._count?.items ?? 0} items supplied</span>
+                  <span className="badge badge-purple" style={{ fontSize: '0.74rem' }}>{s._count?.items ?? 0} items supplied</span>
                 </div>
 
                 <div className="divider" style={{ margin: 0 }} />
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: '0.8rem', color: 'rgb(161,161,170)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: '0.82rem', color: 'rgb(var(--text-secondary))' }}>
                   {s.contact && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <Phone size={13} color="rgb(113,113,122)" /> {s.contact}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Phone size={13} color="rgb(var(--text-muted))" /> {s.contact}
                     </div>
                   )}
                   {s.email && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <Mail size={13} color="rgb(113,113,122)" /> {s.email}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Mail size={13} color="rgb(var(--text-muted))" /> {s.email}
                     </div>
                   )}
                   {s.address && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <MapPin size={13} color="rgb(113,113,122)" /> {s.address}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <MapPin size={13} color="rgb(var(--text-muted))" /> {s.address}
                     </div>
                   )}
                 </div>
@@ -135,7 +137,7 @@ export default function SuppliersPage() {
 
       {/* ── TAB 2: Purchase Orders ────────────────────────────────────── */}
       {activeTab === 'pos' && (
-        <div className="table-wrapper">
+        <div className="table-wrapper desktop-table">
           <table className="data-table">
             <thead>
               <tr>
@@ -145,23 +147,23 @@ export default function SuppliersPage() {
                 <th>Items Count</th>
                 <th>Total Value</th>
                 <th>Status</th>
-                <th>Action</th>
+                <th style={{ textAlign: 'right' }}>Action</th>
               </tr>
             </thead>
             <tbody>
               {isLoadingPos ? (
                 <tr><td colSpan={7} style={{ textAlign: 'center', padding: 24 }}>Loading purchase orders…</td></tr>
               ) : purchaseOrders?.length === 0 ? (
-                <tr><td colSpan={7} style={{ textAlign: 'center', padding: 32, color: 'rgb(113,113,122)' }}>No purchase orders created yet</td></tr>
+                <tr><td colSpan={7} style={{ textAlign: 'center', padding: 32, color: 'rgb(var(--text-secondary))' }}>No purchase orders created yet</td></tr>
               ) : (
                 purchaseOrders?.map((po: any) => (
                   <tr key={po.id}>
-                    <td><code style={{ fontWeight: 700, color: 'rgb(167,139,250)' }}>PO-{po.id.slice(-6).toUpperCase()}</code></td>
-                    <td style={{ fontWeight: 600 }}>{po.supplier?.name}</td>
-                    <td style={{ fontSize: '0.8rem' }}>{format(new Date(po.createdAt), 'dd MMM yyyy')}</td>
+                    <td><code style={{ fontWeight: 700, color: 'rgb(var(--color-primary-dark))', fontFamily: 'monospace' }}>PO-{po.id.slice(-6).toUpperCase()}</code></td>
+                    <td style={{ fontWeight: 700, color: 'rgb(var(--text-primary))' }}>{po.supplier?.name}</td>
+                    <td style={{ fontSize: '0.82rem', color: 'rgb(var(--text-secondary))' }}>{format(new Date(po.createdAt), 'dd MMM yyyy')}</td>
                     <td>{po._count?.items ?? 0} items</td>
-                    <td style={{ fontWeight: 700, color: 'rgb(52,211,153)' }}>
-                      ₹{Number(po.totalAmount).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+                    <td style={{ fontWeight: 700, color: 'rgb(var(--color-primary-dark))' }}>
+                      ${Number(po.totalAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                     <td>
                       <span className={`badge ${po.status === 'RECEIVED' ? 'badge-success' : 'badge-warning'}`}>
@@ -169,21 +171,23 @@ export default function SuppliersPage() {
                       </span>
                     </td>
                     <td>
-                      {po.status === 'DRAFT' || po.status === 'SENT' ? (
-                        <button
-                          className="btn-primary"
-                          style={{ padding: '6px 12px', fontSize: '0.75rem' }}
-                          disabled={receivePoMutation.isPending}
-                          onClick={() => receivePoMutation.mutate(po.id)}
-                        >
-                          <ArrowDownToLine size={13} /> Receive & Restock
-                        </button>
-                      ) : (
-                        <span style={{ fontSize: '0.75rem', color: 'rgb(52,211,153)' }}>
-                          <CheckCircle2 size={13} style={{ display: 'inline', marginRight: 4 }} />
-                          Received {po.receivedAt ? format(new Date(po.receivedAt), 'dd/MM/yy') : ''}
-                        </span>
-                      )}
+                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        {po.status === 'DRAFT' || po.status === 'SENT' ? (
+                          <button
+                            className="btn-primary"
+                            style={{ padding: '6px 14px', fontSize: '0.75rem', borderRadius: 999 }}
+                            disabled={receivePoMutation.isPending}
+                            onClick={() => receivePoMutation.mutate(po.id)}
+                          >
+                            <ArrowDownToLine size={13} /> Receive & Restock
+                          </button>
+                        ) : (
+                          <span style={{ fontSize: '0.78rem', color: 'rgb(var(--color-primary-dark))', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <CheckCircle2 size={14} />
+                            Received {po.receivedAt ? format(new Date(po.receivedAt), 'dd/MM/yy') : ''}
+                          </span>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -231,13 +235,13 @@ function AddSupplierModal({ onClose, onSuccess }: { onClose: () => void; onSucce
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 1000,
-      background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      backdropFilter: 'blur(4px)', padding: 16,
+      background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      backdropFilter: 'blur(6px)', padding: 16,
     }} onClick={onClose}>
-      <div className="glass-card" style={{ width: 440, padding: 28 }} onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-          <h2 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Add New Supplier</h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgb(113,113,122)' }}>
+      <div className="card modal-content animate-fadeIn" style={{ width: '100%', maxWidth: 440, padding: 28, background: '#ffffff', border: '1px solid rgb(var(--border-rgb))', borderRadius: 20, boxShadow: '0 20px 48px rgba(0,0,0,0.12)' }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'rgb(var(--text-primary))', margin: 0 }}>Add New Supplier</h2>
+          <button onClick={onClose} style={{ background: 'rgb(var(--surface-2))', border: 'none', borderRadius: 8, padding: 6, cursor: 'pointer', color: 'rgb(var(--text-secondary))' }}>
             <X size={18} />
           </button>
         </div>
@@ -260,7 +264,7 @@ function AddSupplierModal({ onClose, onSuccess }: { onClose: () => void; onSucce
           </div>
           <div>
             <label className="label">Address / Location</label>
-            <input type="text" className="input" placeholder="City Market, Bangalore" {...register('address')} />
+            <input type="text" className="input" placeholder="City Market, Sector 4" {...register('address')} />
           </div>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 10 }}>
             <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
@@ -314,13 +318,13 @@ function CreatePoModal({ suppliers, onClose, onSuccess }: { suppliers: any[]; on
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 1000,
-      background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      backdropFilter: 'blur(4px)', padding: 16,
+      background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      backdropFilter: 'blur(6px)', padding: 16,
     }} onClick={onClose}>
-      <div className="glass-card" style={{ width: 620, maxHeight: '90vh', padding: 28, overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-          <h2 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Create Purchase Order</h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgb(113,113,122)' }}>
+      <div className="card modal-content animate-fadeIn" style={{ width: '100%', maxWidth: 620, maxHeight: '90vh', padding: 28, overflowY: 'auto', background: '#ffffff', border: '1px solid rgb(var(--border-rgb))', borderRadius: 20, boxShadow: '0 20px 48px rgba(0,0,0,0.12)' }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'rgb(var(--text-primary))', margin: 0 }}>Create Purchase Order</h2>
+          <button onClick={onClose} style={{ background: 'rgb(var(--surface-2))', border: 'none', borderRadius: 8, padding: 6, cursor: 'pointer', color: 'rgb(var(--text-secondary))' }}>
             <X size={18} />
           </button>
         </div>
@@ -340,7 +344,7 @@ function CreatePoModal({ suppliers, onClose, onSuccess }: { suppliers: any[]; on
               <button
                 type="button"
                 className="btn-secondary"
-                style={{ padding: '4px 10px', fontSize: '0.75rem' }}
+                style={{ padding: '4px 12px', fontSize: '0.75rem', borderRadius: 8 }}
                 onClick={() => append({ itemId: items?.[0]?.id ?? '', quantity: 10, unitPrice: 50 })}
               >
                 + Add Item Row
@@ -357,8 +361,8 @@ function CreatePoModal({ suppliers, onClose, onSuccess }: { suppliers: any[]; on
                     ))}
                   </select>
                   <input type="number" className="input" placeholder="Qty" min="1" {...register(`items.${idx}.quantity` as const, { required: true })} />
-                  <input type="number" className="input" placeholder="Unit Price ₹" min="0" step="0.01" {...register(`items.${idx}.unitPrice` as const, { required: true })} />
-                  <button type="button" onClick={() => remove(idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgb(239,100,100)' }}>
+                  <input type="number" className="input" placeholder="Unit Price $" min="0" step="0.01" {...register(`items.${idx}.unitPrice` as const, { required: true })} />
+                  <button type="button" onClick={() => remove(idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', padding: 4 }}>
                     <X size={16} />
                   </button>
                 </div>
@@ -371,10 +375,10 @@ function CreatePoModal({ suppliers, onClose, onSuccess }: { suppliers: any[]; on
             <input type="text" className="input" placeholder="e.g. Deliver by Friday morning" {...register('notes')} />
           </div>
 
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 10 }}>
             <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
             <button type="submit" className="btn-primary" disabled={isSubmitting}>
-              {isSubmitting ? <><Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> Creating...</> : 'Create PO (Draft)'}
+              {isSubmitting ? <><Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> Generating PO...</> : 'Create PO'}
             </button>
           </div>
         </form>

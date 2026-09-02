@@ -402,17 +402,20 @@ export default function BarcodeScannerModal({
       onClick={onClose}
     >
       <div
-        className="glass-card animate-fadeIn"
+        className="card animate-fadeIn"
         style={{
           width: '100%',
           maxWidth: 520,
           padding: 24,
+          background: '#ffffff',
+          border: '1px solid rgb(var(--border-rgb))',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'stretch',
           position: 'relative',
           overflow: 'hidden',
           borderRadius: 20,
+          boxShadow: '0 20px 48px rgba(0,0,0,0.12)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -421,27 +424,27 @@ export default function BarcodeScannerModal({
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{
               width: 38, height: 38, borderRadius: 12,
-              background: 'linear-gradient(135deg, rgb(139,92,246), rgb(52,211,153))',
+              background: 'rgb(var(--color-primary))',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 4px 16px rgba(139,92,246,0.3)',
+              boxShadow: '0 4px 14px rgba(78,159,118,0.25)',
             }}>
               <ScanLine size={20} color="white" />
             </div>
             <div>
-              <h2 style={{ fontSize: '1.1rem', fontWeight: 800 }}>{title}</h2>
-              <p style={{ fontSize: '0.72rem', color: 'rgb(161,161,170)' }}>{subtitle}</p>
+              <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'rgb(var(--text-primary))', margin: 0 }}>{title}</h2>
+              <p style={{ fontSize: '0.74rem', color: 'rgb(var(--text-secondary))', margin: 0 }}>{subtitle}</p>
             </div>
           </div>
 
           <button
             onClick={onClose}
             style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.1)',
+              background: 'rgb(var(--surface-2))',
+              border: 'none',
               borderRadius: 8,
               padding: 6,
               cursor: 'pointer',
-              color: 'rgb(161,161,170)',
+              color: 'rgb(var(--text-secondary))',
             }}
           >
             <X size={18} />
@@ -456,17 +459,17 @@ export default function BarcodeScannerModal({
           background: 'rgb(14, 14, 18)',
           borderRadius: 14,
           overflow: 'hidden',
-          border: '1px solid rgba(255,255,255,0.1)',
+          border: '1px solid rgb(var(--border-rgb))',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
         }}>
           {cameraError ? (
-            <div style={{ padding: 24, textAlign: 'center', color: 'rgb(239,100,100)' }}>
+            <div style={{ padding: 24, textAlign: 'center', color: '#dc2626' }}>
               <AlertCircle size={36} style={{ display: 'block', margin: '0 auto 12px', opacity: 0.8 }} />
               <p style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: 8 }}>Camera Access Unavailable</p>
-              <p style={{ fontSize: '0.75rem', color: 'rgb(161,161,170)' }}>{cameraError}</p>
-              <p style={{ fontSize: '0.7rem', color: 'rgb(113,113,122)', marginTop: 8 }}>
+              <p style={{ fontSize: '0.75rem', color: 'rgb(var(--text-secondary))' }}>{cameraError}</p>
+              <p style={{ fontSize: '0.7rem', color: 'rgb(var(--text-muted))', marginTop: 8 }}>
                 You can type the barcode digits or search the product name below.
               </p>
             </div>
@@ -497,7 +500,7 @@ export default function BarcodeScannerModal({
                   <div style={{
                     width: '88%',
                     height: '60%',
-                    border: '2px solid rgba(52,211,153,0.9)',
+                    border: '2px solid rgba(78, 159, 118, 0.9)',
                     borderRadius: 12,
                     boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.5)',
                     position: 'relative',
@@ -509,8 +512,8 @@ export default function BarcodeScannerModal({
                       left: 0,
                       right: 0,
                       height: 3,
-                      background: 'linear-gradient(90deg, transparent, rgb(52,211,153), rgb(245,158,11), rgb(52,211,153), transparent)',
-                      boxShadow: '0 0 12px rgb(52,211,153)',
+                      background: 'linear-gradient(90deg, transparent, rgb(78,159,118), rgb(245,158,11), rgb(78,159,118), transparent)',
+                      boxShadow: '0 0 12px rgb(78,159,118)',
                       animation: 'scanLaser 1.8s linear infinite alternate',
                     }} />
 
@@ -545,12 +548,12 @@ export default function BarcodeScannerModal({
               placeholder="Or type/paste barcode digits (e.g. 9789362255495)"
               value={manualBarcode}
               onChange={(e) => setManualBarcode(e.target.value)}
-              style={{ fontSize: '0.82rem', height: 38 }}
+              style={{ fontSize: '0.84rem', height: 38 }}
             />
             <button
               type="submit"
               className="btn-primary"
-              style={{ height: 38, padding: '0 14px', fontSize: '0.8rem', flexShrink: 0 }}
+              style={{ height: 38, padding: '0 16px', fontSize: '0.82rem', flexShrink: 0, borderRadius: 10 }}
               disabled={!manualBarcode.trim()}
             >
               <ArrowRight size={14} /> Submit
@@ -560,7 +563,7 @@ export default function BarcodeScannerModal({
           {/* Quick matching product suggestions */}
           {searchResults.length > 0 && (
             <div
-              className="glass-card"
+              className="card"
               style={{
                 position: 'absolute',
                 top: 44,
@@ -568,12 +571,12 @@ export default function BarcodeScannerModal({
                 right: 0,
                 zIndex: 50,
                 padding: 6,
-                borderRadius: 10,
+                borderRadius: 12,
                 maxHeight: 180,
                 overflowY: 'auto',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
-                background: 'rgb(22, 22, 30)',
-                border: '1px solid rgba(255,255,255,0.12)',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                background: '#ffffff',
+                border: '1px solid rgb(var(--border-rgb))',
               }}
             >
               {searchResults.map((item) => (
@@ -589,7 +592,7 @@ export default function BarcodeScannerModal({
                   }}
                   style={{
                     padding: '8px 10px',
-                    borderRadius: 6,
+                    borderRadius: 8,
                     cursor: 'pointer',
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -597,16 +600,15 @@ export default function BarcodeScannerModal({
                     fontSize: '0.8rem',
                     transition: 'background 0.15s',
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(139,92,246,0.2)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                  className="search-result-row"
                 >
                   <div>
-                    <div style={{ fontWeight: 600 }}>{item.name}</div>
-                    <div style={{ fontSize: '0.7rem', color: 'rgb(161,161,170)' }}>
+                    <div style={{ fontWeight: 700, color: 'rgb(var(--text-primary))' }}>{item.name}</div>
+                    <div style={{ fontSize: '0.72rem', color: 'rgb(var(--text-secondary))' }}>
                       Barcode: {item.barcode || '—'} · Stock: {item.currentStock} {item.unit}
                     </div>
                   </div>
-                  <div style={{ fontWeight: 700, color: 'rgb(52,211,153)' }}>
+                  <div style={{ fontWeight: 800, color: 'rgb(var(--color-primary-dark))' }}>
                     ₹{item.offerPrice ?? item.mrp}
                   </div>
                 </div>
@@ -621,26 +623,26 @@ export default function BarcodeScannerModal({
             marginTop: 14,
             padding: '12px 14px',
             borderRadius: 12,
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.08)',
+            background: 'rgb(var(--surface-2))',
+            border: '1px solid rgb(var(--border-rgb))',
             display: 'flex',
             flexDirection: 'column',
             gap: 10,
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem', fontWeight: 800, color: 'rgb(244,244,245)' }}>
-                <ShoppingBag size={16} color="rgb(139,92,246)" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem', fontWeight: 800, color: 'rgb(var(--text-primary))' }}>
+                <ShoppingBag size={16} color="rgb(var(--color-primary-dark))" />
                 <span>Added Products ({cartItems.reduce((acc, i) => acc + i.qty, 0)})</span>
               </div>
               {grandTotal !== undefined && (
-                <div style={{ fontSize: '0.9rem', fontWeight: 800, color: 'rgb(52,211,153)' }}>
+                <div style={{ fontSize: '0.9rem', fontWeight: 800, color: 'rgb(var(--color-primary-dark))' }}>
                   Total: ₹{grandTotal.toFixed(2)}
                 </div>
               )}
             </div>
 
             {cartItems.length === 0 ? (
-              <div style={{ padding: '16px 0', textAlign: 'center', color: '#a1a1aa', fontSize: '0.78rem' }}>
+              <div style={{ padding: '16px 0', textAlign: 'center', color: 'rgb(var(--text-muted))', fontSize: '0.78rem' }}>
                 No items added yet. Aim barcode at camera to scan.
               </div>
             ) : (
@@ -660,17 +662,17 @@ export default function BarcodeScannerModal({
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       padding: '8px 10px',
-                      borderRadius: 8,
-                      background: 'rgba(255,255,255,0.04)',
-                      border: '1px solid rgba(255,255,255,0.06)',
+                      borderRadius: 10,
+                      background: '#ffffff',
+                      border: '1px solid rgb(var(--border-rgb))',
                     }}
                   >
                     <div style={{ flex: 1, minWidth: 0, paddingRight: 8 }}>
-                      <div style={{ fontSize: '0.82rem', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div style={{ fontSize: '0.84rem', fontWeight: 700, color: 'rgb(var(--text-primary))', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {item.name}
                       </div>
-                      <div style={{ fontSize: '0.72rem', color: '#a1a1aa' }}>
-                        ₹{item.priceAtSale.toFixed(2)} × {item.qty} = <span style={{ color: 'rgb(52,211,153)', fontWeight: 700 }}>₹{(item.priceAtSale * item.qty).toFixed(2)}</span>
+                      <div style={{ fontSize: '0.72rem', color: 'rgb(var(--text-secondary))' }}>
+                        ₹{item.priceAtSale.toFixed(2)} × {item.qty} = <span style={{ color: 'rgb(var(--color-primary-dark))', fontWeight: 700 }}>₹{(item.priceAtSale * item.qty).toFixed(2)}</span>
                       </div>
                     </div>
 
@@ -680,30 +682,22 @@ export default function BarcodeScannerModal({
                         <>
                           <button
                             type="button"
+                            className="qty-btn"
+                            style={{ width: 26, height: 26, fontSize: '0.75rem' }}
                             onClick={() => onUpdateQty(item.itemId, item.qty - 1)}
-                            style={{
-                              width: 26, height: 26, borderRadius: 6,
-                              background: 'rgba(255,255,255,0.1)', border: 'none',
-                              color: 'white', fontWeight: 800, cursor: 'pointer',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            }}
                           >
-                            <Minus size={12} />
+                            −
                           </button>
-                          <span style={{ fontSize: '0.82rem', fontWeight: 800, minWidth: 20, textAlign: 'center' }}>
+                          <span style={{ fontSize: '0.82rem', fontWeight: 800, minWidth: 20, textAlign: 'center', color: 'rgb(var(--text-primary))' }}>
                             {item.qty}
                           </span>
                           <button
                             type="button"
+                            className="qty-btn"
+                            style={{ width: 26, height: 26, fontSize: '0.75rem' }}
                             onClick={() => onUpdateQty(item.itemId, item.qty + 1)}
-                            style={{
-                              width: 26, height: 26, borderRadius: 6,
-                              background: 'rgba(139,92,246,0.3)', border: '1px solid rgba(139,92,246,0.5)',
-                              color: 'rgb(167,139,250)', fontWeight: 800, cursor: 'pointer',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            }}
                           >
-                            <Plus size={12} />
+                            +
                           </button>
                         </>
                       )}
@@ -713,7 +707,7 @@ export default function BarcodeScannerModal({
                           type="button"
                           onClick={() => onRemoveItem(item.itemId)}
                           style={{
-                            background: 'none', border: 'none', color: '#a1a1aa',
+                            background: 'none', border: 'none', color: '#dc2626',
                             cursor: 'pointer', padding: 4, marginLeft: 4
                           }}
                           title="Remove item"
@@ -733,7 +727,7 @@ export default function BarcodeScannerModal({
         <div style={{
           marginTop: 14,
           paddingTop: 12,
-          borderTop: '1px solid rgba(255,255,255,0.08)',
+          borderTop: '1px solid rgb(var(--border-rgb))',
           display: 'flex',
           flexDirection: 'column',
           gap: 10,
@@ -745,7 +739,7 @@ export default function BarcodeScannerModal({
               <button
                 type="button"
                 className="btn-secondary"
-                style={{ padding: '6px 10px', fontSize: '0.74rem' }}
+                style={{ padding: '6px 10px', fontSize: '0.74rem', borderRadius: 8 }}
                 onClick={() => handleZoom(0.5)}
                 title="Zoom In"
               >
@@ -756,7 +750,7 @@ export default function BarcodeScannerModal({
                 <button
                   type="button"
                   className="btn-secondary"
-                  style={{ padding: '6px 8px', fontSize: '0.74rem' }}
+                  style={{ padding: '6px 8px', fontSize: '0.74rem', borderRadius: 8 }}
                   onClick={() => handleZoom(-0.5)}
                   title="Zoom Out"
                 >
@@ -768,7 +762,7 @@ export default function BarcodeScannerModal({
                 <button
                   type="button"
                   className="btn-secondary"
-                  style={{ padding: '6px 10px', fontSize: '0.74rem' }}
+                  style={{ padding: '6px 10px', fontSize: '0.74rem', borderRadius: 8 }}
                   onClick={handleSwitchCamera}
                   title="Switch Camera"
                 >
@@ -788,7 +782,7 @@ export default function BarcodeScannerModal({
               <button
                 type="button"
                 className="btn-secondary"
-                style={{ padding: '6px 10px', fontSize: '0.74rem', display: 'flex', alignItems: 'center', gap: 4 }}
+                style={{ padding: '6px 10px', fontSize: '0.74rem', display: 'flex', alignItems: 'center', gap: 4, borderRadius: 8 }}
                 onClick={() => fileInputRef.current?.click()}
                 title="Upload photo of barcode"
                 disabled={isProcessingFile}
@@ -804,7 +798,8 @@ export default function BarcodeScannerModal({
                 style={{
                   padding: '6px 10px',
                   fontSize: '0.74rem',
-                  color: soundEnabled ? 'rgb(52,211,153)' : 'rgb(113,113,122)',
+                  borderRadius: 8,
+                  color: soundEnabled ? 'rgb(var(--color-primary-dark))' : 'rgb(var(--text-muted))',
                 }}
                 onClick={() => setSoundEnabled(!soundEnabled)}
                 title={soundEnabled ? 'Mute Sound' : 'Enable Sound'}
@@ -818,7 +813,8 @@ export default function BarcodeScannerModal({
                 style={{
                   padding: '6px 10px',
                   fontSize: '0.74rem',
-                  color: torchOn ? 'rgb(245,158,11)' : 'rgb(113,113,122)',
+                  borderRadius: 8,
+                  color: torchOn ? '#d97706' : 'rgb(var(--text-muted))',
                 }}
                 onClick={toggleTorch}
                 title="Toggle Torch"
@@ -837,12 +833,11 @@ export default function BarcodeScannerModal({
               height: 44,
               fontSize: '0.9rem',
               fontWeight: 800,
-              borderRadius: 12,
+              borderRadius: 999,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: 8,
-              boxShadow: '0 4px 16px rgba(139,92,246,0.3)',
             }}
             onClick={onClose}
           >

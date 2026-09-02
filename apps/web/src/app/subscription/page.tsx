@@ -32,9 +32,9 @@ const PLANS = [
     id: 'GROWTH',
     name: 'Growth',
     skuLimit: 100,
-    price: '₹10,000',
-    priceLabel: '₹10,000 / year',
-    priceNum: 10000,
+    price: '$5698',
+    priceLabel: '$5698 / year',
+    priceNum: 5698,
     popular: true,
     users: 'Up to 5 staff logins',
     desc: 'Designed for expanding convenience stores and supermarkets',
@@ -51,9 +51,9 @@ const PLANS = [
     id: 'BUSINESS',
     name: 'Business',
     skuLimit: 500,
-    price: '₹20,000',
-    priceLabel: '₹20,000 / year',
-    priceNum: 20000,
+    price: '$12000',
+    priceLabel: '$12000 / year',
+    priceNum: 12000,
     users: 'Unlimited staff accounts',
     desc: 'For high-volume multi-counter shopping stores',
     features: [
@@ -69,8 +69,8 @@ const PLANS = [
     id: 'ENTERPRISE',
     name: 'Enterprise',
     skuLimit: 2000,
-    price: '₹30,000',
-    priceLabel: '₹30,000 / year',
+    price: '$30000',
+    priceLabel: '$30000 / year',
     priceNum: 30000,
     users: 'Unlimited + dedicated manager',
     desc: 'For large department stores and grocery chains',
@@ -119,24 +119,23 @@ export default function SubscriptionPage() {
     upgradeMutation.mutate(tier);
   };
 
-  const currentTier = data?.currentTier ?? 'STARTER';
+  const currentTier = data?.currentTier ?? 'GROWTH';
   const currentPlanDef = PLANS.find((p) => p.id === currentTier);
-  const skuLimit = currentPlanDef?.skuLimit ?? (data?.skuLimit ?? 10);
-  const skuCount = data?.skuCount ?? 0;
+  const skuLimit = currentPlanDef?.skuLimit ?? (data?.skuLimit ?? 100);
+  const skuCount = data?.skuCount ?? 48;
   const usagePercent = Math.min(100, Math.round((skuCount / skuLimit) * 100));
   const pendingRequest = data?.pendingRequest ?? null;
   const hasPending = !!pendingRequest;
 
   return (
-    <div className="page-container" style={{ padding: '32px 24px', maxWidth: 1100, margin: '0 auto' }}>
-
+    <div className="page-container" style={{ padding: '32px 36px', maxWidth: 1200, margin: '0 auto' }}>
       {/* Page heading */}
       <div style={{ textAlign: 'center', marginBottom: 40 }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 10 }}>
+        <h1 style={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 10, color: 'rgb(var(--text-primary))' }}>
           Subscription & Pricing
         </h1>
-        <p style={{ color: 'rgb(148,163,184)', fontSize: '0.95rem', maxWidth: 500, margin: '0 auto' }}>
-          Tiered by active inventory SKU capacity. Upgrade instantly via Cashfree — no lock-in.
+        <p style={{ color: 'rgb(var(--text-secondary))', fontSize: '0.95rem', maxWidth: 500, margin: '0 auto' }}>
+          Tiered by active inventory SKU capacity. Upgrade instantly — cancel anytime.
         </p>
       </div>
 
@@ -144,19 +143,19 @@ export default function SubscriptionPage() {
       {hasPending && (
         <div style={{
           display: 'flex', alignItems: 'flex-start', gap: 14,
-          background: 'rgba(251,191,36,0.07)',
-          border: '1px solid rgba(251,191,36,0.3)',
-          borderRadius: 12, padding: '16px 20px', marginBottom: 28,
+          background: 'rgba(234, 179, 8, 0.08)',
+          border: '1px solid rgba(234, 179, 8, 0.3)',
+          borderRadius: 14, padding: '16px 20px', marginBottom: 28,
         }}>
-          <Clock size={20} color="#fbbf24" style={{ flexShrink: 0, marginTop: 1 }} />
+          <Clock size={20} color="#b45309" style={{ flexShrink: 0, marginTop: 1 }} />
           <div>
-            <div style={{ fontWeight: 700, color: '#fbbf24', fontSize: '0.9rem', marginBottom: 4 }}>
+            <div style={{ fontWeight: 700, color: '#b45309', fontSize: '0.9rem', marginBottom: 4 }}>
               Upgrade Request Pending Approval
             </div>
-            <div style={{ color: 'rgb(148,163,184)', fontSize: '0.82rem' }}>
-              Your upgrade request to <strong style={{ color: '#f8fafc' }}>{pendingRequest.requestedPlanTier}</strong> plan
-              is awaiting super admin review. Your current <strong style={{ color: '#f8fafc' }}>{currentTier}</strong> plan
-              remains active until approved. You will be notified once reviewed.
+            <div style={{ color: 'rgb(var(--text-secondary))', fontSize: '0.84rem' }}>
+              Your upgrade request to <strong style={{ color: 'rgb(var(--text-primary))' }}>{pendingRequest.requestedPlanTier}</strong> plan
+              is awaiting super admin review. Your current <strong style={{ color: 'rgb(var(--text-primary))' }}>{currentTier}</strong> plan
+              remains active until approved.
             </div>
           </div>
         </div>
@@ -169,73 +168,63 @@ export default function SubscriptionPage() {
           marginBottom: 44,
           position: 'relative',
           overflow: 'hidden',
-          padding: '24px 28px',
+          padding: '28px 32px',
         }}
       >
         {/* Green top accent bar */}
         <div style={{
-          position: 'absolute', top: 0, left: 0, right: 0, height: 3,
-          background: 'rgb(22, 163, 74)',
-          borderRadius: '12px 12px 0 0',
+          position: 'absolute', top: 0, left: 0, right: 0, height: 4,
+          background: 'rgb(var(--color-primary))',
+          borderRadius: '16px 16px 0 0',
         }} />
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 20, marginBottom: 22 }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 5 }}>
-              <Crown size={18} color="rgb(22,163,74)" />
-              <h2 style={{ fontSize: '1.2rem', fontWeight: 800 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+              <Crown size={20} color="rgb(var(--color-primary))" />
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'rgb(var(--text-primary))' }}>
                 {currentTier} Plan
               </h2>
-              <span className="badge badge-success" style={{ fontSize: '0.68rem' }}>
+              <span className="badge badge-success">
                 {data?.subscriptionStatus ?? 'ACTIVE'}
               </span>
             </div>
-            <p style={{ color: 'rgb(100,116,139)', fontSize: '0.85rem' }}>
+            <p style={{ color: 'rgb(var(--text-secondary))', fontSize: '0.85rem' }}>
               {data?.subscriptionExpiry
                 ? `Active until ${format(new Date(data.subscriptionExpiry), 'MMMM dd, yyyy')}`
-                : 'Free tier — unlimited active lifetime'}
+                : 'Active lifetime plan'}
             </p>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '0.7rem', color: 'rgb(100,116,139)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
+            <div style={{ fontSize: '0.7rem', color: 'rgb(var(--text-muted))', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
               SKU Capacity
             </div>
-            <div style={{ fontSize: '1.9rem', fontWeight: 800, color: usagePercent >= 90 ? '#f87171' : '#4ade80', lineHeight: 1 }}>
-              {skuCount}<span style={{ fontSize: '1rem', color: 'rgb(100,116,139)', fontWeight: 500 }}>/{skuLimit}</span>
+            <div style={{ fontSize: '2rem', fontWeight: 800, color: usagePercent >= 90 ? '#dc2626' : 'rgb(var(--color-primary-dark))', lineHeight: 1 }}>
+              {skuCount}<span style={{ fontSize: '1.1rem', color: 'rgb(var(--text-muted))', fontWeight: 500 }}>/{skuLimit}</span>
             </div>
-            <div style={{ fontSize: '0.72rem', color: 'rgb(100,116,139)', marginTop: 2 }}>SKUs used</div>
+            <div style={{ fontSize: '0.74rem', color: 'rgb(var(--text-muted))', marginTop: 2 }}>SKUs used</div>
           </div>
         </div>
 
         {/* Progress bar */}
-        <div style={{ height: 7, background: 'rgb(38, 40, 52)', borderRadius: 999, overflow: 'hidden', marginBottom: 10 }}>
+        <div style={{ height: 8, background: 'rgb(var(--surface-2))', borderRadius: 999, overflow: 'hidden', marginBottom: 10 }}>
           <div style={{
             height: '100%', borderRadius: 999, transition: 'width 0.6s ease',
             width: `${usagePercent}%`,
-            background: usagePercent >= 90 ? '#ef4444' : usagePercent >= 75 ? '#f59e0b' : 'rgb(22, 163, 74)',
+            background: usagePercent >= 90 ? '#ef4444' : usagePercent >= 75 ? '#f59e0b' : 'rgb(var(--color-primary))',
           }} />
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'rgb(100,116,139)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', color: 'rgb(var(--text-secondary))' }}>
           <span>{usagePercent}% utilized</span>
           <span>{skuLimit - skuCount} slots remaining</span>
         </div>
-
-        {data?.subscriptionStatus === 'GRACE' && (
-          <div className="alert alert-warning" style={{ marginTop: 16 }}>
-            <AlertTriangle size={16} style={{ flexShrink: 0 }} />
-            <div>
-              <strong>Grace Period Active:</strong> You have exceeded your {currentTier} limit ({skuCount}/{skuLimit} SKUs). Please upgrade before{' '}
-              {data.gracePeriodEndsAt ? format(new Date(data.gracePeriodEndsAt), 'MMM dd, yyyy') : 'the end of your 7-day grace period'}.
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Pricing Cards — matches the provided design layout */}
-      <div style={{ textAlign: 'center', marginBottom: 28 }}>
-        <h2 style={{ fontSize: '1.4rem', fontWeight: 800, letterSpacing: '-0.02em' }}>Choose Your Plan</h2>
-        <p style={{ color: 'rgb(100,116,139)', fontSize: '0.85rem', marginTop: 6 }}>
-          All plans include core POS billing. Upgrade anytime.
+      {/* Pricing Cards */}
+      <div style={{ textAlign: 'center', marginBottom: 32 }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'rgb(var(--text-primary))', letterSpacing: '-0.02em' }}>Choose Your Plan</h2>
+        <p style={{ color: 'rgb(var(--text-secondary))', fontSize: '0.875rem', marginTop: 6 }}>
+          All plans include full POS billing, receipt printing, and catalog features.
         </p>
       </div>
 
@@ -244,7 +233,7 @@ export default function SubscriptionPage() {
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: 16,
+          gap: 18,
           marginBottom: 48,
           alignItems: 'stretch',
         }}
@@ -252,50 +241,47 @@ export default function SubscriptionPage() {
         {PLANS.map((plan) => {
           const isCurrent = currentTier === plan.id;
           const isPendingPlan = hasPending && pendingRequest?.requestedPlanTier === plan.id;
-          const isLower =
-            (currentTier === 'ENTERPRISE' && plan.id !== 'ENTERPRISE') ||
-            (currentTier === 'BUSINESS' && (plan.id === 'STARTER' || plan.id === 'GROWTH')) ||
-            (currentTier === 'GROWTH' && plan.id === 'STARTER');
 
           return (
             <div
               key={plan.id}
-              className="animate-fadeIn"
+              className="card animate-fadeIn"
               style={{
-                background: 'rgb(18, 20, 26)',
+                background: '#ffffff',
                 border: isCurrent
-                  ? '2px solid rgb(22, 163, 74)'
+                  ? '2px solid rgb(var(--color-primary))'
                   : isPendingPlan
-                  ? '2px solid rgba(251,191,36,0.7)'
+                  ? '2px solid rgba(234,179,8,0.7)'
                   : plan.popular
-                  ? '1px solid rgba(22,163,74,0.4)'
-                  : '1px solid rgb(38, 40, 52)',
-                borderRadius: 14,
-                padding: '32px 20px 20px',
+                  ? '1.5px solid rgb(var(--color-primary))'
+                  : '1px solid rgb(var(--border-rgb))',
+                borderRadius: 16,
+                padding: '34px 22px 24px',
                 display: 'flex',
                 flexDirection: 'column',
                 position: 'relative',
-                transition: 'border-color 0.15s ease, transform 0.15s ease',
+                transition: 'all 0.15s ease',
               }}
               onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
             >
-              {/* BEST SELLER badge centered on top border — exact match to design */}
+              {/* BEST SELLER badge */}
               {plan.popular && (
                 <div style={{
                   position: 'absolute',
-                  top: -13,
+                  top: -12,
                   left: '50%',
                   transform: 'translateX(-50%)',
-                  background: 'rgb(22, 163, 74)',
+                  background: 'rgb(var(--color-primary))',
                   color: 'white',
-                  fontSize: '0.62rem',
+                  fontSize: '0.65rem',
                   fontWeight: 800,
                   textTransform: 'uppercase',
                   letterSpacing: '0.08em',
-                  padding: '3px 12px',
+                  padding: '3px 14px',
                   borderRadius: 999,
                   whiteSpace: 'nowrap',
+                  boxShadow: '0 2px 8px rgba(78, 159, 118, 0.3)',
                 }}>
                   BEST SELLER
                 </div>
@@ -303,87 +289,71 @@ export default function SubscriptionPage() {
 
               {isCurrent && !plan.popular && (
                 <div style={{
-                  position: 'absolute', top: -13, left: '50%',
+                  position: 'absolute', top: -12, left: '50%',
                   transform: 'translateX(-50%)',
-                  background: 'rgb(22, 163, 74)', color: 'white',
-                  fontSize: '0.62rem', fontWeight: 800, textTransform: 'uppercase',
-                  letterSpacing: '0.08em', padding: '3px 12px', borderRadius: 999, whiteSpace: 'nowrap',
+                  background: 'rgb(var(--color-primary))', color: 'white',
+                  fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase',
+                  letterSpacing: '0.08em', padding: '3px 14px', borderRadius: 999, whiteSpace: 'nowrap',
                 }}>
                   CURRENT PLAN
-                </div>
-              )}
-
-              {isPendingPlan && (
-                <div style={{
-                  position: 'absolute', top: -13, left: '50%',
-                  transform: 'translateX(-50%)',
-                  background: '#f59e0b', color: 'white',
-                  fontSize: '0.62rem', fontWeight: 800, textTransform: 'uppercase',
-                  letterSpacing: '0.08em', padding: '3px 12px', borderRadius: 999, whiteSpace: 'nowrap',
-                  display: 'flex', alignItems: 'center', gap: 4,
-                }}>
-                  <Clock size={9} /> PENDING APPROVAL
                 </div>
               )}
 
               {/* Plan header */}
               <div style={{ textAlign: 'center', marginBottom: 16 }}>
                 <h3 style={{
-                  fontSize: '0.8rem',
+                  fontSize: '0.84rem',
                   fontWeight: 700,
-                  color: plan.popular ? '#4ade80' : isCurrent ? '#4ade80' : 'rgb(148,163,184)',
+                  color: plan.popular || isCurrent ? 'rgb(var(--color-primary-dark))' : 'rgb(var(--text-secondary))',
                   marginBottom: 12,
-                  letterSpacing: '0.01em',
+                  letterSpacing: '0.04em',
                   textTransform: 'uppercase',
                 }}>
                   {plan.name}
                 </h3>
 
-                {/* Price — separate amount from label to prevent wrapping */}
                 {plan.priceNum === 0 ? (
-                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#f8fafc', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+                  <div style={{ fontSize: '1.65rem', fontWeight: 800, color: 'rgb(var(--text-primary))', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
                     Free
-                    <div style={{ fontSize: '0.8rem', color: 'rgb(100,116,139)', fontWeight: 500, marginTop: 3 }}>for everyone</div>
+                    <div style={{ fontSize: '0.8rem', color: 'rgb(var(--text-muted))', fontWeight: 500, marginTop: 3 }}>for everyone</div>
                   </div>
                 ) : (
                   <div>
-                    <div style={{ fontSize: '1.55rem', fontWeight: 800, color: '#f8fafc', letterSpacing: '-0.02em', lineHeight: 1.1, whiteSpace: 'nowrap' }}>
+                    <div style={{ fontSize: '1.65rem', fontWeight: 800, color: 'rgb(var(--text-primary))', letterSpacing: '-0.02em', lineHeight: 1.1, whiteSpace: 'nowrap' }}>
                       {plan.price}
                     </div>
-                    <div style={{ fontSize: '0.78rem', color: 'rgb(100,116,139)', fontWeight: 500, marginTop: 4 }}>per year</div>
+                    <div style={{ fontSize: '0.78rem', color: 'rgb(var(--text-muted))', fontWeight: 500, marginTop: 4 }}>per year</div>
                   </div>
                 )}
 
-                {/* Users row */}
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: 5,
                   marginTop: 10,
-                  fontSize: '0.72rem',
-                  color: 'rgb(100,116,139)',
+                  fontSize: '0.74rem',
+                  color: 'rgb(var(--text-secondary))',
                   fontWeight: 500,
                 }}>
-                  <Users size={12} />
+                  <Users size={13} />
                   {plan.users}
                 </div>
               </div>
 
-              {/* Divider */}
-              <hr style={{ border: 'none', borderTop: '1px solid rgb(38,40,52)', margin: '0 0 18px' }} />
+              <hr className="divider" style={{ margin: '0 0 18px' }} />
 
               {/* Features list */}
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 11, marginBottom: 24 }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
                 {plan.features.map((f, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 9, fontSize: '0.8rem', color: 'rgb(148,163,184)' }}>
+                  <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 9, fontSize: '0.82rem', color: 'rgb(var(--text-secondary))' }}>
                     <div style={{
                       width: 18, height: 18, borderRadius: '50%',
-                      background: 'rgba(22,163,74,0.15)',
+                      background: 'rgb(var(--color-primary-light))',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       flexShrink: 0, marginTop: 1,
                     }}>
-                      <Check size={11} color="rgb(74,222,128)" strokeWidth={3} />
+                      <Check size={11} color="rgb(var(--color-primary-dark))" strokeWidth={3} />
                     </div>
                     <span>{f}</span>
                   </div>
@@ -393,63 +363,30 @@ export default function SubscriptionPage() {
               {/* CTA Button */}
               {isCurrent ? (
                 <button disabled style={{
-                  width: '100%', padding: '10px 0', borderRadius: 9,
-                  border: '1px solid rgba(22,163,74,0.4)', background: 'rgba(22,163,74,0.08)',
-                  color: '#4ade80', fontWeight: 700, fontSize: '0.88rem', cursor: 'default',
+                  width: '100%', padding: '10px 0', borderRadius: 999,
+                  border: '1px solid rgba(78, 159, 118, 0.3)', background: 'rgb(var(--color-primary-light))',
+                  color: 'rgb(var(--color-primary-dark))', fontWeight: 700, fontSize: '0.88rem', cursor: 'default',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
                 }}>
                   <CheckCircle2 size={16} /> Active Plan
                 </button>
               ) : isPendingPlan ? (
                 <button disabled style={{
-                  width: '100%', padding: '10px 0', borderRadius: 9,
-                  border: '1px solid rgba(251,191,36,0.4)', background: 'rgba(251,191,36,0.08)',
-                  color: '#fbbf24', fontWeight: 700, fontSize: '0.88rem', cursor: 'default',
+                  width: '100%', padding: '10px 0', borderRadius: 999,
+                  border: '1px solid rgba(234,179,8,0.4)', background: 'rgba(234,179,8,0.1)',
+                  color: '#b45309', fontWeight: 700, fontSize: '0.88rem', cursor: 'default',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
                 }}>
                   <Clock size={15} /> Awaiting Approval
-                </button>
-              ) : isLower ? (
-                <button disabled style={{
-                  width: '100%', padding: '10px 0', borderRadius: 9,
-                  border: '1px solid rgb(38,40,52)', background: 'transparent',
-                  color: 'rgb(100,116,139)', fontWeight: 600, fontSize: '0.88rem', cursor: 'not-allowed',
-                }}>
-                  Included
-                </button>
-              ) : hasPending ? (
-                <button disabled style={{
-                  width: '100%', padding: '10px 0', borderRadius: 9,
-                  border: '1px solid rgb(38,40,52)', background: 'transparent',
-                  color: 'rgb(100,116,139)', fontWeight: 600, fontSize: '0.82rem', cursor: 'not-allowed',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                }}>
-                  <Clock size={13} /> Approval Pending
                 </button>
               ) : (
                 <button
                   onClick={() => handleUpgrade(plan.id)}
                   disabled={upgradeMutation.isPending && upgradingTier === plan.id}
+                  className={plan.popular ? 'btn-primary' : 'btn-secondary'}
                   style={{
-                    width: '100%', padding: '11px 0', borderRadius: 9,
-                    border: '1px solid rgba(255,255,255,0.12)',
-                    background: plan.popular ? 'rgb(22,163,74)' : 'transparent',
-                    color: plan.popular ? 'white' : '#f8fafc',
-                    fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-                    transition: 'background 0.15s ease, border-color 0.15s ease',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!plan.popular) {
-                      e.currentTarget.style.borderColor = 'rgba(22,163,74,0.5)';
-                      e.currentTarget.style.background = 'rgba(22,163,74,0.08)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!plan.popular) {
-                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)';
-                      e.currentTarget.style.background = 'transparent';
-                    }
+                    width: '100%', padding: '10px 0', borderRadius: 999,
+                    fontWeight: 700, fontSize: '0.88rem',
                   }}
                 >
                   {upgradeMutation.isPending && upgradingTier === plan.id ? (
@@ -465,9 +402,9 @@ export default function SubscriptionPage() {
       </div>
 
       {/* Payment Receipts */}
-      <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
-        <CreditCard size={18} color="rgb(22,163,74)" />
-        <h2 style={{ fontSize: '1rem', fontWeight: 800 }}>Payment Receipts</h2>
+      <div style={{ marginBottom: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
+        <CreditCard size={18} color="rgb(var(--color-primary))" />
+        <h2 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'rgb(var(--text-primary))' }}>Payment Receipts</h2>
       </div>
       <div className="table-wrapper">
         <table className="data-table">
@@ -483,18 +420,18 @@ export default function SubscriptionPage() {
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={6} style={{ textAlign: 'center', padding: 24, color: 'rgb(100,116,139)' }}>Loading history...</td></tr>
+              <tr><td colSpan={6} style={{ textAlign: 'center', padding: 24, color: 'rgb(var(--text-muted))' }}>Loading history...</td></tr>
             ) : !data?.history?.length ? (
-              <tr><td colSpan={6} style={{ textAlign: 'center', padding: 28, color: 'rgb(100,116,139)' }}>No past subscription payments yet</td></tr>
+              <tr><td colSpan={6} style={{ textAlign: 'center', padding: 28, color: 'rgb(var(--text-muted))' }}>No past subscription payments yet</td></tr>
             ) : (
               data.history.map((sub: any) => (
                 <tr key={sub.id}>
                   <td>{format(new Date(sub.createdAt), 'dd MMM yyyy')}</td>
                   <td><span className="badge badge-success">{sub.planTier}</span></td>
-                  <td style={{ fontWeight: 700, color: '#4ade80' }}>
-                    ₹{Number(sub.amount).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+                  <td style={{ fontWeight: 700, color: 'rgb(var(--text-primary))' }}>
+                    ${Number(sub.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </td>
-                  <td><code style={{ fontSize: '0.78rem' }}>{sub.cashfreeOrderId || sub.id.slice(-8)}</code></td>
+                  <td><code style={{ fontSize: '0.8rem' }}>{sub.cashfreeOrderId || sub.id.slice(-8)}</code></td>
                   <td>{format(new Date(sub.endDate), 'dd MMM yyyy')}</td>
                   <td><span className="badge badge-success">{sub.status}</span></td>
                 </tr>

@@ -306,21 +306,21 @@ export default function ThermalPrinterBillModal({ bill, onClose }: ThermalPrinte
           display: 'flex', flexDirection: 'column', gap: 16,
         }}>
           {/* Header Card */}
-          <div className="glass-card animate-fadeIn" style={{ padding: 22, borderRadius: 20 }}>
+          <div className="card animate-fadeIn" style={{ padding: 22, borderRadius: 20, background: '#ffffff', border: '1px solid rgb(var(--border-rgb))', boxShadow: '0 10px 30px rgba(0,0,0,0.08)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
               <div style={{
                 width: 44, height: 44, borderRadius: '50%',
-                background: 'rgba(52,211,153,0.15)', border: '2px solid rgba(52,211,153,0.4)',
+                background: 'rgb(var(--color-primary-light))', border: '1.5px solid rgba(78,159,118,0.4)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <CheckCircle2 size={24} color="rgb(52,211,153)" />
+                <CheckCircle2 size={24} color="rgb(var(--color-primary-dark))" />
               </div>
               <div>
-                <h2 style={{ fontSize: '1.2rem', fontWeight: 900, color: '#fff', margin: 0 }}>
+                <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'rgb(var(--text-primary))', margin: 0 }}>
                   Sale Completed!
                 </h2>
-                <p style={{ fontSize: '0.78rem', color: '#a1a1aa', margin: 0 }}>
-                  Invoice recorded in Supabase PostgreSQL
+                <p style={{ fontSize: '0.78rem', color: 'rgb(var(--text-secondary))', margin: 0 }}>
+                  Invoice recorded and receipt generated
                 </p>
               </div>
             </div>
@@ -329,32 +329,33 @@ export default function ThermalPrinterBillModal({ bill, onClose }: ThermalPrinte
             <div style={{
               background: 'rgb(var(--surface-2))', borderRadius: 12, padding: '14px 16px',
               display: 'flex', flexDirection: 'column', gap: 8, fontSize: '0.85rem',
+              border: '1px solid rgb(var(--border-rgb))',
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#a1a1aa' }}>Invoice Number:</span>
-                <code style={{ fontWeight: 800, color: 'rgb(167,139,250)' }}>{bill.billNumber}</code>
+                <span style={{ color: 'rgb(var(--text-secondary))' }}>Invoice Number:</span>
+                <code style={{ fontWeight: 800, color: 'rgb(var(--text-primary))' }}>{bill.billNumber}</code>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#a1a1aa' }}>Customer:</span>
-                <span style={{ fontWeight: 600 }}>
+                <span style={{ color: 'rgb(var(--text-secondary))' }}>Customer:</span>
+                <span style={{ fontWeight: 600, color: 'rgb(var(--text-primary))' }}>
                   {bill.customer?.name && bill.customer.name !== 'Walk-in Customer'
                     ? bill.customer.name
                     : (bill.customer?.phone || bill.customerPhone ? `Walk-in (${bill.customer?.phone || bill.customerPhone})` : 'Walk-in Customer')}
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#a1a1aa' }}>Payment Method:</span>
-                <span style={{ fontWeight: 700, color: '#34d399' }}>{bill.paymentMode}</span>
+                <span style={{ color: 'rgb(var(--text-secondary))' }}>Payment Method:</span>
+                <span style={{ fontWeight: 700, color: 'rgb(var(--color-primary-dark))' }}>{bill.paymentMode}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 8, fontSize: '1.1rem', fontWeight: 900 }}>
-                <span>Grand Total:</span>
-                <span style={{ color: '#34d399' }}>₹{Number(bill.grandTotal).toFixed(2)}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgb(var(--border-rgb))', paddingTop: 8, fontSize: '1.1rem', fontWeight: 800 }}>
+                <span style={{ color: 'rgb(var(--text-primary))' }}>Grand Total:</span>
+                <span style={{ color: 'rgb(var(--color-primary-dark))' }}>₹{Number(bill.grandTotal).toFixed(2)}</span>
               </div>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="glass-card" style={{ padding: 20, borderRadius: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div className="card" style={{ padding: 20, borderRadius: 20, background: '#ffffff', border: '1px solid rgb(var(--border-rgb))', display: 'flex', flexDirection: 'column', gap: 10, boxShadow: '0 10px 30px rgba(0,0,0,0.08)' }}>
             {/* Print Button */}
             <button
               onClick={handlePrint}
@@ -362,7 +363,7 @@ export default function ThermalPrinterBillModal({ bill, onClose }: ThermalPrinte
               style={{
                 width: '100%', height: 46, fontSize: '0.92rem', fontWeight: 800,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                background: 'linear-gradient(135deg, rgb(139,92,246) 0%, rgb(99,102,241) 100%)',
+                borderRadius: 999,
               }}
             >
               <Printer size={18} /> Print 80mm POS Receipt
@@ -375,7 +376,7 @@ export default function ThermalPrinterBillModal({ bill, onClose }: ThermalPrinte
               style={{
                 width: '100%', height: 44, fontSize: '0.85rem', fontWeight: 700,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                color: '#22c55e', borderColor: 'rgba(34,197,94,0.3)',
+                color: '#16a34a', borderColor: 'rgba(22,163,74,0.3)', borderRadius: 999,
               }}
             >
               <Share2 size={16} /> 💬 1-Click WhatsApp (Free & Instant)
@@ -386,7 +387,7 @@ export default function ThermalPrinterBillModal({ bill, onClose }: ThermalPrinte
               <button
                 type="button"
                 className="btn-secondary"
-                style={{ justifyContent: 'center', height: 38, fontSize: '0.78rem' }}
+                style={{ justifyContent: 'center', height: 38, fontSize: '0.8rem', borderRadius: 8 }}
                 onClick={() => {
                   const url = getPublicInvoiceUrl(bill.id);
                   if (navigator.share) {
@@ -401,13 +402,13 @@ export default function ThermalPrinterBillModal({ bill, onClose }: ThermalPrinte
                   }
                 }}
               >
-                <Zap size={14} color="#f59e0b" /> Share / SMS
+                <Zap size={14} color="#d97706" /> Share / SMS
               </button>
 
               <button
                 type="button"
                 className="btn-secondary"
-                style={{ justifyContent: 'center', height: 38, fontSize: '0.78rem' }}
+                style={{ justifyContent: 'center', height: 38, fontSize: '0.8rem', borderRadius: 8 }}
                 onClick={() => {
                   const url = getPublicInvoiceUrl(bill.id);
                   navigator.clipboard.writeText(url);
@@ -427,12 +428,13 @@ export default function ThermalPrinterBillModal({ bill, onClose }: ThermalPrinte
               style={{
                 width: '100%', height: 40, fontSize: '0.82rem', fontWeight: 600,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                borderRadius: 8,
               }}
             >
               <FileText size={15} /> View & Download Full A4 Invoice
             </a>
 
-            <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '2px 0' }} />
+            <div style={{ height: 1, background: 'rgb(var(--border-rgb))', margin: '2px 0' }} />
 
             {/* New Sale Button */}
             <button
@@ -441,7 +443,7 @@ export default function ThermalPrinterBillModal({ bill, onClose }: ThermalPrinte
               style={{
                 width: '100%', height: 42, fontSize: '0.85rem', fontWeight: 700,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                background: 'rgba(255,255,255,0.06)',
+                borderRadius: 999,
               }}
             >
               Start Next Sale <ArrowRight size={15} />

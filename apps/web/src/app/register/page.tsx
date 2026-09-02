@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
-import { ShoppingBag, Loader2, Store, User, Mail, Phone, Lock } from 'lucide-react';
+import { Flame, Loader2, Store, User, Mail, Phone, Lock } from 'lucide-react';
 import { authApi } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 
@@ -60,7 +60,7 @@ export default function RegisterPage() {
     <div
       className="min-h-screen flex items-center justify-center p-4"
       style={{
-        background: 'radial-gradient(ellipse at bottom right, rgba(52,211,153,0.08) 0%, transparent 60%), rgb(9,9,11)',
+        background: 'rgb(var(--surface-0))',
       }}
     >
       <div className="w-full max-w-md animate-fadeIn">
@@ -69,79 +69,74 @@ export default function RegisterPage() {
           <div style={{
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
             width: 56, height: 56, borderRadius: 16,
-            background: 'linear-gradient(135deg, rgb(139,92,246), rgb(109,40,217))',
-            boxShadow: '0 8px 32px rgba(139,92,246,0.4)',
+            background: 'rgb(var(--text-primary))',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
             marginBottom: 16,
           }}>
-            <ShoppingBag size={28} color="white" />
+            <Flame size={28} color="white" />
           </div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: 6 }}>
+          <h1 style={{ fontSize: '1.8rem', fontWeight: 800, letterSpacing: '-0.03em', color: 'rgb(var(--text-primary))', marginBottom: 4 }}>
             Create Your Shop
           </h1>
-          <p style={{ color: 'rgb(161,161,170)', fontSize: '0.875rem' }}>
-            Free Starter plan · 10 SKUs · No credit card required
+          <p style={{ color: 'rgb(var(--text-secondary))', fontSize: '0.85rem' }}>
+            Free Starter Tier · Instant Setup · No Credit Card Required
           </p>
         </div>
 
-        <div className="glass-card" style={{ padding: '32px' }}>
+        {/* Card */}
+        <div className="card" style={{ padding: '34px', background: '#ffffff', border: '1px solid rgb(var(--border-rgb))', borderRadius: 20 }}>
           <form onSubmit={handleSubmit(onSubmit)} noValidate>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {fields.map((field) => (
-                <div key={field.name}>
-                  <label className="label" htmlFor={field.name}>{field.label}</label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+              {fields.map(({ name, label, placeholder, icon: Icon, type }) => (
+                <div key={name}>
+                  <label className="label" htmlFor={name}>{label}</label>
                   <div style={{ position: 'relative' }}>
-                    <span style={{
-                      position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
-                      color: 'rgb(113,113,122)',
+                    <div style={{
+                      position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
+                      color: 'rgb(var(--text-muted))', display: 'flex', pointerEvents: 'none',
                     }}>
-                      <field.icon size={15} />
-                    </span>
+                      <Icon size={16} />
+                    </div>
                     <input
-                      id={field.name}
-                      type={field.type}
+                      id={name}
+                      type={type}
                       className="input"
-                      placeholder={field.placeholder}
-                      style={{ paddingLeft: '36px' }}
-                      {...register(field.name)}
+                      style={{ paddingLeft: '40px' }}
+                      placeholder={placeholder}
+                      {...register(name)}
                     />
                   </div>
-                  {errors[field.name] && (
-                    <p style={{ color: 'rgb(239,100,100)', fontSize: '0.75rem', marginTop: 4 }}>
-                      {errors[field.name]?.message as string}
+                  {errors[name] && (
+                    <p style={{ color: '#dc2626', fontSize: '0.78rem', marginTop: 5, fontWeight: 600 }}>
+                      {errors[name]?.message}
                     </p>
                   )}
                 </div>
               ))}
-            </div>
 
-            <button
-              type="submit"
-              className="btn-primary"
-              style={{ width: '100%', justifyContent: 'center', marginTop: '24px' }}
-              disabled={isLoading}
-            >
-              {isLoading
-                ? <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Creating Shop...</>
-                : '🚀 Create My Shop — Free'}
-            </button>
+              <button
+                type="submit"
+                className="btn-primary"
+                style={{ width: '100%', justifyContent: 'center', height: 46, fontSize: '0.95rem', marginTop: 8 }}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Setting up your shop...</>
+                ) : (
+                  'Create My Shop — Free'
+                )}
+              </button>
+            </div>
           </form>
 
-          <hr className="divider" style={{ margin: '20px 0' }} />
+          <hr className="divider" style={{ margin: '22px 0' }} />
 
-          <p style={{ textAlign: 'center', fontSize: '0.875rem', color: 'rgb(161,161,170)' }}>
-            Already have an account?{' '}
-            <Link href="/login" style={{ color: 'rgb(167,139,250)', fontWeight: 600, textDecoration: 'none' }}>
+          <p style={{ textAlign: 'center', fontSize: '0.86rem', color: 'rgb(var(--text-secondary))' }}>
+            Already have a shop account?{' '}
+            <Link href="/login" style={{ color: 'rgb(var(--color-primary))', fontWeight: 700, textDecoration: 'none' }}>
               Sign in →
             </Link>
           </p>
-        </div>
-
-        {/* Plan badge */}
-        <div style={{
-          textAlign: 'center', marginTop: 16,
-          fontSize: '0.75rem', color: 'rgb(113,113,122)',
-        }}>
-          🔒 Your data is encrypted and isolated. No sharing between shops.
         </div>
       </div>
     </div>

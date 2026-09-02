@@ -124,12 +124,12 @@ export default function CustomersPage() {
   const meta = data?.meta;
 
   return (
-    <div className="page-container" style={{ padding: '28px 24px' }}>
+    <div className="page-container" style={{ padding: '32px 36px', maxWidth: 1400, margin: '0 auto' }}>
       {/* Header */}
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28, flexWrap: 'wrap', gap: 14 }}>
         <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: 4 }}>Customers</h1>
-          <p style={{ color: 'rgb(161,161,170)', fontSize: '0.875rem' }}>
+          <h1 style={{ fontSize: '1.65rem', fontWeight: 800, color: 'rgb(var(--text-primary))', marginBottom: 4 }}>Customers</h1>
+          <p style={{ color: 'rgb(var(--text-secondary))', fontSize: '0.875rem' }}>
             Auto-captured from counter sales & manual registry · Loyalty points & order history
           </p>
         </div>
@@ -137,30 +137,32 @@ export default function CustomersPage() {
           <button
             onClick={openCreateModal}
             className="btn-primary"
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 16px', fontSize: '0.875rem' }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 20px', fontSize: '0.85rem' }}
           >
             <Plus size={16} /> Add Customer
           </button>
         </div>
       </div>
 
-      {/* Search Filter */}
-      <div className="search-container" style={{ maxWidth: 400, position: 'relative', marginBottom: 20 }}>
-        <Search size={15} style={{
-          position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
-          color: 'rgb(113,113,122)',
-        }} />
-        <input
-          type="text"
-          className="input"
-          placeholder="Search by phone or name…"
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          style={{ paddingLeft: 36 }}
-        />
+      {/* Search and Filters */}
+      <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap', alignItems: 'center' }}>
+        <div className="search-container" style={{ flex: 1, minWidth: 260, maxWidth: 400, position: 'relative' }}>
+          <Search size={15} style={{
+            position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
+            color: 'rgb(var(--text-muted))',
+          }} />
+          <input
+            type="text"
+            className="input"
+            placeholder="Search by name, phone or email…"
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            style={{ paddingLeft: 38 }}
+          />
+        </div>
       </div>
 
-      {/* Desktop Customers Table */}
+      {/* Desktop Table */}
       <div className="table-wrapper desktop-table">
         <table className="data-table">
           <thead>
@@ -171,8 +173,8 @@ export default function CustomersPage() {
               <th>Total Orders</th>
               <th>Total Spend</th>
               <th>Loyalty Points</th>
-              <th>First Visit</th>
-              <th>Actions</th>
+              <th>Registered Date</th>
+              <th style={{ textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -186,7 +188,7 @@ export default function CustomersPage() {
               ))
             ) : customers.length === 0 ? (
               <tr>
-                <td colSpan={8} style={{ textAlign: 'center', padding: '48px', color: 'rgb(113,113,122)' }}>
+                <td colSpan={8} style={{ textAlign: 'center', padding: '48px', color: 'rgb(var(--text-secondary))' }}>
                   <Users size={32} style={{ opacity: 0.3, marginBottom: 8, display: 'block', margin: '0 auto 8px' }} />
                   No customer records found. Add a customer or make a sale at the POS counter!
                 </td>
@@ -197,61 +199,61 @@ export default function CustomersPage() {
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <div style={{
-                        width: 32, height: 32, borderRadius: 8,
-                        background: 'linear-gradient(135deg, rgba(139,92,246,0.2), rgba(52,211,153,0.2))',
+                        width: 34, height: 34, borderRadius: 10,
+                        background: 'rgb(var(--color-primary-light))',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontWeight: 700, fontSize: '0.75rem', color: 'rgb(167,139,250)',
+                        fontWeight: 700, fontSize: '0.8rem', color: 'rgb(var(--color-primary-dark))',
                       }}>
                         {c.name?.[0]?.toUpperCase() ?? c.phone?.slice(-2)}
                       </div>
                       <div>
-                        <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{c.name || 'Walk-in Customer'}</div>
-                        <div style={{ fontSize: '0.75rem', color: 'rgb(113,113,122)' }}>ID: {c.id.slice(-6)}</div>
+                        <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'rgb(var(--text-primary))' }}>{c.name || 'Walk-in Customer'}</div>
+                        <div style={{ fontSize: '0.72rem', color: 'rgb(var(--text-muted))' }}>ID: {c.id.slice(-6)}</div>
                       </div>
                     </div>
                   </td>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem' }}>
-                      <Phone size={12} color="rgb(113,113,122)" />
-                      <code>{c.phone}</code>
+                      <Phone size={12} color="rgb(var(--text-muted))" />
+                      <code style={{ fontFamily: 'monospace', color: 'rgb(var(--text-primary))' }}>{c.phone}</code>
                     </div>
                   </td>
                   <td>
-                    <span style={{ fontSize: '0.8rem', color: c.email ? 'rgb(161,161,170)' : 'rgb(113,113,122)' }}>
+                    <span style={{ fontSize: '0.82rem', color: c.email ? 'rgb(var(--text-secondary))' : 'rgb(var(--text-muted))' }}>
                       {c.email || '—'}
                     </span>
                   </td>
-                  <td style={{ fontWeight: 600 }}>{c._count?.bills ?? 0}</td>
+                  <td style={{ fontWeight: 700, color: 'rgb(var(--text-primary))' }}>{c._count?.bills ?? 0}</td>
                   <td>
-                    <span style={{ color: 'rgb(52,211,153)', fontWeight: 700 }}>
-                      ₹{Number(c.totalSpend).toFixed(2)}
+                    <span style={{ color: 'rgb(var(--color-primary-dark))', fontWeight: 700 }}>
+                      ${Number(c.totalSpend).toFixed(2)}
                     </span>
                   </td>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <Award size={13} color="rgb(251,191,36)" />
-                      <span style={{ fontWeight: 600, color: 'rgb(251,191,36)' }}>
+                      <Award size={13} color="#d97706" />
+                      <span style={{ fontWeight: 700, color: '#d97706' }}>
                         {Number(c.loyaltyPoints).toFixed(0)}
                       </span>
                     </div>
                   </td>
-                  <td style={{ fontSize: '0.8rem', color: 'rgb(161,161,170)' }}>
+                  <td style={{ fontSize: '0.82rem', color: 'rgb(var(--text-secondary))' }}>
                     {format(new Date(c.createdAt), 'dd MMM yyyy')}
                   </td>
                   <td>
-                    <div style={{ display: 'flex', gap: 6 }}>
+                    <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
                       <button
                         onClick={() => setSelectedCustomerId(c.id)}
                         className="btn-secondary"
-                        style={{ padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: 4 }}
+                        style={{ padding: '6px 10px', fontSize: '0.75rem', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 4 }}
                         title="View order history"
                       >
-                        <Eye size={12} /> View
+                        <Eye size={13} /> View
                       </button>
                       <button
                         onClick={() => openEditModal(c)}
                         className="btn-secondary"
-                        style={{ padding: '4px 8px', fontSize: '0.75rem' }}
+                        style={{ padding: '6px 10px', fontSize: '0.75rem', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 4 }}
                         title="Edit Customer"
                       >
                         <Edit2 size={12} />

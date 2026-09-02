@@ -8,7 +8,7 @@ import {
   ShieldCheck, Store, Users, IndianRupee, Search, Edit3,
   Power, CheckCircle2, AlertTriangle, X, Loader2, CreditCard,
   Plus, Trash2, Phone, Mail, Lock, Building2, Clock, CheckCheck, XCircle,
-  ArrowRight, Sparkles, AlertCircle, RotateCcw, ShieldAlert, History
+  ArrowRight, Sparkles, AlertCircle, RotateCcw, ShieldAlert, History, RefreshCw
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useForm } from 'react-hook-form';
@@ -144,18 +144,18 @@ function SuperAdminContent() {
   };
 
   return (
-    <div style={{ padding: '28px 24px' }}>
+    <div className="page-container" style={{ padding: '32px 36px', maxWidth: 1400, margin: '0 auto' }}>
       {/* Top Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28, flexWrap: 'wrap', gap: 16 }}>
         <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: 4 }}>Platform Super Admin</h1>
-          <p style={{ color: 'rgb(100,116,139)', fontSize: '0.875rem' }}>
+          <h1 style={{ fontSize: '1.65rem', fontWeight: 800, color: 'rgb(var(--text-primary))', marginBottom: 4 }}>Platform Super Admin</h1>
+          <p style={{ color: 'rgb(var(--text-secondary))', fontSize: '0.875rem' }}>
             Live platform metrics · Tenant management · 10-day recovery queue & subscription approvals
           </p>
         </div>
         <button
           className="btn-primary"
-          style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgb(22, 163, 74)' }}
+          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
           onClick={() => setShowCreateShopModal(true)}
         >
           <Plus size={16} /> Onboard New Shop
@@ -163,19 +163,17 @@ function SuperAdminContent() {
       </div>
 
       {/* Navigation Tabs */}
-      <div style={{ display: 'flex', gap: 8, borderBottom: '1px solid rgb(38, 40, 52)', marginBottom: 28, overflowX: 'auto' }}>
+      <div style={{ display: 'flex', gap: 8, borderBottom: '1px solid rgb(var(--border-rgb))', marginBottom: 28, overflowX: 'auto', paddingBottom: 12 }}>
         <button
           onClick={() => handleTabChange('shops')}
           style={{
-            padding: '10px 18px',
-            fontSize: '0.88rem',
+            padding: '8px 18px',
+            fontSize: '0.86rem',
             fontWeight: activeTab === 'shops' ? 700 : 500,
-            color: activeTab === 'shops' ? '#4ade80' : 'rgb(148, 163, 184)',
-            borderBottom: activeTab === 'shops' ? '2px solid rgb(22, 163, 74)' : '2px solid transparent',
-            background: 'none',
-            borderTop: 'none',
-            borderLeft: 'none',
-            borderRight: 'none',
+            color: activeTab === 'shops' ? 'rgb(var(--color-primary-dark))' : 'rgb(var(--text-secondary))',
+            background: activeTab === 'shops' ? 'rgb(var(--color-primary-light))' : 'transparent',
+            borderRadius: 999,
+            border: 'none',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
@@ -183,22 +181,20 @@ function SuperAdminContent() {
             transition: 'all 0.15s ease',
           }}
         >
-          <Store size={16} />
+          <Store size={15} />
           <span>Active Shops ({activeTenantsList.length})</span>
         </button>
 
         <button
           onClick={() => handleTabChange('approvals')}
           style={{
-            padding: '10px 18px',
-            fontSize: '0.88rem',
+            padding: '8px 18px',
+            fontSize: '0.86rem',
             fontWeight: activeTab === 'approvals' ? 700 : 500,
-            color: activeTab === 'approvals' ? '#fbbf24' : 'rgb(148, 163, 184)',
-            borderBottom: activeTab === 'approvals' ? '2px solid #f59e0b' : '2px solid transparent',
-            background: 'none',
-            borderTop: 'none',
-            borderLeft: 'none',
-            borderRight: 'none',
+            color: activeTab === 'approvals' ? '#b45309' : 'rgb(var(--text-secondary))',
+            background: activeTab === 'approvals' ? 'rgba(234, 179, 8, 0.12)' : 'transparent',
+            borderRadius: 999,
+            border: 'none',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
@@ -206,12 +202,12 @@ function SuperAdminContent() {
             transition: 'all 0.15s ease',
           }}
         >
-          <Clock size={16} />
+          <Clock size={15} />
           <span>Subscription Approvals</span>
           {pendingApprovals?.length > 0 && (
             <span style={{
-              background: '#f59e0b',
-              color: '#000000',
+              background: '#b45309',
+              color: '#ffffff',
               fontSize: '0.68rem',
               fontWeight: 900,
               padding: '1px 7px',
@@ -225,15 +221,13 @@ function SuperAdminContent() {
         <button
           onClick={() => handleTabChange('recovery')}
           style={{
-            padding: '10px 18px',
-            fontSize: '0.88rem',
+            padding: '8px 18px',
+            fontSize: '0.86rem',
             fontWeight: activeTab === 'recovery' ? 700 : 500,
-            color: activeTab === 'recovery' ? '#f87171' : 'rgb(148, 163, 184)',
-            borderBottom: activeTab === 'recovery' ? '2px solid #f87171' : '2px solid transparent',
-            background: 'none',
-            borderTop: 'none',
-            borderLeft: 'none',
-            borderRight: 'none',
+            color: activeTab === 'recovery' ? '#dc2626' : 'rgb(var(--text-secondary))',
+            background: activeTab === 'recovery' ? 'rgba(239, 68, 68, 0.1)' : 'transparent',
+            borderRadius: 999,
+            border: 'none',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
@@ -241,11 +235,11 @@ function SuperAdminContent() {
             transition: 'all 0.15s ease',
           }}
         >
-          <RotateCcw size={16} />
+          <RotateCcw size={15} />
           <span>10-Day Recovery Queue</span>
           {deletedTenantsList.length > 0 && (
             <span style={{
-              background: '#ef4444',
+              background: '#dc2626',
               color: '#ffffff',
               fontSize: '0.68rem',
               fontWeight: 900,
@@ -262,17 +256,17 @@ function SuperAdminContent() {
       {activeTab === 'recovery' && (
         <div>
           <div style={{ marginBottom: 20 }}>
-            <h2 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: 4 }}>10-Day Deleted Shop Recovery Queue</h2>
-            <p style={{ color: 'rgb(100,116,139)', fontSize: '0.82rem' }}>
+            <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'rgb(var(--text-primary))', marginBottom: 4 }}>10-Day Deleted Shop Recovery Queue</h2>
+            <p style={{ color: 'rgb(var(--text-secondary))', fontSize: '0.82rem' }}>
               Shops deleted by owners are retained safely for 10 days before permanent purging. You can recover an account and all its customer & biller data in 1 click.
             </p>
           </div>
 
           {deletedTenantsList.length === 0 ? (
-            <div className="card" style={{ padding: '60px 24px', textAlign: 'center', background: 'rgb(18, 20, 26)' }}>
-              <CheckCircle2 size={44} color="#4ade80" style={{ margin: '0 auto 14px', opacity: 0.8 }} />
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#f8fafc', marginBottom: 4 }}>Recovery Queue is Empty</h3>
-              <p style={{ color: 'rgb(100,116,139)', fontSize: '0.84rem' }}>
+            <div className="card" style={{ padding: '60px 24px', textAlign: 'center', background: '#ffffff', border: '1px solid rgb(var(--border-rgb))', borderRadius: 16 }}>
+              <CheckCircle2 size={44} color="rgb(var(--color-primary-dark))" style={{ margin: '0 auto 14px', opacity: 0.8 }} />
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'rgb(var(--text-primary))', marginBottom: 4 }}>Recovery Queue is Empty</h3>
+              <p style={{ color: 'rgb(var(--text-secondary))', fontSize: '0.84rem' }}>
                 No shops are currently scheduled for deletion. All tenant accounts are in active standing.
               </p>
             </div>
@@ -290,45 +284,46 @@ function SuperAdminContent() {
                     className="card animate-fadeIn"
                     style={{
                       padding: '20px 24px',
-                      background: 'rgb(18, 20, 26)',
-                      border: '1px solid rgba(239, 68, 68, 0.35)',
-                      borderRadius: 14,
+                      background: '#ffffff',
+                      border: '1px solid rgba(239, 68, 68, 0.3)',
+                      borderRadius: 16,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       flexWrap: 'wrap',
                       gap: 18,
+                      boxShadow: '0 2px 10px rgba(0,0,0,0.03)',
                     }}
                   >
                     <div style={{ flex: 1, minWidth: 280 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
-                        <span style={{ fontWeight: 800, fontSize: '1.05rem', color: '#f8fafc' }}>
+                        <span style={{ fontWeight: 800, fontSize: '1.1rem', color: 'rgb(var(--text-primary))' }}>
                           {t.name}
                         </span>
                         <span style={{
-                          background: 'rgba(239, 68, 68, 0.15)',
-                          color: '#f87171',
-                          fontSize: '0.72rem',
+                          background: 'rgba(239, 68, 68, 0.08)',
+                          color: '#dc2626',
+                          fontSize: '0.74rem',
                           fontWeight: 800,
-                          padding: '3px 9px',
-                          borderRadius: 6,
-                          border: '1px solid rgba(239,68,68,0.3)',
+                          padding: '4px 10px',
+                          borderRadius: 999,
+                          border: '1px solid rgba(239,68,68,0.25)',
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: 5,
                         }}>
                           <Clock size={12} /> {daysLeft} Day{daysLeft !== 1 ? 's' : ''} Remaining for Recovery
                         </span>
-                        <span style={{ fontSize: '0.72rem', color: 'rgb(100,116,139)' }}>
+                        <span style={{ fontSize: '0.74rem', color: 'rgb(var(--text-muted))' }}>
                           (Scheduled deletion: {format(schedDate, 'dd MMM yyyy')})
                         </span>
                       </div>
 
-                      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: '0.76rem', color: 'rgb(100, 116, 139)' }}>
-                        <div>Owner: <strong style={{ color: '#f8fafc' }}>{owner?.name || 'Owner'}</strong> ({owner?.email})</div>
-                        <div>Preserved Bills: <strong style={{ color: '#f8fafc' }}>{t._count?.bills ?? 0}</strong></div>
-                        <div>Preserved Items: <strong style={{ color: '#f8fafc' }}>{t._count?.items ?? 0} SKUs</strong></div>
-                        <div>Preserved Staff: <strong style={{ color: '#f8fafc' }}>{t._count?.users ?? 0}</strong></div>
+                      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: '0.78rem', color: 'rgb(var(--text-secondary))' }}>
+                        <div>Owner: <strong style={{ color: 'rgb(var(--text-primary))' }}>{owner?.name || 'Owner'}</strong> ({owner?.email})</div>
+                        <div>Preserved Bills: <strong style={{ color: 'rgb(var(--text-primary))' }}>{t._count?.bills ?? 0}</strong></div>
+                        <div>Preserved Items: <strong style={{ color: 'rgb(var(--text-primary))' }}>{t._count?.items ?? 0} SKUs</strong></div>
+                        <div>Preserved Staff: <strong style={{ color: 'rgb(var(--text-primary))' }}>{t._count?.users ?? 0}</strong></div>
                       </div>
                     </div>
 
@@ -336,34 +331,21 @@ function SuperAdminContent() {
                       <button
                         className="btn-primary"
                         style={{
-                          fontSize: '0.82rem',
-                          padding: '8px 18px',
-                          background: 'rgb(22, 163, 74)',
+                          fontSize: '0.84rem',
+                          padding: '8px 20px',
+                          borderRadius: 999,
                           display: 'flex',
                           alignItems: 'center',
                           gap: 6,
                         }}
                         disabled={restoreShopMutation.isPending}
-                        onClick={() => restoreShopMutation.mutate(t.id)}
-                      >
-                        {restoreShopMutation.isPending ? (
-                          <><Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> Restoring...</>
-                        ) : (
-                          <><RotateCcw size={16} /> Recover Shop Account</>
-                        )}
-                      </button>
-
-                      <button
-                        className="btn-danger"
-                        style={{ fontSize: '0.82rem', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 6 }}
-                        disabled={deleteShopMutation.isPending}
                         onClick={() => {
-                          if (confirm(`Are you sure you want to permanently purge "${t.name}" right now? All preserved data will be lost immediately.`)) {
-                            deleteShopMutation.mutate(t.id);
+                          if (confirm(`Restore and reactivate shop "${t.name}"?`)) {
+                            restoreShopMutation.mutate(t.id);
                           }
                         }}
                       >
-                        <Trash2 size={15} /> Purge Now
+                        <RefreshCw size={14} /> Restore Shop
                       </button>
                     </div>
                   </div>
@@ -378,22 +360,24 @@ function SuperAdminContent() {
       {activeTab === 'approvals' && (
         <div>
           <div style={{ marginBottom: 20 }}>
-            <h2 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: 4 }}>Subscription Upgrade Approvals Queue</h2>
-            <p style={{ color: 'rgb(100,116,139)', fontSize: '0.82rem' }}>
-              When shop owners request a plan upgrade, review the request and click Approve to activate the new tier and SKU limits.
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'rgb(var(--text-primary))', marginBottom: 4 }}>
+              Pending Subscription Approvals
+            </h2>
+            <p style={{ color: 'rgb(var(--text-secondary))', fontSize: '0.84rem' }}>
+              Review manual UPI/Bank transfer subscription payments submitted by shop owners. Approve to immediately upgrade their plan limits.
             </p>
           </div>
 
           {isLoadingPending ? (
-            <div className="card" style={{ padding: 48, textAlign: 'center', color: 'rgb(100,116,139)' }}>
+            <div className="card" style={{ padding: 48, textAlign: 'center', color: 'rgb(var(--text-secondary))', background: '#ffffff', borderRadius: 16 }}>
               <Loader2 size={24} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 12px' }} />
               <p>Checking pending approval queue...</p>
             </div>
           ) : pendingApprovals.length === 0 ? (
-            <div className="card" style={{ padding: '60px 24px', textAlign: 'center', background: 'rgb(18, 20, 26)' }}>
-              <CheckCircle2 size={44} color="#4ade80" style={{ margin: '0 auto 14px', opacity: 0.8 }} />
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#f8fafc', marginBottom: 4 }}>All Caught Up!</h3>
-              <p style={{ color: 'rgb(100,116,139)', fontSize: '0.84rem' }}>
+            <div className="card" style={{ padding: '60px 24px', textAlign: 'center', background: '#ffffff', border: '1px solid rgb(var(--border-rgb))', borderRadius: 16 }}>
+              <CheckCircle2 size={44} color="rgb(var(--color-primary-dark))" style={{ margin: '0 auto 14px', opacity: 0.8 }} />
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'rgb(var(--text-primary))', marginBottom: 4 }}>All Caught Up!</h3>
+              <p style={{ color: 'rgb(var(--text-secondary))', fontSize: '0.84rem' }}>
                 There are currently no pending subscription upgrade requests waiting for approval.
               </p>
             </div>
@@ -410,51 +394,52 @@ function SuperAdminContent() {
                     className="card animate-fadeIn"
                     style={{
                       padding: '20px 24px',
-                      background: 'rgb(18, 20, 26)',
-                      border: '1px solid rgba(251, 191, 36, 0.35)',
-                      borderRadius: 14,
+                      background: '#ffffff',
+                      border: '1px solid rgba(245, 158, 11, 0.35)',
+                      borderRadius: 16,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       flexWrap: 'wrap',
                       gap: 18,
+                      boxShadow: '0 2px 10px rgba(0,0,0,0.03)',
                     }}
                   >
                     <div style={{ flex: 1, minWidth: 280 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
-                        <span style={{ fontWeight: 800, fontSize: '1.05rem', color: '#f8fafc' }}>
+                        <span style={{ fontWeight: 800, fontSize: '1.1rem', color: 'rgb(var(--text-primary))' }}>
                           {req.tenant?.name}
                         </span>
                         <span style={{
-                          background: 'rgba(100, 116, 139, 0.15)',
-                          color: 'rgb(148, 163, 184)',
-                          fontSize: '0.72rem',
+                          background: 'rgb(var(--surface-2))',
+                          color: 'rgb(var(--text-secondary))',
+                          fontSize: '0.74rem',
                           fontWeight: 700,
-                          padding: '3px 8px',
-                          borderRadius: 6,
-                          border: '1px solid rgba(100,116,139,0.3)',
+                          padding: '3px 10px',
+                          borderRadius: 999,
+                          border: '1px solid rgb(var(--border-rgb))',
                         }}>
                           Current: {curTier} ({PLAN_LIMITS[curTier] ?? 10} SKUs)
                         </span>
-                        <ArrowRight size={14} color="#fbbf24" />
+                        <ArrowRight size={14} color="#d97706" />
                         <span style={{
-                          background: 'rgba(22, 163, 74, 0.15)',
-                          color: '#4ade80',
+                          background: 'rgb(var(--color-primary-light))',
+                          color: 'rgb(var(--color-primary-dark))',
                           fontSize: '0.75rem',
                           fontWeight: 800,
                           padding: '3px 10px',
-                          borderRadius: 6,
-                          border: '1px solid rgba(22, 163, 74, 0.4)',
+                          borderRadius: 999,
+                          border: '1px solid rgba(78, 159, 118, 0.3)',
                         }}>
                           Requested: {newTier} ({PLAN_LIMITS[newTier] ?? 100} SKUs)
                         </span>
                       </div>
 
-                      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: '0.76rem', color: 'rgb(100, 116, 139)' }}>
-                        <div>Owner: <strong style={{ color: '#f8fafc' }}>{owner?.name || 'Owner'}</strong> ({owner?.email})</div>
-                        {owner?.phone && <div>Phone: <strong style={{ color: '#f8fafc' }}>{owner.phone}</strong></div>}
-                        <div>Plan Price: <strong style={{ color: '#4ade80' }}>{PLAN_PRICES[newTier] ?? `₹${Number(req.amount).toLocaleString('en-IN')}`}</strong></div>
-                        <div>Date: <strong style={{ color: '#f8fafc' }}>{format(new Date(req.createdAt), 'dd MMM yyyy, hh:mm a')}</strong></div>
+                      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: '0.78rem', color: 'rgb(var(--text-secondary))' }}>
+                        <div>Owner: <strong style={{ color: 'rgb(var(--text-primary))' }}>{owner?.name || 'Owner'}</strong> ({owner?.email})</div>
+                        {owner?.phone && <div>Phone: <strong style={{ color: 'rgb(var(--text-primary))' }}>{owner.phone}</strong></div>}
+                        <div>Plan Price: <strong style={{ color: 'rgb(var(--color-primary-dark))' }}>{PLAN_PRICES[newTier] ?? `$${Number(req.amount).toLocaleString('en-US')}`}</strong></div>
+                        <div>Date: <strong style={{ color: 'rgb(var(--text-primary))' }}>{format(new Date(req.createdAt), 'dd MMM yyyy, hh:mm a')}</strong></div>
                       </div>
                     </div>
 
@@ -462,9 +447,10 @@ function SuperAdminContent() {
                       <button
                         className="btn-secondary"
                         style={{
-                          fontSize: '0.82rem',
+                          fontSize: '0.84rem',
                           padding: '8px 16px',
-                          color: '#f87171',
+                          borderRadius: 999,
+                          color: '#dc2626',
                           borderColor: 'rgba(239, 68, 68, 0.3)',
                           display: 'flex',
                           alignItems: 'center',
@@ -479,9 +465,9 @@ function SuperAdminContent() {
                       <button
                         className="btn-primary"
                         style={{
-                          fontSize: '0.82rem',
-                          padding: '8px 18px',
-                          background: 'rgb(22, 163, 74)',
+                          fontSize: '0.84rem',
+                          padding: '8px 20px',
+                          borderRadius: 999,
                           display: 'flex',
                           alignItems: 'center',
                           gap: 6,
@@ -798,15 +784,15 @@ function OverridePlanModal({
     <div
       style={{
         position: 'fixed', inset: 0, zIndex: 1000,
-        background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        backdropFilter: 'blur(4px)',
+        background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        backdropFilter: 'blur(6px)', padding: 16,
       }}
       onClick={onClose}
     >
-      <div className="card modal-content" style={{ width: 440, padding: 28, background: 'rgb(18, 20, 26)' }} onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>
-          <h2 style={{ fontSize: '1rem', fontWeight: 800 }}>Override Plan: {tenant.name}</h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgb(100,116,139)' }}>
+      <div className="card modal-content animate-fadeIn" style={{ width: '100%', maxWidth: 440, padding: 28, background: '#ffffff', border: '1px solid rgb(var(--border-rgb))', borderRadius: 20, boxShadow: '0 20px 48px rgba(0,0,0,0.12)' }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'rgb(var(--text-primary))', margin: 0 }}>Override Plan: {tenant.name}</h2>
+          <button onClick={onClose} style={{ background: 'rgb(var(--surface-2))', border: 'none', borderRadius: 8, padding: 6, color: 'rgb(var(--text-secondary))', cursor: 'pointer' }}>
             <X size={18} />
           </button>
         </div>
@@ -816,9 +802,9 @@ function OverridePlanModal({
             <label className="label">Plan Tier</label>
             <select className="input" {...register('planTier')}>
               <option value="STARTER">Starter — Free (10 SKUs)</option>
-              <option value="GROWTH">Growth — ₹10,000/yr (100 SKUs)</option>
-              <option value="BUSINESS">Business — ₹20,000/yr (500 SKUs)</option>
-              <option value="ENTERPRISE">Enterprise — ₹30,000/yr (2,000+ SKUs)</option>
+              <option value="GROWTH">Growth — $100/yr (100 SKUs)</option>
+              <option value="BUSINESS">Business — $200/yr (500 SKUs)</option>
+              <option value="ENTERPRISE">Enterprise — $300/yr (2,000+ SKUs)</option>
             </select>
           </div>
 
@@ -840,7 +826,7 @@ function OverridePlanModal({
 
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 12 }}>
             <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
-            <button type="submit" className="btn-primary" disabled={isPending} style={{ background: 'rgb(22, 163, 74)' }}>
+            <button type="submit" className="btn-primary" disabled={isPending} style={{ borderRadius: 999, padding: '8px 20px' }}>
               {isPending ? <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> : 'Apply Override'}
             </button>
           </div>
@@ -885,18 +871,18 @@ function CreateShopModal({
     <div
       style={{
         position: 'fixed', inset: 0, zIndex: 1000,
-        background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        backdropFilter: 'blur(4px)',
+        background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        backdropFilter: 'blur(6px)', padding: 16,
       }}
       onClick={onClose}
     >
-      <div className="card modal-content" style={{ width: 500, padding: 28, maxHeight: '90vh', overflowY: 'auto', background: 'rgb(18, 20, 26)' }} onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>
+      <div className="card modal-content animate-fadeIn" style={{ width: '100%', maxWidth: 500, padding: 28, maxHeight: '90vh', overflowY: 'auto', background: '#ffffff', border: '1px solid rgb(var(--border-rgb))', borderRadius: 20, boxShadow: '0 20px 48px rgba(0,0,0,0.12)' }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Building2 size={20} color="#4ade80" />
-            <h2 style={{ fontSize: '1.05rem', fontWeight: 800 }}>Onboard New Shop & Owner</h2>
+            <Building2 size={20} color="rgb(var(--color-primary-dark))" />
+            <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'rgb(var(--text-primary))', margin: 0 }}>Onboard New Shop & Owner</h2>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgb(100,116,139)' }}>
+          <button onClick={onClose} style={{ background: 'rgb(var(--surface-2))', border: 'none', borderRadius: 8, padding: 6, color: 'rgb(var(--text-secondary))', cursor: 'pointer' }}>
             <X size={18} />
           </button>
         </div>
@@ -937,15 +923,15 @@ function CreateShopModal({
             <label className="label">Assigned Plan Tier</label>
             <select className="input" {...register('planTier')}>
               <option value="STARTER">Starter — Free (10 SKUs)</option>
-              <option value="GROWTH">Growth — ₹10,000/yr (100 SKUs)</option>
-              <option value="BUSINESS">Business — ₹20,000/yr (500 SKUs)</option>
-              <option value="ENTERPRISE">Enterprise — ₹30,000/yr (2,000+ SKUs)</option>
+              <option value="GROWTH">Growth — $100/yr (100 SKUs)</option>
+              <option value="BUSINESS">Business — $200/yr (500 SKUs)</option>
+              <option value="ENTERPRISE">Enterprise — $300/yr (2,000+ SKUs)</option>
             </select>
           </div>
 
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 12 }}>
             <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
-            <button type="submit" className="btn-primary" disabled={isSubmitting} style={{ background: 'rgb(22, 163, 74)' }}>
+            <button type="submit" className="btn-primary" disabled={isSubmitting} style={{ borderRadius: 999, padding: '8px 24px' }}>
               {isSubmitting ? <><Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> Creating...</> : 'Create Shop & Account'}
             </button>
           </div>

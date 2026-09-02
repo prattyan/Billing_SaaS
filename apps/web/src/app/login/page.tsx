@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
-import { Eye, EyeOff, ShoppingBag, Loader2, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, Flame, Loader2, ShieldCheck } from 'lucide-react';
 import { authApi } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 
@@ -56,21 +56,21 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4"
       style={{
-        background: 'rgb(10, 10, 14)',
+        background: 'rgb(var(--surface-0))',
       }}>
 
-      {/* Background decoration */}
+      {/* Background soft ambient decoration */}
       <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
         <div style={{
           position: 'absolute', top: '-15%', right: '-10%',
           width: '600px', height: '600px',
-          background: 'radial-gradient(circle, rgba(22, 163, 74, 0.07) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(78, 159, 118, 0.08) 0%, transparent 70%)',
           borderRadius: '50%',
         }} />
         <div style={{
           position: 'absolute', bottom: '-15%', left: '-10%',
           width: '500px', height: '500px',
-          background: 'radial-gradient(circle, rgba(22, 163, 74, 0.04) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(78, 159, 118, 0.05) 0%, transparent 70%)',
           borderRadius: '50%',
         }} />
       </div>
@@ -81,22 +81,22 @@ export default function LoginPage() {
           <div style={{
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
             width: 58, height: 58, borderRadius: 16,
-            background: 'rgb(22, 163, 74)',
-            boxShadow: '0 6px 24px rgba(22,163,74,0.3)',
+            background: 'rgb(var(--text-primary))',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
             marginBottom: 18,
           }}>
-            <ShoppingBag size={28} color="white" />
+            <Flame size={28} color="white" />
           </div>
-          <h1 style={{ fontSize: '1.9rem', fontWeight: 800, marginBottom: 6, letterSpacing: '-0.03em' }}>
-            BillFlow POS
+          <h1 style={{ fontSize: '1.9rem', fontWeight: 800, marginBottom: 6, letterSpacing: '-0.03em', color: 'rgb(var(--text-primary))' }}>
+            BillFlow
           </h1>
-          <p style={{ color: 'rgb(100,116,139)', fontSize: '0.88rem', fontWeight: 500 }}>
+          <p style={{ color: 'rgb(var(--text-secondary))', fontSize: '0.88rem', fontWeight: 500 }}>
             Enterprise Cloud POS & Billing SaaS
           </p>
         </div>
 
         {/* Card */}
-        <div className="card" style={{ padding: '34px', border: '1px solid rgb(38,40,52)' }}>
+        <div className="card" style={{ padding: '36px', background: '#ffffff', border: '1px solid rgb(var(--border-rgb))', borderRadius: 20 }}>
           <form onSubmit={handleSubmit(onSubmit)} noValidate>
             <div style={{ marginBottom: '22px' }}>
               <label className="label" htmlFor="email">Email Address</label>
@@ -109,7 +109,7 @@ export default function LoginPage() {
                 {...register('email')}
               />
               {errors.email && (
-                <p style={{ color: 'rgb(251, 113, 133)', fontSize: '0.78rem', marginTop: 6, fontWeight: 600 }}>
+                <p style={{ color: '#dc2626', fontSize: '0.78rem', marginTop: 6, fontWeight: 600 }}>
                   {errors.email.message}
                 </p>
               )}
@@ -133,14 +133,14 @@ export default function LoginPage() {
                   style={{
                     position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
                     background: 'none', border: 'none', cursor: 'pointer',
-                    color: 'rgb(161, 161, 170)',
+                    color: 'rgb(var(--text-muted))',
                   }}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
               {errors.password && (
-                <p style={{ color: 'rgb(251, 113, 133)', fontSize: '0.78rem', marginTop: 6, fontWeight: 600 }}>
+                <p style={{ color: '#dc2626', fontSize: '0.78rem', marginTop: 6, fontWeight: 600 }}>
                   {errors.password.message}
                 </p>
               )}
@@ -153,13 +153,13 @@ export default function LoginPage() {
 
           <hr className="divider" style={{ margin: '26px 0' }} />
 
-          <div style={{ textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: '0.78rem', color: 'rgb(100,116,139)' }}>
-            <ShieldCheck size={15} color="rgb(22, 163, 74)" /> 256-bit Encrypted Multi-Tenant SaaS
+          <div style={{ textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: '0.78rem', color: 'rgb(var(--text-muted))' }}>
+            <ShieldCheck size={15} color="rgb(var(--color-primary))" /> 256-bit Encrypted Multi-Tenant SaaS
           </div>
 
-          <p style={{ textAlign: 'center', fontSize: '0.88rem', color: 'rgb(100,116,139)', marginTop: 16 }}>
+          <p style={{ textAlign: 'center', fontSize: '0.88rem', color: 'rgb(var(--text-secondary))', marginTop: 16 }}>
             New shop?{' '}
-            <Link href="/register" style={{ color: '#4ade80', fontWeight: 700, textDecoration: 'none' }}>
+            <Link href="/register" style={{ color: 'rgb(var(--color-primary))', fontWeight: 700, textDecoration: 'none' }}>
               Create your shop account →
             </Link>
           </p>

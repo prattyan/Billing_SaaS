@@ -428,18 +428,19 @@ export default function POSPage() {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {/* Top Sticky Bar: Search + Camera Scan */}
         <div style={{
-          padding: '12px 16px',
-          background: 'rgb(10, 10, 14)',
-          borderBottom: '1px solid rgb(38, 40, 52)',
+          padding: '14px 18px',
+          background: '#ffffff',
+          borderBottom: '1px solid rgb(var(--border-rgb))',
           position: 'sticky',
           top: 0,
           zIndex: 40,
+          boxShadow: '0 1px 4px rgba(0,0,0,0.02)',
         }}>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
             <div style={{ flex: 1, position: 'relative' }}>
               <Search size={16} style={{
                 position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
-                color: 'rgb(113,113,122)', pointerEvents: 'none',
+                color: 'rgb(var(--text-muted))', pointerEvents: 'none',
               }} />
               <input
                 ref={searchInputRef}
@@ -448,7 +449,7 @@ export default function POSPage() {
                 placeholder="Search item or scan barcode…"
                 value={searchQuery}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                style={{ paddingLeft: 40, height: 44, fontSize: '0.9rem', borderRadius: 12 }}
+                style={{ paddingLeft: 40, height: 44, fontSize: '0.9rem', borderRadius: 12, background: 'rgb(var(--surface-0))' }}
                 autoFocus
               />
               {searchQuery && (
@@ -456,7 +457,7 @@ export default function POSPage() {
                   onClick={() => { setSearchQuery(''); setShowResults(false); }}
                   style={{
                     position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-                    background: 'none', border: 'none', color: '#a1a1aa', cursor: 'pointer',
+                    background: 'none', border: 'none', color: 'rgb(var(--text-muted))', cursor: 'pointer',
                   }}
                 >
                   <X size={16} />
@@ -469,14 +470,12 @@ export default function POSPage() {
               className="btn-primary"
               style={{
                 height: 44,
-                padding: '0 16px',
-                borderRadius: 10,
+                padding: '0 18px',
+                borderRadius: 12,
                 display: 'flex',
                 alignItems: 'center',
                 gap: 8,
                 flexShrink: 0,
-                background: 'rgb(22, 163, 74)',
-                boxShadow: '0 4px 14px rgba(22,163,74,0.25)',
               }}
               onClick={() => setShowCameraScanner(true)}
               title="Open mobile camera barcode scanner"
@@ -490,14 +489,14 @@ export default function POSPage() {
               className="btn-secondary"
               style={{
                 height: 44,
-                padding: '0 14px',
-                borderRadius: 10,
+                padding: '0 16px',
+                borderRadius: 999,
                 display: 'flex',
                 alignItems: 'center',
-                gap: 8,
-                background: (heldBills?.length || 0) > 0 ? 'rgba(251, 191, 36, 0.12)' : 'rgb(18, 20, 26)',
-                border: (heldBills?.length || 0) > 0 ? '1px solid rgba(251, 191, 36, 0.4)' : '1px solid rgb(38, 40, 52)',
-                color: (heldBills?.length || 0) > 0 ? 'rgb(251, 191, 36)' : 'rgb(148, 163, 184)',
+                gap: 6,
+                background: (heldBills?.length || 0) > 0 ? 'rgba(234, 179, 8, 0.12)' : 'rgb(var(--surface-1))',
+                border: `1px solid ${(heldBills?.length || 0) > 0 ? 'rgba(234, 179, 8, 0.4)' : 'rgb(var(--border-rgb))'}`,
+                color: (heldBills?.length || 0) > 0 ? '#b45309' : 'rgb(var(--text-secondary))',
                 fontWeight: 700,
               }}
               onClick={() => setShowHeldModal(true)}
@@ -507,8 +506,8 @@ export default function POSPage() {
               <span className="hide-mobile">Held Orders</span>
               {(heldBills?.length || 0) > 0 && (
                 <span style={{
-                  background: 'rgb(251, 191, 36)',
-                  color: '#000000',
+                  background: 'rgb(234, 179, 8)',
+                  color: '#ffffff',
                   borderRadius: 999,
                   padding: '1px 7px',
                   fontSize: '0.72rem',
@@ -523,7 +522,7 @@ export default function POSPage() {
             {cartItems.length > 0 && (
               <button
                 className="btn-secondary hide-mobile"
-                style={{ height: 44, padding: '0 12px', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 6, background: 'rgb(18, 20, 26)', border: '1px solid rgb(38, 40, 52)' }}
+                style={{ height: 44, padding: '0 16px', borderRadius: 999, display: 'flex', alignItems: 'center', gap: 6, background: 'rgb(var(--surface-1))', border: '1px solid rgb(var(--border-rgb))' }}
                 onClick={() => holdBillMutation.mutate()}
                 disabled={holdBillMutation.isPending}
                 title="Hold current bill"
@@ -539,16 +538,16 @@ export default function POSPage() {
             <button
               onClick={() => setSelectedCategory('ALL')}
               style={{
-                padding: '7px 16px',
+                padding: '7px 18px',
                 borderRadius: 999,
-                fontSize: '0.78rem',
+                fontSize: '0.8rem',
                 fontWeight: 700,
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
-                background: selectedCategory === 'ALL' ? 'rgb(22, 163, 74)' : 'rgb(18, 20, 26)',
-                color: selectedCategory === 'ALL' ? '#ffffff' : 'rgb(148, 163, 184)',
-                border: `1px solid ${selectedCategory === 'ALL' ? 'rgb(22, 163, 74)' : 'rgb(38, 40, 52)'}`,
-                boxShadow: selectedCategory === 'ALL' ? '0 2px 10px rgba(22,163,74,0.3)' : 'none',
+                background: selectedCategory === 'ALL' ? 'rgb(var(--color-primary))' : '#ffffff',
+                color: selectedCategory === 'ALL' ? '#ffffff' : 'rgb(var(--text-secondary))',
+                border: `1px solid ${selectedCategory === 'ALL' ? 'rgb(var(--color-primary))' : 'rgb(var(--border-rgb))'}`,
+                boxShadow: selectedCategory === 'ALL' ? '0 2px 8px rgba(78, 159, 118, 0.25)' : 'none',
                 transition: 'all 0.15s ease',
               }}
             >
@@ -559,16 +558,16 @@ export default function POSPage() {
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
                 style={{
-                  padding: '7px 16px',
+                  padding: '7px 18px',
                   borderRadius: 999,
-                  fontSize: '0.78rem',
+                  fontSize: '0.8rem',
                   fontWeight: 600,
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
-                  background: selectedCategory === cat.id ? 'rgb(22, 163, 74)' : 'rgb(18, 20, 26)',
-                  color: selectedCategory === cat.id ? '#ffffff' : 'rgb(148, 163, 184)',
-                  border: `1px solid ${selectedCategory === cat.id ? 'rgb(22, 163, 74)' : 'rgb(38, 40, 52)'}`,
-                  boxShadow: selectedCategory === cat.id ? '0 2px 10px rgba(22,163,74,0.3)' : 'none',
+                  background: selectedCategory === cat.id ? 'rgb(var(--color-primary))' : '#ffffff',
+                  color: selectedCategory === cat.id ? '#ffffff' : 'rgb(var(--text-secondary))',
+                  border: `1px solid ${selectedCategory === cat.id ? 'rgb(var(--color-primary))' : 'rgb(var(--border-rgb))'}`,
+                  boxShadow: selectedCategory === cat.id ? '0 2px 8px rgba(78, 159, 118, 0.25)' : 'none',
                   transition: 'all 0.15s ease',
                 }}
               >
@@ -579,55 +578,46 @@ export default function POSPage() {
 
           {/* Search Dropdown (if user searches) */}
           {showResults && searchResults.length > 0 && (
-            <div className="card" style={{
-              position: 'absolute', top: '100%', left: 16, right: 16, zIndex: 120,
-              maxHeight: 340, overflowY: 'auto', padding: 8, marginTop: 4,
-              border: '1px solid rgb(38, 40, 52)',
-              boxShadow: '0 12px 32px rgba(0,0,0,0.8)',
-            }}>
-              {searchResults.map((item: any) => (
+            <div
+              className="card animate-fadeIn"
+              style={{
+                marginTop: 12,
+                maxHeight: 280,
+                overflowY: 'auto',
+                padding: 6,
+                zIndex: 20,
+                background: '#ffffff',
+                border: '1.5px solid rgb(var(--color-primary))',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
+              }}
+            >
+              {searchResults.map((item) => (
                 <div
                   key={item.id}
                   style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '10px 12px', borderRadius: 8, cursor: 'pointer',
-                    background: 'rgba(255,255,255,0.02)',
-                    marginBottom: 4,
-                    border: '1px solid transparent',
-                    transition: 'border-color 0.15s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '10px 14px',
+                    borderRadius: 8,
+                    cursor: 'pointer',
+                    transition: 'background 0.1s',
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(22,163,74,0.4)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'transparent'; }}
-                  onClick={() => {
-                    addItemToCart(item);
-                    setShowResults(false);
-                    setSearchQuery('');
-                  }}
+                  className="search-result-row"
+                  onClick={() => addItemToCart(item)}
                 >
-                  <div style={{
-                    width: 38, height: 38, borderRadius: 8, flexShrink: 0,
-                    background: 'rgba(22, 163, 74, 0.12)',
-                    color: '#4ade80',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '0.9rem', fontWeight: 800,
-                  }}>
-                    <ShoppingBag size={18} />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#f8fafc' }}>{item.name}</div>
-                    <div style={{ fontSize: '0.72rem', color: 'rgb(100, 116, 139)' }}>
-                      {item.barcode ? `${item.barcode} · ` : ''}Stock: {Number(item.currentStock).toFixed(0)} {item.unit}
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'rgb(var(--text-primary))' }}>{item.name}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'rgb(var(--text-secondary))' }}>
+                      {item.barcode && <span style={{ marginRight: 8 }}>BAR: {item.barcode}</span>}
+                      <span>Stock: {item.currentStock} {item.unit}</span>
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#4ade80' }}>
-                      ₹{Number(item.offerPrice ?? item.mrp).toFixed(2)}
+                    <div style={{ fontWeight: 800, color: 'rgb(var(--color-primary-dark))', fontSize: '0.95rem' }}>
+                      ₹{Number(item.offerPrice ?? item.sellingPrice ?? item.mrp).toFixed(2)}
                     </div>
-                    {item.offerPrice && Number(item.offerPrice) < Number(item.mrp) && (
-                      <div style={{ fontSize: '0.7rem', color: 'rgb(100, 116, 139)', textDecoration: 'line-through' }}>
-                        ₹{Number(item.mrp).toFixed(2)}
-                      </div>
-                    )}
+                    <div style={{ fontSize: '0.72rem', color: 'rgb(var(--text-muted))' }}>+ {item.taxRate || 0}% tax</div>
                   </div>
                 </div>
               ))}
@@ -638,15 +628,15 @@ export default function POSPage() {
         {/* ── Catalog Item Grid (1-Tap Sell on Mobile & Desktop) ── */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px 18px 90px 18px' }}>
           {filteredCatalog.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px 20px', color: 'rgb(100, 116, 139)' }}>
+            <div style={{ textAlign: 'center', padding: '60px 20px', color: 'rgb(var(--text-muted))' }}>
               <ShoppingBag size={44} style={{ opacity: 0.25, margin: '0 auto 14px' }} />
-              <p style={{ fontWeight: 700, fontSize: '0.95rem', color: '#f8fafc', marginBottom: 4 }}>No items in this category</p>
-              <p style={{ fontSize: '0.82rem', color: 'rgb(100, 116, 139)' }}>Scan a barcode or add products in Inventory</p>
+              <p style={{ fontWeight: 700, fontSize: '0.95rem', color: 'rgb(var(--text-primary))', marginBottom: 4 }}>No items in this category</p>
+              <p style={{ fontSize: '0.82rem', color: 'rgb(var(--text-secondary))' }}>Scan a barcode or add products in Inventory</p>
             </div>
           ) : (
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
               gap: 14,
             }}>
               {filteredCatalog.map((item: any) => {
@@ -656,7 +646,7 @@ export default function POSPage() {
                 return (
                   <div
                     key={item.id}
-                    className="animate-fadeIn"
+                    className="card animate-fadeIn"
                     style={{
                       cursor: isOut ? 'not-allowed' : 'pointer',
                       opacity: isOut ? 0.45 : 1,
@@ -664,22 +654,22 @@ export default function POSPage() {
                       flexDirection: 'column',
                       justifyContent: 'space-between',
                       position: 'relative',
-                      borderRadius: 14,
+                      borderRadius: 16,
                       padding: '16px 14px 14px',
-                      background: inCart ? 'rgba(22, 163, 74, 0.08)' : 'rgb(18, 20, 26)',
-                      border: inCart ? '1.5px solid rgb(22, 163, 74)' : '1px solid rgb(38, 40, 52)',
-                      boxShadow: inCart ? '0 4px 16px rgba(22,163,74,0.15)' : '0 2px 8px rgba(0,0,0,0.3)',
+                      background: inCart ? 'rgb(var(--color-primary-light))' : '#ffffff',
+                      border: inCart ? '1.5px solid rgb(var(--color-primary))' : '1px solid rgb(var(--border-rgb))',
+                      boxShadow: inCart ? '0 4px 14px rgba(78, 159, 118, 0.15)' : '0 2px 6px rgba(0,0,0,0.03)',
                       transition: 'all 0.15s ease',
                     }}
                     onMouseEnter={(e) => {
                       if (!isOut && !inCart) {
-                        e.currentTarget.style.borderColor = 'rgba(22,163,74,0.4)';
+                        e.currentTarget.style.borderColor = 'rgb(var(--color-primary))';
                         e.currentTarget.style.transform = 'translateY(-2px)';
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (!isOut && !inCart) {
-                        e.currentTarget.style.borderColor = 'rgb(38, 40, 52)';
+                        e.currentTarget.style.borderColor = 'rgb(var(--border-rgb))';
                         e.currentTarget.style.transform = 'translateY(0)';
                       }
                     }}
@@ -692,7 +682,7 @@ export default function POSPage() {
                         position: 'absolute',
                         top: 10,
                         right: 10,
-                        background: 'rgb(22, 163, 74)',
+                        background: 'rgb(var(--color-primary))',
                         color: 'white',
                         borderRadius: 999,
                         width: 22,
@@ -702,7 +692,7 @@ export default function POSPage() {
                         justifyContent: 'center',
                         fontSize: '0.72rem',
                         fontWeight: 800,
-                        boxShadow: '0 2px 6px rgba(22,163,74,0.4)',
+                        boxShadow: '0 2px 6px rgba(78, 159, 118, 0.4)',
                       }}>
                         {inCart.qty}
                       </div>
@@ -710,11 +700,11 @@ export default function POSPage() {
 
                     <div>
                       <div style={{
-                        fontSize: '0.92rem',
+                        fontSize: '0.94rem',
                         fontWeight: 700,
                         lineHeight: 1.3,
                         marginBottom: 6,
-                        color: '#f8fafc',
+                        color: 'rgb(var(--text-primary))',
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: 'vertical',
@@ -723,9 +713,9 @@ export default function POSPage() {
                       }}>
                         {item.name}
                       </div>
-                      <div style={{ fontSize: '0.72rem', color: 'rgb(100, 116, 139)', marginBottom: 12 }}>
+                      <div style={{ fontSize: '0.74rem', color: 'rgb(var(--text-secondary))', marginBottom: 12 }}>
                         {item.unit} · {Number(item.currentStock) <= 5 ? (
-                          <span style={{ color: '#f87171', fontWeight: 700 }}>
+                          <span style={{ color: '#dc2626', fontWeight: 700 }}>
                             {Number(item.currentStock) <= 0 ? 'Out of stock' : `${Number(item.currentStock)} left`}
                           </span>
                         ) : (
@@ -739,14 +729,14 @@ export default function POSPage() {
                       alignItems: 'flex-end',
                       justifyContent: 'space-between',
                       paddingTop: 10,
-                      borderTop: '1px solid rgba(255,255,255,0.04)',
+                      borderTop: '1px solid rgb(var(--border-rgb))',
                     }}>
                       <div>
-                        <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#4ade80', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+                        <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'rgb(var(--color-primary-dark))', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
                           ₹{Number(item.offerPrice ?? item.mrp).toFixed(2)}
                         </div>
                         {item.offerPrice && Number(item.offerPrice) < Number(item.mrp) && (
-                          <div style={{ fontSize: '0.7rem', color: 'rgb(100, 116, 139)', textDecoration: 'line-through', marginTop: 2 }}>
+                          <div style={{ fontSize: '0.72rem', color: 'rgb(var(--text-muted))', textDecoration: 'line-through', marginTop: 2 }}>
                             ₹{Number(item.mrp).toFixed(2)}
                           </div>
                         )}
@@ -755,12 +745,12 @@ export default function POSPage() {
                       <button
                         type="button"
                         style={{
-                          width: 32,
-                          height: 32,
-                          borderRadius: 8,
-                          background: inCart ? 'rgb(22, 163, 74)' : 'rgba(255,255,255,0.06)',
-                          border: inCart ? '1px solid rgb(22, 163, 74)' : '1px solid rgb(38, 40, 52)',
-                          color: inCart ? '#ffffff' : '#f8fafc',
+                          width: 34,
+                          height: 34,
+                          borderRadius: 10,
+                          background: inCart ? 'rgb(var(--color-primary))' : 'rgb(var(--surface-2))',
+                          border: inCart ? '1px solid rgb(var(--color-primary))' : '1px solid rgb(var(--border-rgb))',
+                          color: inCart ? '#ffffff' : 'rgb(var(--text-primary))',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -768,7 +758,7 @@ export default function POSPage() {
                           transition: 'all 0.15s ease',
                         }}
                       >
-                        <Plus size={15} strokeWidth={2.5} />
+                        <Plus size={16} strokeWidth={2.5} />
                       </button>
                     </div>
                   </div>
@@ -815,26 +805,26 @@ export default function POSPage() {
           width: 380,
           display: 'flex',
           flexDirection: 'column',
-          background: 'rgb(var(--surface-1))',
-          borderLeft: '1px solid rgba(255,255,255,0.06)',
+          background: '#ffffff',
+          borderLeft: '1px solid rgb(var(--border-rgb))',
           overflow: 'hidden',
         }}
       >
         <div style={{
           padding: '16px 20px',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          borderBottom: '1px solid rgb(var(--border-rgb))',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Receipt size={18} color="rgb(139,92,246)" />
-            <span style={{ fontWeight: 800, fontSize: '0.95rem' }}>
+            <Receipt size={18} color="rgb(var(--color-primary-dark))" />
+            <span style={{ fontWeight: 800, fontSize: '0.98rem', color: 'rgb(var(--text-primary))' }}>
               Active Cart ({totalCartCount})
             </span>
           </div>
           {cartItems.length > 0 && (
             <button
               onClick={clearCart}
-              style={{ background: 'none', border: 'none', color: '#a1a1aa', fontSize: '0.75rem', cursor: 'pointer' }}
+              style={{ background: 'none', border: 'none', color: '#dc2626', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}
             >
               Clear
             </button>
@@ -844,10 +834,10 @@ export default function POSPage() {
         {/* Cart items list */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '12px 20px' }}>
           {cartItems.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px 20px', color: 'rgb(113,113,122)' }}>
+            <div style={{ textAlign: 'center', padding: '60px 20px', color: 'rgb(var(--text-muted))' }}>
               <ShoppingCart size={36} style={{ opacity: 0.3, margin: '0 auto 8px' }} />
-              <p style={{ fontWeight: 600 }}>Cart is empty</p>
-              <p style={{ fontSize: '0.75rem' }}>Tap any item from catalog or scan barcode</p>
+              <p style={{ fontWeight: 600, color: 'rgb(var(--text-primary))' }}>Cart is empty</p>
+              <p style={{ fontSize: '0.78rem', color: 'rgb(var(--text-secondary))' }}>Tap any item from catalog or scan barcode</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -859,27 +849,27 @@ export default function POSPage() {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     padding: '10px 12px',
-                    borderRadius: 10,
+                    borderRadius: 12,
                     background: 'rgb(var(--surface-2))',
-                    border: '1px solid rgba(255,255,255,0.04)',
+                    border: '1px solid rgb(var(--border-rgb))',
                   }}
                 >
                   <div style={{ flex: 1, marginRight: 10 }}>
-                    <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>{item.name}</div>
-                    <div style={{ fontSize: '0.7rem', color: 'rgb(52,211,153)', fontWeight: 600 }}>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'rgb(var(--text-primary))' }}>{item.name}</div>
+                    <div style={{ fontSize: '0.74rem', color: 'rgb(var(--color-primary-dark))', fontWeight: 700 }}>
                       ₹{item.priceAtSale.toFixed(2)} × {item.qty} = ₹{(item.priceAtSale * item.qty).toFixed(2)}
                     </div>
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <button className="qty-btn" onClick={() => updateQty(item.itemId, item.qty - 1)}>−</button>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 800, minWidth: 20, textAlign: 'center' }}>{item.qty}</span>
+                    <span style={{ fontSize: '0.88rem', fontWeight: 800, minWidth: 20, textAlign: 'center', color: 'rgb(var(--text-primary))' }}>{item.qty}</span>
                     <button className="qty-btn" onClick={() => updateQty(item.itemId, item.qty + 1)}>+</button>
                     <button
                       onClick={() => removeItem(item.itemId)}
-                      style={{ background: 'none', border: 'none', color: '#a1a1aa', cursor: 'pointer', padding: 4 }}
+                      style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', padding: 4 }}
                     >
-                      <Trash2 size={14} />
+                      <Trash2 size={15} />
                     </button>
                   </div>
                 </div>
@@ -889,11 +879,11 @@ export default function POSPage() {
         </div>
 
         {/* Customer & Checkout Form */}
-        <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ padding: '16px 20px', borderTop: '1px solid rgb(var(--border-rgb))', display: 'flex', flexDirection: 'column', gap: 12 }}>
           {/* Customer phone & name */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ position: 'relative' }}>
-              <Phone size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'rgb(113,113,122)' }} />
+              <Phone size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'rgb(var(--text-muted))' }} />
               <input
                 type="tel"
                 className="input"
@@ -903,15 +893,15 @@ export default function POSPage() {
                   setCustomerPhoneInput(e.target.value);
                   setCustomer(e.target.value, customerNameInput);
                 }}
-                style={{ paddingLeft: 34, height: 38, fontSize: '0.82rem' }}
+                style={{ paddingLeft: 34, height: 38, fontSize: '0.84rem' }}
               />
               {isLookingUpCustomer && (
-                <Loader2 size={12} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', animation: 'spin 1s linear infinite', color: 'rgb(139,92,246)' }} />
+                <Loader2 size={12} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', animation: 'spin 1s linear infinite', color: 'rgb(var(--color-primary))' }} />
               )}
             </div>
 
             <div style={{ position: 'relative' }}>
-              <User size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'rgb(113,113,122)' }} />
+              <User size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'rgb(var(--text-muted))' }} />
               <input
                 type="text"
                 className="input"
@@ -921,22 +911,22 @@ export default function POSPage() {
                   setCustomerNameInput(e.target.value);
                   setCustomer(customerPhoneInput, e.target.value);
                 }}
-                style={{ paddingLeft: 34, height: 38, fontSize: '0.82rem' }}
+                style={{ paddingLeft: 34, height: 38, fontSize: '0.84rem' }}
               />
             </div>
           </div>
 
           {/* Returning Customer / Loyalty Badge */}
           {customerSuggestion && (
-            <div style={{ padding: '8px 10px', borderRadius: 8, background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', fontSize: '0.74rem', color: 'rgb(110,231,183)' }}>
+            <div style={{ padding: '8px 10px', borderRadius: 8, background: 'rgb(var(--color-primary-light))', border: '1px solid rgba(78,159,118,0.3)', fontSize: '0.74rem', color: 'rgb(var(--color-primary-dark))' }}>
               <strong>{customerSuggestion.name || 'Returning Customer'}</strong> · Loyalty: {Number(customerSuggestion.loyaltyPoints).toFixed(0)} pts
             </div>
           )}
 
           {/* Loyalty points redemption */}
           {customerSuggestion && Math.floor(Number(customerSuggestion?.loyaltyPoints || 0)) > 0 && (
-            <div style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 10, padding: '10px 12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 700, color: 'rgb(251,191,36)', marginBottom: 6 }}>
+            <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 10, padding: '10px 12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.76rem', fontWeight: 700, color: '#d97706', marginBottom: 6 }}>
                 <span>⭐ Redeem Loyalty Points</span>
                 <span>{Math.floor(Number(customerSuggestion.loyaltyPoints))} pts</span>
               </div>
@@ -947,12 +937,12 @@ export default function POSPage() {
                   placeholder="Points (1 pt = ₹1)"
                   value={pointsToRedeemInput}
                   onChange={(e) => setPointsToRedeemInput(e.target.value)}
-                  style={{ flex: 1, height: 32, fontSize: '0.78rem' }}
+                  style={{ flex: 1, height: 32, fontSize: '0.8rem' }}
                 />
                 <button
                   type="button"
                   className="btn-secondary"
-                  style={{ height: 32, fontSize: '0.72rem', color: 'rgb(251,191,36)', fontWeight: 700 }}
+                  style={{ height: 32, fontSize: '0.74rem', color: '#d97706', fontWeight: 700 }}
                   onClick={() => {
                     const avail = Math.floor(Number(customerSuggestion.loyaltyPoints));
                     const maxRedeem = Math.min(avail, Math.floor(Math.max(0, rawTotal - manualDiscount)));
@@ -984,14 +974,14 @@ export default function POSPage() {
                   }}
                   style={{
                     padding: '8px 4px',
-                    borderRadius: 8,
+                    borderRadius: 10,
                     cursor: isDisabled ? 'not-allowed' : 'pointer',
                     opacity: isDisabled ? 0.45 : 1,
-                    background: isSelected ? 'rgba(139,92,246,0.2)' : 'rgb(var(--surface-2))',
-                    border: `1px solid ${isSelected ? 'rgb(139,92,246)' : 'rgba(255,255,255,0.06)'}`,
-                    color: isSelected ? 'rgb(167,139,250)' : 'rgb(161,161,170)',
+                    background: isSelected ? 'rgb(var(--color-primary-light))' : 'rgb(var(--surface-2))',
+                    border: `1.5px solid ${isSelected ? 'rgb(var(--color-primary))' : 'rgb(var(--border-rgb))'}`,
+                    color: isSelected ? 'rgb(var(--color-primary-dark))' : 'rgb(var(--text-secondary))',
                     fontWeight: isSelected ? 700 : 500,
-                    fontSize: '0.75rem',
+                    fontSize: '0.78rem',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
@@ -1002,7 +992,7 @@ export default function POSPage() {
                   <span>{mode.emoji}</span>
                   <span>{mode.label}</span>
                   {mode.badge && (
-                    <span style={{ fontSize: '0.58rem', color: '#f87171', fontWeight: 700 }}>
+                    <span style={{ fontSize: '0.58rem', color: '#dc2626', fontWeight: 700 }}>
                       {mode.badge}
                     </span>
                   )}
@@ -1012,24 +1002,24 @@ export default function POSPage() {
           </div>
 
           {/* Bill Totals Box */}
-          <div style={{ padding: '10px 12px', borderRadius: 10, background: 'rgb(var(--surface-2))', fontSize: '0.82rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#a1a1aa', marginBottom: 4 }}>
+          <div style={{ padding: '12px 14px', borderRadius: 12, background: 'rgb(var(--surface-2))', border: '1px solid rgb(var(--border-rgb))', fontSize: '0.84rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'rgb(var(--text-secondary))', marginBottom: 4 }}>
               <span>Subtotal</span>
-              <span>₹{subtotal.toFixed(2)}</span>
+              <span style={{ fontWeight: 600, color: 'rgb(var(--text-primary))' }}>₹{subtotal.toFixed(2)}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#a1a1aa', marginBottom: 4 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'rgb(var(--text-secondary))', marginBottom: 4 }}>
               <span>GST / Tax</span>
-              <span>₹{taxTotal.toFixed(2)}</span>
+              <span style={{ fontWeight: 600, color: 'rgb(var(--text-primary))' }}>₹{taxTotal.toFixed(2)}</span>
             </div>
             {totalDiscount > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'rgb(52,211,153)', marginBottom: 4, fontWeight: 700 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'rgb(var(--color-primary-dark))', marginBottom: 4, fontWeight: 700 }}>
                 <span>Total Discount</span>
                 <span>−₹{totalDiscount.toFixed(2)}</span>
               </div>
             )}
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: '1.05rem', color: '#fafafa', marginTop: 6, paddingTop: 6, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: '1.1rem', color: 'rgb(var(--text-primary))', marginTop: 8, paddingTop: 8, borderTop: '1px solid rgb(var(--border-rgb))' }}>
               <span>Grand Total</span>
-              <span style={{ color: 'rgb(52,211,153)' }}>₹{grandTotal.toFixed(2)}</span>
+              <span style={{ color: 'rgb(var(--color-primary-dark))' }}>₹{grandTotal.toFixed(2)}</span>
             </div>
           </div>
 
@@ -1041,14 +1031,8 @@ export default function POSPage() {
               height: 48,
               fontSize: '0.95rem',
               fontWeight: 800,
+              borderRadius: 999,
               justifyContent: 'center',
-              background: finalizeBillMutation.isPending
-                ? 'linear-gradient(135deg, rgb(16, 185, 129), rgb(139, 92, 246))'
-                : undefined,
-              boxShadow: finalizeBillMutation.isPending
-                ? '0 0 24px rgba(52, 211, 153, 0.6)'
-                : undefined,
-              transition: 'all 0.2s ease',
             }}
             disabled={cartItems.length === 0 || finalizeBillMutation.isPending}
             onClick={() => {
@@ -1083,21 +1067,22 @@ export default function POSPage() {
         >
           <div
             className="mobile-sheet-drawer"
+            style={{ background: '#ffffff', borderTop: '1px solid rgb(var(--border-rgb))' }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Sheet Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Receipt size={20} color="rgb(139,92,246)" />
-                <span style={{ fontWeight: 800, fontSize: '1.1rem', color: '#fafafa' }}>
+                <Receipt size={20} color="rgb(var(--color-primary-dark))" />
+                <span style={{ fontWeight: 800, fontSize: '1.1rem', color: 'rgb(var(--text-primary))' }}>
                   Checkout ({totalCartCount} Items)
                 </span>
               </div>
               <button
                 onClick={() => setMobileCartSheetOpen(false)}
-                style={{ background: 'none', border: 'none', color: '#a1a1aa', padding: 6, cursor: 'pointer' }}
+                style={{ background: 'rgb(var(--surface-2))', border: 'none', borderRadius: 8, color: 'rgb(var(--text-secondary))', padding: 6, cursor: 'pointer' }}
               >
-                <X size={22} />
+                <X size={20} />
               </button>
             </div>
 
@@ -1112,24 +1097,24 @@ export default function POSPage() {
                     justifyContent: 'space-between',
                     padding: '10px 12px',
                     borderRadius: 12,
-                    background: 'rgb(28,28,35)',
-                    border: '1px solid rgba(255,255,255,0.06)',
+                    background: 'rgb(var(--surface-2))',
+                    border: '1px solid rgb(var(--border-rgb))',
                   }}
                 >
                   <div style={{ flex: 1, marginRight: 8 }}>
-                    <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#fafafa' }}>{item.name}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'rgb(52,211,153)', fontWeight: 600 }}>
+                    <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'rgb(var(--text-primary))' }}>{item.name}</div>
+                    <div style={{ fontSize: '0.76rem', color: 'rgb(var(--color-primary-dark))', fontWeight: 700 }}>
                       ₹{item.priceAtSale.toFixed(2)} × {item.qty} = ₹{(item.priceAtSale * item.qty).toFixed(2)}
                     </div>
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <button className="qty-btn" style={{ width: 32, height: 32 }} onClick={() => updateQty(item.itemId, item.qty - 1)}>−</button>
-                    <span style={{ fontSize: '0.95rem', fontWeight: 800, minWidth: 24, textAlign: 'center' }}>{item.qty}</span>
+                    <span style={{ fontSize: '0.95rem', fontWeight: 800, minWidth: 24, textAlign: 'center', color: 'rgb(var(--text-primary))' }}>{item.qty}</span>
                     <button className="qty-btn" style={{ width: 32, height: 32 }} onClick={() => updateQty(item.itemId, item.qty + 1)}>+</button>
                     <button
                       onClick={() => removeItem(item.itemId)}
-                      style={{ background: 'none', border: 'none', color: '#a1a1aa', cursor: 'pointer', padding: 6 }}
+                      style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', padding: 6 }}
                     >
                       <Trash2 size={16} />
                     </button>
@@ -1141,11 +1126,11 @@ export default function POSPage() {
             {/* Mobile Customer Phone & Name Inputs */}
             <div style={{ marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div>
-                <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#a1a1aa', display: 'block', marginBottom: 6 }}>
+                <label style={{ fontSize: '0.76rem', fontWeight: 700, color: 'rgb(var(--text-secondary))', display: 'block', marginBottom: 6 }}>
                   Customer Phone (Sends Digital Bill via WhatsApp)
                 </label>
                 <div style={{ position: 'relative' }}>
-                  <Phone size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'rgb(113,113,122)' }} />
+                  <Phone size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'rgb(var(--text-muted))' }} />
                   <input
                     type="tel"
                     className="input"
@@ -1161,11 +1146,11 @@ export default function POSPage() {
               </div>
 
               <div>
-                <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#a1a1aa', display: 'block', marginBottom: 6 }}>
+                <label style={{ fontSize: '0.76rem', fontWeight: 700, color: 'rgb(var(--text-secondary))', display: 'block', marginBottom: 6 }}>
                   Customer Name (Optional)
                 </label>
                 <div style={{ position: 'relative' }}>
-                  <User size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'rgb(113,113,122)' }} />
+                  <User size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'rgb(var(--text-muted))' }} />
                   <input
                     type="text"
                     className="input"
@@ -1183,15 +1168,15 @@ export default function POSPage() {
 
             {/* Customer suggestion banner on mobile */}
             {customerSuggestion && (
-              <div style={{ padding: '8px 12px', borderRadius: 10, background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', fontSize: '0.78rem', color: 'rgb(110,231,183)', marginBottom: 12 }}>
+              <div style={{ padding: '8px 12px', borderRadius: 10, background: 'rgb(var(--color-primary-light))', border: '1px solid rgba(78,159,118,0.3)', fontSize: '0.78rem', color: 'rgb(var(--color-primary-dark))', marginBottom: 12 }}>
                 <strong>{customerSuggestion.name || 'Returning Customer'}</strong> · Loyalty: {Number(customerSuggestion.loyaltyPoints).toFixed(0)} pts
               </div>
             )}
 
             {/* Mobile Loyalty Redemption */}
             {customerSuggestion && Math.floor(Number(customerSuggestion?.loyaltyPoints || 0)) > 0 && (
-              <div style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 12, padding: '10px 12px', marginBottom: 12 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 700, color: 'rgb(251,191,36)', marginBottom: 6 }}>
+              <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 12, padding: '10px 12px', marginBottom: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 700, color: '#d97706', marginBottom: 6 }}>
                   <span>⭐ Redeem Loyalty Points</span>
                   <span>{Math.floor(Number(customerSuggestion.loyaltyPoints))} pts</span>
                 </div>
@@ -1207,7 +1192,7 @@ export default function POSPage() {
                   <button
                     type="button"
                     className="btn-secondary"
-                    style={{ height: 38, fontSize: '0.78rem', color: 'rgb(251,191,36)', fontWeight: 800, padding: '0 14px' }}
+                    style={{ height: 38, fontSize: '0.78rem', color: '#d97706', fontWeight: 800, padding: '0 14px' }}
                     onClick={() => {
                       const avail = Math.floor(Number(customerSuggestion.loyaltyPoints));
                       const maxRedeem = Math.min(avail, Math.floor(Math.max(0, rawTotal - manualDiscount)));
@@ -1222,7 +1207,7 @@ export default function POSPage() {
 
             {/* Mobile Payment Mode Picker */}
             <div style={{ marginBottom: 14 }}>
-              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#a1a1aa', display: 'block', marginBottom: 6 }}>
+              <label style={{ fontSize: '0.76rem', fontWeight: 700, color: 'rgb(var(--text-secondary))', display: 'block', marginBottom: 6 }}>
                 Payment Method
               </label>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
@@ -1246,9 +1231,9 @@ export default function POSPage() {
                         borderRadius: 12,
                         cursor: isDisabled ? 'not-allowed' : 'pointer',
                         opacity: isDisabled ? 0.45 : 1,
-                        background: isSelected ? 'rgba(139,92,246,0.25)' : 'rgb(28,28,35)',
-                        border: `1px solid ${isSelected ? 'rgb(139,92,246)' : 'rgba(255,255,255,0.06)'}`,
-                        color: isSelected ? 'rgb(167,139,250)' : 'rgb(161,161,170)',
+                        background: isSelected ? 'rgb(var(--color-primary-light))' : 'rgb(var(--surface-2))',
+                        border: `1.5px solid ${isSelected ? 'rgb(var(--color-primary))' : 'rgb(var(--border-rgb))'}`,
+                        color: isSelected ? 'rgb(var(--color-primary-dark))' : 'rgb(var(--text-secondary))',
                         fontWeight: isSelected ? 800 : 500,
                         fontSize: '0.8rem',
                         display: 'flex',
@@ -1260,7 +1245,7 @@ export default function POSPage() {
                       <span style={{ fontSize: '1.2rem' }}>{mode.emoji}</span>
                       <span>{mode.label}</span>
                       {mode.badge && (
-                        <span style={{ fontSize: '0.62rem', color: '#f87171', fontWeight: 700 }}>
+                        <span style={{ fontSize: '0.62rem', color: '#dc2626', fontWeight: 700 }}>
                           {mode.badge}
                         </span>
                       )}
@@ -1271,24 +1256,24 @@ export default function POSPage() {
             </div>
 
             {/* Mobile Bill Totals Summary */}
-            <div style={{ padding: '12px 14px', borderRadius: 12, background: 'rgb(28,28,35)', fontSize: '0.88rem', marginBottom: 16 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#a1a1aa', marginBottom: 4 }}>
+            <div style={{ padding: '12px 14px', borderRadius: 12, background: 'rgb(var(--surface-2))', border: '1px solid rgb(var(--border-rgb))', fontSize: '0.88rem', marginBottom: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'rgb(var(--text-secondary))', marginBottom: 4 }}>
                 <span>Subtotal</span>
-                <span>₹{subtotal.toFixed(2)}</span>
+                <span style={{ fontWeight: 600, color: 'rgb(var(--text-primary))' }}>₹{subtotal.toFixed(2)}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#a1a1aa', marginBottom: 4 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'rgb(var(--text-secondary))', marginBottom: 4 }}>
                 <span>GST / Tax</span>
-                <span>₹{taxTotal.toFixed(2)}</span>
+                <span style={{ fontWeight: 600, color: 'rgb(var(--text-primary))' }}>₹{taxTotal.toFixed(2)}</span>
               </div>
               {totalDiscount > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', color: 'rgb(52,211,153)', marginBottom: 4, fontWeight: 700 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: 'rgb(var(--color-primary-dark))', marginBottom: 4, fontWeight: 700 }}>
                   <span>Discount Applied</span>
                   <span>−₹{totalDiscount.toFixed(2)}</span>
                 </div>
               )}
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: '1.2rem', color: '#fafafa', marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: '1.2rem', color: 'rgb(var(--text-primary))', marginTop: 8, paddingTop: 8, borderTop: '1px solid rgb(var(--border-rgb))' }}>
                 <span>Grand Total</span>
-                <span style={{ color: 'rgb(52,211,153)' }}>₹{grandTotal.toFixed(2)}</span>
+                <span style={{ color: 'rgb(var(--color-primary-dark))' }}>₹{grandTotal.toFixed(2)}</span>
               </div>
             </div>
 
@@ -1300,15 +1285,8 @@ export default function POSPage() {
                 height: 52,
                 fontSize: '1.05rem',
                 fontWeight: 800,
-                borderRadius: 14,
+                borderRadius: 999,
                 justifyContent: 'center',
-                background: finalizeBillMutation.isPending
-                  ? 'linear-gradient(135deg, rgb(16, 185, 129), rgb(139, 92, 246))'
-                  : 'linear-gradient(135deg, rgb(139,92,246), rgb(109,40,217))',
-                boxShadow: finalizeBillMutation.isPending
-                  ? '0 0 24px rgba(52, 211, 153, 0.6)'
-                  : '0 4px 18px rgba(139,92,246,0.4)',
-                transition: 'all 0.2s ease',
               }}
               disabled={cartItems.length === 0 || finalizeBillMutation.isPending}
               onClick={() => {
